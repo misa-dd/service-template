@@ -1,6 +1,9 @@
 build:
 	docker build . -t service
 
+test:
+	echo "no tests"
+
 dev:
 	docker run -d -p 80:5000 -v `pwd`/app:/root/app service bash runlocal.sh
 
