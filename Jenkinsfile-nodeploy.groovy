@@ -1,4 +1,4 @@
-@Library('common-pipelines@v3.0.4')
+@Library('common-pipelines@v3.0.11')
 import java.time.Instant
 
 // -----------------------------------------------------------------------------------
