@@ -33,6 +33,7 @@ properties(
 
 stage('Build'){
     node(NODE_TYPE) {
+        docker = new org.doordash.Docker()
         github = new org.doordash.Github()
         github.doClosureWithStatus(
             {
