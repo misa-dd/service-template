@@ -33,6 +33,7 @@ properties(
 
 stage('Build'){
     node(NODE_TYPE) {
+        github = new org.doordash.Github()
         github.doClosureWithStatus(
             {
                 docker.buildPushContainers(
