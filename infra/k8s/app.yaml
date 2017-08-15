@@ -25,6 +25,6 @@ spec:
     spec:
       containers:
       - name: web
-        image: {{aws_account}}.dkr.ecr.us-west-2.amazonaws.com/doordash/{{service}}.app:master
+        image: {{aws_account}}.dkr.ecr.us-west-2.amazonaws.com/doordash/{{service}}.app:{{git_sha}}
         ports:
         - containerPort: 80

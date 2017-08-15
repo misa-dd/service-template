@@ -20,7 +20,7 @@ def shwrapper(func, *args, **kwargs):
         func(*args, **kwargs)
 
 
-for func in ['aws']:
+for func in ['aws', 'git']:
     locals()[func] = functools.partial(shwrapper, getattr(sh, func))
 
 
@@ -49,4 +49,5 @@ if __name__ == '__main__':
     with open("infra/env/{}.yaml".format(env)) as f:
         context = yaml.load(f)
     context['aws_account'] = aws('sts', 'get-caller-identity', '--output', 'text', '--query', 'Account').strip()
+    context['git_sha'] = git('rev-parse', 'HEAD')
     render(src, dst, context)

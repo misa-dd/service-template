@@ -31,6 +31,24 @@ properties(
     ]
 )
 
+stage('Build'){
+    node(NODE_TYPE) {
+        github.doClosureWithStatus(
+            {
+                docker.buildPushContainers(
+                    params["GITHUB_REPOSITORY"].toString(),
+                    params["BRANCH_NAME"].toString(),
+                    params["SHA"].toString()
+                )
+            }, 
+            params["GITHUB_REPOSITORY"], 
+            params["SHA"], 
+            "CI: Docker Images", 
+            "${BUILD_URL}console"
+        )
+    }
+}
+
 stage('Deploy') {
     def input = input(message: "select an environment",
         parameters: [
