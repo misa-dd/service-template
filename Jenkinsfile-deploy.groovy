@@ -4,7 +4,7 @@ import java.time.Instant
 import org.doordash.Docker
 import org.doordash.Github
 import org.doordash.Os
-import org.dorodash.Slack
+import org.doordash.Slack
 
 def NODE_TYPE = "general || spot"
 
