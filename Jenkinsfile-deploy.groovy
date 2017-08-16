@@ -42,7 +42,7 @@ stage('Startup'){
             params["SHA"],
             params["GITHUB_REPOSITORY"],
             "Started.",
-            "Start Jenkinsfile-nodeploy Pipeline",
+            "Start Jenkinsfile-deploy Pipeline",
             "${BUILD_URL}console"
         )
     }
