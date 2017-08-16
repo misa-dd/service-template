@@ -1,7 +1,7 @@
 terraform {
   backend "s3" {
     bucket = "dd-service-tf-state-staging"
-    key    = "{{env}}/{{service}}/terraform.tfstate"
+    key    = "{{fabric}}/{{service}}/terraform.tfstate"
     region = "us-west-2"
   }
 }

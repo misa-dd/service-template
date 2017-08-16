@@ -1,0 +1,3 @@
+fabric: staging
+service: service-name
+replicas: 1
