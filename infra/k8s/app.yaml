@@ -15,7 +15,7 @@ spec:
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
-  name: {{service}} 
+  name: {{service}}
 spec:
   replicas: {{replicas}}
   template:
@@ -28,3 +28,14 @@ spec:
         image: {{aws_account}}.dkr.ecr.us-west-2.amazonaws.com/doordash/{{service}}.app:{{git_sha}}
         ports:
         - containerPort: 80
+        env:
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: {{service}}-aws-credentials
+              key: AWS_ACCESS_KEY_ID
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{service}}-aws-credentials
+              key: AWS_SECRET_ACCESS_KEY
