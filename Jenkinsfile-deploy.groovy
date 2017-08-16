@@ -1,9 +1,10 @@
 @Library('common-pipelines@v5.0.5')
 import java.time.Instant
 
+import org.doordash.Docker
 import org.doordash.Github
 import org.doordash.Os
-import org.doordash.Workspace
+import org.dorodash.Slack
 
 def NODE_TYPE = "general || spot"
 
@@ -35,6 +36,7 @@ stage('Startup'){
     node(NODE_TYPE) {
         docker = new Docker()
         github = new Github()
+        os = new Os()
         slack = new Slack()
         github.sendStatusToGitHub(
             params["SHA"],
@@ -107,16 +109,13 @@ stage('Deploy') {
     }
     // TODO (bliang) simplify
     node(NODE_TYPE) {
-        g = new Github()
-        o = new Os()
-        w = new Workspace()
         sh 'mkdir -p /root/.kube'
-        o.deleteContextDirSubDirsWithExceptions("${WORKSPACE}", ["doordash-containertools"])
+        os.deleteContextDirSubDirsWithExceptions("${WORKSPACE}", ["doordash-containertools"])
         git_url = params["GITHUB_REPOSITORY"].toString()
         sha = params["SHA"].toString()
-        serviceid = g.extractGitUrlParts(git_url)[1]
+        serviceid = github.extractGitUrlParts(git_url)[1]
         service_dir = "${WORKSPACE}/${serviceid}"
-        g.fastCheckoutScm(git_url, sha, service_dir)
+        github.fastCheckoutScm(git_url, sha, service_dir)
 
         if (targetEnv == 'prod') {
             withCredentials([file(credentialsId: 'K8S_CONFIG_PROD', variable: 'K8S_CONFIG_PROD')]) {
