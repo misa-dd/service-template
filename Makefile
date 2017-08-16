@@ -10,7 +10,7 @@ dev:
 render-tf:
 	rm -rf .tmp/tf
 	mkdir -p .tmp/tf
-	docker run -v `pwd`:/root service python3 render.py infra/tf .tmp/tf $(ENV)
+	docker run -v `pwd`:/root service python3 render.py infra/tf .tmp/tf $(FABRIC)
 
 apply-tf:
 	cd .tmp/tf && terraform init && terraform apply

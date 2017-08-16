@@ -45,8 +45,8 @@ def mkdirp(path):
 
 
 if __name__ == '__main__':
-    src, dst, env = sys.argv[1:]
-    with open("infra/env/{}.yaml".format(env)) as f:
+    src, dst, fabric = sys.argv[1:]
+    with open("infra/fabric/{}.yaml".format(fabric)) as f:
         context = yaml.load(f)
     context['aws_account'] = aws('sts', 'get-caller-identity', '--output', 'text', '--query', 'Account').strip()
     context['git_sha'] = git('rev-parse', 'HEAD')

@@ -1,3 +1,3 @@
-env: prod
+fabric: prod
 service: service-template
 replicas: 3
