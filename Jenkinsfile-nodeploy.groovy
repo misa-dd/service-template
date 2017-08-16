@@ -1,5 +1,9 @@
-@Library('common-pipelines@v3.0.11')
+@Library('common-pipelines@v5.0.5')
 import java.time.Instant
+
+import org.doordash.Docker
+import org.doordash.Github
+import org.doordash.Slack
 
 // -----------------------------------------------------------------------------------
 // ********* WARNING *********
@@ -29,14 +33,14 @@ def NODE_TYPE = "general || spot"
 
 stage('Startup'){
     node(NODE_TYPE) {
-        github = new org.doordash.Github()
-        docker = new org.doordash.Docker()
-        slack = new org.doordash.Slack()
+        docker = new Docker()
+        github = new Github()
+        slack = new Slack()
         github.sendStatusToGitHub(
-            params["SHA"], 
-            params["GITHUB_REPOSITORY"], 
-            "Started.", 
-            "CI: Start Pipeline", 
+            params["SHA"],
+            params["GITHUB_REPOSITORY"],
+            "Started.",
+            "Start Jenkinsfile-nodeploy Pipeline",
             "${BUILD_URL}console"
         )
     }
@@ -51,16 +55,16 @@ stage('Build'){
                     params["BRANCH_NAME"].toString(),
                     params["SHA"].toString()
                 )
-            }, 
-            params["GITHUB_REPOSITORY"], 
-            params["SHA"], 
-            "CI: Docker Images", 
+            },
+            params["GITHUB_REPOSITORY"],
+            params["SHA"],
+            "Docker Images",
             "${BUILD_URL}console"
         )
     }
 }
 
-stage('Make Test'){
+stage('Testing'){
     node(NODE_TYPE) {
         github.doClosureWithStatus(
             {
@@ -70,10 +74,10 @@ stage('Make Test'){
                     params["SHA"].toString(),
                     "make test"
                 )
-            }, 
-            params["GITHUB_REPOSITORY"], 
-            params["SHA"], 
-            "CI: make test", 
+            },
+            params["GITHUB_REPOSITORY"],
+            params["SHA"],
+            "Testing",
             "${BUILD_URL}console"
         )
     }

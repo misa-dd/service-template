@@ -1,4 +1,4 @@
-@Library('common-pipelines@v3.0.11')
+@Library('common-pipelines@v5.0.5')
 import java.time.Instant
 
 import org.doordash.Github
@@ -31,10 +31,23 @@ properties(
     ]
 )
 
+stage('Startup'){
+    node(NODE_TYPE) {
+        docker = new Docker()
+        github = new Github()
+        slack = new Slack()
+        github.sendStatusToGitHub(
+            params["SHA"],
+            params["GITHUB_REPOSITORY"],
+            "Started.",
+            "Start Jenkinsfile-nodeploy Pipeline",
+            "${BUILD_URL}console"
+        )
+    }
+}
+
 stage('Build'){
     node(NODE_TYPE) {
-        docker = new org.doordash.Docker()
-        github = new org.doordash.Github()
         github.doClosureWithStatus(
             {
                 docker.buildPushContainers(
@@ -42,26 +55,55 @@ stage('Build'){
                     params["BRANCH_NAME"].toString(),
                     params["SHA"].toString()
                 )
-            }, 
-            params["GITHUB_REPOSITORY"], 
-            params["SHA"], 
-            "CI: Docker Images", 
+            },
+            params["GITHUB_REPOSITORY"],
+            params["SHA"],
+            "Docker Images",
+            "${BUILD_URL}console"
+        )
+    }
+}
+
+stage('Testing'){
+    node(NODE_TYPE) {
+        github.doClosureWithStatus(
+            {
+                docker.runMakeTargetOnService(
+                    params["GITHUB_REPOSITORY"].toString(),
+                    params["BRANCH_NAME"].toString(),
+                    params["SHA"].toString(),
+                    "make test"
+                )
+            },
+            params["GITHUB_REPOSITORY"],
+            params["SHA"],
+            "Testing",
             "${BUILD_URL}console"
         )
     }
 }
 
 stage('Deploy') {
-    def input = input(message: "select an environment",
-        parameters: [
-            choice(name: 'target', choices: 'custom\nstaging\nprod', description: 'What environment to deploy to?'),
-            [name: 'targetCustom', $class: 'TextParameterDefinition', description: 'specify custom environment']
-        ]
-    )
-    if (input['target'] == "custom") {
-        targetEnv = input['targetCustom']
-    } else {
-        targetEnv = input['target']
+    while (true) {
+        try {
+            timeout(time: 8, unit: 'MINUTES') {
+                def input = input(message: "select an environment",
+                    parameters: [
+                        choice(name: 'target', choices: 'custom\nstaging\nprod', description: 'What environment to deploy to?'),
+                        [name: 'targetCustom', $class: 'TextParameterDefinition', description: 'specify custom environment']
+                    ]
+                )
+                if (input['target'] == "custom") {
+                    targetEnv = input['targetCustom']
+                } else {
+                    targetEnv = input['target']
+                }
+                break
+            }
+        } catch(err) {
+            println "Aborted!"
+            sh "exit 1"
+        }
     }
     // TODO (bliang) simplify
     node(NODE_TYPE) {
