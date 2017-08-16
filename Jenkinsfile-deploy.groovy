@@ -103,8 +103,7 @@ stage('Deploy') {
                 break
             }
         } catch(err) {
-            println "Aborted!"
-            sh "exit 1"
+            err('Aborted due to timeout!')
         }
     }
     // TODO (bliang) simplify
