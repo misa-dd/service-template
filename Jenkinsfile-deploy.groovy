@@ -121,7 +121,7 @@ stage('Deploy') {
                 pip install -r requirements.txt
                 python render.py infra/k8s .tmp prod
                 \$(aws ecr get-login --no-include-email --region us-west-2)
-                docker run -e KUBECONFIG=/root/.kube/config.prod -v /root/.kube:/root/.kube -v $service_dir:/root/$serviceid 611706558220.dkr.ecr.us-west-2.amazonaws.com/doordash/deployment-tools.app:latest kubectl apply -f /root/$serviceid/.tmp/app.yaml
+                docker run -e KUBECONFIG=/root/.kube/config.prod -v /root/.kube:/root/.kube -v $service_dir:/root/$serviceid 611706558220.dkr.ecr.us-west-2.amazonaws.com/doordash/deployment-tools.app:latest kubectl apply -f /root/$serviceid/.tmp/app.yaml -n prod
                 """
             }
         } else if (targetFabric == 'staging') {
@@ -132,7 +132,7 @@ stage('Deploy') {
                 pip install -r requirements.txt
                 python render.py infra/k8s .tmp staging
                 \$(aws ecr get-login --no-include-email --region us-west-2)
-                docker run -e KUBECONFIG=/root/.kube/config.staging -v /root/.kube:/root/.kube -v $service_dir:/root/$serviceid 611706558220.dkr.ecr.us-west-2.amazonaws.com/doordash/deployment-tools.app:latest kubectl apply -f /root/$serviceid/.tmp/app.yaml
+                docker run -e KUBECONFIG=/root/.kube/config.staging -v /root/.kube:/root/.kube -v $service_dir:/root/$serviceid 611706558220.dkr.ecr.us-west-2.amazonaws.com/doordash/deployment-tools.app:latest kubectl apply -f /root/$serviceid/.tmp/app.yaml -n staging
                 """
             }
         } else {
@@ -143,7 +143,7 @@ stage('Deploy') {
                 pip install -r requirements.txt
                 python render.py infra/k8s .tmp $targetFabric
                 \$(aws ecr get-login --no-include-email --region us-west-2)
-                docker run -e KUBECONFIG=/root/.kube/config.sandbox -v /root/.kube:/root/.kube -v $service_dir:/root/$serviceid 611706558220.dkr.ecr.us-west-2.amazonaws.com/doordash/deployment-tools.app:latest kubectl apply -f /root/$serviceid/.tmp/app.yaml
+                docker run -e KUBECONFIG=/root/.kube/config.sandbox -v /root/.kube:/root/.kube -v $service_dir:/root/$serviceid 611706558220.dkr.ecr.us-west-2.amazonaws.com/doordash/deployment-tools.app:latest kubectl apply -f /root/$serviceid/.tmp/app.yaml -n $targetFabric
                 """
             }
         }
