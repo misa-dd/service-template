@@ -86,25 +86,22 @@ stage('Testing'){
 }
 
 stage('Deploy') {
-    while (true) {
-        try {
-            timeout(time: 8, unit: 'MINUTES') {
-                def input = input(message: "select a fabric",
-                    parameters: [
-                        choice(name: 'target', choices: 'custom\nstaging\nprod', description: 'What fabric to deploy to?'),
-                        [name: 'targetCustom', $class: 'TextParameterDefinition', description: 'specify custom fabric']
-                    ]
-                )
-                if (input['target'] == "custom") {
-                    targetFabric = input['targetCustom']
-                } else {
-                    targetFabric = input['target']
-                }
-                break
+    try {
+        timeout(time: 8, unit: 'MINUTES') {
+            def input = input(message: "select a fabric",
+                parameters: [
+                    choice(name: 'target', choices: 'custom\nstaging\nprod', description: 'What fabric to deploy to?'),
+                    [name: 'targetCustom', $class: 'TextParameterDefinition', description: 'specify custom fabric']
+                ]
+            )
+            if (input['target'] == "custom") {
+                targetFabric = input['targetCustom']
+            } else {
+                targetFabric = input['target']
             }
-        } catch(err) {
-            error('Aborted due to timeout!')
         }
+    } catch(err) {
+        error('Aborted due to timeout!')
     }
     // TODO (bliang) simplify
     node(NODE_TYPE) {
