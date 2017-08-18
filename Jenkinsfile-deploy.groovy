@@ -96,8 +96,10 @@ stage('Deploy') {
             )
             if (input['target'] == "custom") {
                 targetFabric = input['targetCustom']
+                targetCluster = 'sandbox'
             } else {
                 targetFabric = input['target']
+                targetCluster = targetFabric
             }
         }
     } catch(err) {
@@ -105,47 +107,24 @@ stage('Deploy') {
     }
     // TODO (bliang) simplify
     node(NODE_TYPE) {
-        sh 'mkdir -p /root/.kube'
-        os.deleteContextDirSubDirsWithExceptions("${WORKSPACE}", ["doordash-containertools"])
+        os.deleteContextDirSubDirsWithExceptions("$WORKSPACE", ["doordash-containertools"])
         git_url = params["GITHUB_REPOSITORY"].toString()
         sha = params["SHA"].toString()
         serviceid = github.extractGitUrlParts(git_url)[1]
-        service_dir = "${WORKSPACE}/${serviceid}"
+        service_dir = "$WORKSPACE/$serviceid"
         github.fastCheckoutScm(git_url, sha, service_dir)
 
-        if (targetFabric == 'prod') {
-            withCredentials([file(credentialsId: 'K8S_CONFIG_PROD', variable: 'K8S_CONFIG_PROD')]) {
-                sh """
-                cp "$K8S_CONFIG_PROD" /root/.kube/config.prod
-                cd $serviceid
-                pip install -r requirements.txt
-                python render.py infra/k8s .tmp prod
-                \$(aws ecr get-login --no-include-email --region us-west-2)
-                docker run -e KUBECONFIG=/root/.kube/config.prod -v /root/.kube:/root/.kube -v $service_dir:/root/$serviceid 611706558220.dkr.ecr.us-west-2.amazonaws.com/doordash/deployment-tools.app:latest kubectl apply -f /root/$serviceid/.tmp/app.yaml -n prod
-                """
-            }
-        } else if (targetFabric == 'staging') {
-            withCredentials([file(credentialsId: 'K8S_CONFIG_STAGING', variable: 'K8S_CONFIG_STAGING')]) {
-                sh """
-                cp "$K8S_CONFIG_STAGING" /root/.kube/config.staging
-                cd $serviceid
-                pip install -r requirements.txt
-                python render.py infra/k8s .tmp staging
-                \$(aws ecr get-login --no-include-email --region us-west-2)
-                docker run -e KUBECONFIG=/root/.kube/config.staging -v /root/.kube:/root/.kube -v $service_dir:/root/$serviceid 611706558220.dkr.ecr.us-west-2.amazonaws.com/doordash/deployment-tools.app:latest kubectl apply -f /root/$serviceid/.tmp/app.yaml -n staging
-                """
-            }
-        } else {
-            withCredentials([file(credentialsId: 'K8S_CONFIG_SANDBOX', variable: 'K8S_CONFIG_SANDBOX')]) {
-                sh """
-                cp "$K8S_CONFIG_SANDBOX" /root/.kube/config.sandbox
-                cd $serviceid
-                pip install -r requirements.txt
-                python render.py infra/k8s .tmp $targetFabric
-                \$(aws ecr get-login --no-include-email --region us-west-2)
-                docker run -e KUBECONFIG=/root/.kube/config.sandbox -v /root/.kube:/root/.kube -v $service_dir:/root/$serviceid 611706558220.dkr.ecr.us-west-2.amazonaws.com/doordash/deployment-tools.app:latest kubectl apply -f /root/$serviceid/.tmp/app.yaml -n $targetFabric
-                """
-            }
+        credentialsId = 'K8S_CONFIG_' + targetCluster.toUpperCase()
+        withCredentials([file(credentialsId: credentialsId, variable: credentialsId)]) {
+            sh """
+            mkdir -p $WORKSPACE/.kube
+            cp \$$credentialsId $WORKSPACE/.kube/config.$targetCluster
+            cd $serviceid
+            pip install -r requirements.txt
+            python render.py infra/k8s .tmp $targetFabric
+            \$(aws ecr get-login --no-include-email --region us-west-2)
+            docker run -e KUBECONFIG=/root/.kube/config.$targetCluster -v $WORKSPACE/.kube:/root/.kube -v $service_dir:/root/$serviceid 611706558220.dkr.ecr.us-west-2.amazonaws.com/doordash/deployment-tools.app:latest kubectl apply -f /root/$serviceid/.tmp/app.yaml -n $targetFabric
+            """
         }
     }
 }
