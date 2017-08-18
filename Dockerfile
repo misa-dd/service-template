@@ -6,7 +6,8 @@ RUN apt-get update -y && \
     python3-dev \
     rsyslog \
     supervisor \
-    nginx
+    nginx \
+    curl
 
 ENV LC_ALL C.UTF-8
 
