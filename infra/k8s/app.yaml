@@ -28,6 +28,10 @@ spec:
         image: {{aws_account}}.dkr.ecr.us-west-2.amazonaws.com/doordash/{{service}}.app:{{git_sha}}
         command: ["/root/docker/entrypoint.sh"]
         args: ["/root/docker/run.sh"]
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
         ports:
         - containerPort: 80
         env:
@@ -41,3 +45,7 @@ spec:
             secretKeyRef:
               name: {{service}}-aws-credentials
               key: AWS_SECRET_ACCESS_KEY
+        - name: FABRIC
+          value: {{fabric}}
+        - name: SERVICE_NAME
+          value: {{service}}

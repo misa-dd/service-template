@@ -1,5 +1,7 @@
+--extra-index-url https://pypi.fury.io/1QsbrfvsG9ZX7g5PXdZv/doordash/
+doordash-python-lib
 Flask==0.12.2
-uWSGI==2.0.13.1
 jinja2==2.9
 PyYAML==3.11
 sh
+uWSGI==2.0.13.1
