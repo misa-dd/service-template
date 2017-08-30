@@ -1,4 +1,4 @@
-@Library('common-pipelines@v5.0.5')
+@Library('common-pipelines@v6.0.15')
 import java.time.Instant
 
 import org.doordash.Docker
@@ -29,10 +29,8 @@ properties(
     ]
 )
 
-def NODE_TYPE = "general || spot"
-
 stage('Startup'){
-    node(NODE_TYPE) {
+    curlSlave {
         docker = new Docker()
         github = new Github()
         slack = new Slack()
@@ -47,7 +45,7 @@ stage('Startup'){
 }
 
 stage('Build'){
-    node(NODE_TYPE) {
+    buildSlave {
         github.doClosureWithStatus(
             {
                 docker.buildPushContainers(
@@ -65,7 +63,7 @@ stage('Build'){
 }
 
 stage('Testing'){
-    node(NODE_TYPE) {
+    genericSlave {
         github.doClosureWithStatus(
             {
                 docker.runMakeTargetOnService(

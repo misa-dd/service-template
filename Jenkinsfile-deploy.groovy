@@ -1,12 +1,10 @@
-@Library('common-pipelines@v5.0.5')
+@Library('common-pipelines@v6.0.15')
 import java.time.Instant
 
 import org.doordash.Docker
 import org.doordash.Github
 import org.doordash.Os
 import org.doordash.Slack
-
-def NODE_TYPE = "general || spot"
 
 // -----------------------------------------------------------------------------------
 // ********* WARNING *********
@@ -33,7 +31,7 @@ properties(
 )
 
 stage('Startup'){
-    node(NODE_TYPE) {
+    curlSlave {
         docker = new Docker()
         github = new Github()
         os = new Os()
@@ -49,7 +47,7 @@ stage('Startup'){
 }
 
 stage('Build'){
-    node(NODE_TYPE) {
+    buildSlave {
         github.doClosureWithStatus(
             {
                 docker.buildPushContainers(
@@ -67,7 +65,7 @@ stage('Build'){
 }
 
 stage('Testing'){
-    node(NODE_TYPE) {
+    genericSlave {
         github.doClosureWithStatus(
             {
                 docker.runMakeTargetOnService(
@@ -106,7 +104,7 @@ stage('Deploy') {
         error('Aborted due to timeout!')
     }
     // TODO (bliang) simplify
-    node(NODE_TYPE) {
+    genericSlave {
         os.deleteContextDirSubDirsWithExceptions("$WORKSPACE", ["doordash-containertools"])
         git_url = params["GITHUB_REPOSITORY"].toString()
         sha = params["SHA"].toString()
