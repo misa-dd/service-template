@@ -108,18 +108,20 @@ stage('Deploy') {
         os.deleteContextDirSubDirsWithExceptions("$WORKSPACE", ["doordash-containertools"])
         git_url = params["GITHUB_REPOSITORY"].toString()
         sha = params["SHA"].toString()
+        is_branch = (params["BRANCH_NAME"] != "master") ? ' y' : ''
         serviceid = github.extractGitUrlParts(git_url)[1]
         service_dir = "$WORKSPACE/$serviceid"
         github.fastCheckoutScm(git_url, sha, service_dir)
 
         credentialsId = 'K8S_CONFIG_' + targetCluster.toUpperCase()
+        // not pip3 since only used for render.py on Jenkins slaves
         withCredentials([file(credentialsId: credentialsId, variable: credentialsId)]) {
             sh """
             mkdir -p $WORKSPACE/.kube
             cp \$$credentialsId $WORKSPACE/.kube/config.$targetCluster
             cd $serviceid
-            pip3 install -r requirements.txt
-            python render.py infra/k8s .tmp $targetFabric
+            pip install -r requirements.txt
+            python render.py infra/k8s .tmp $targetFabric$is_branch
             \$(aws ecr get-login --no-include-email --region us-west-2)
             docker run -e KUBECONFIG=/root/.kube/config.$targetCluster -v $WORKSPACE/.kube:/root/.kube -v $service_dir:/root/$serviceid 611706558220.dkr.ecr.us-west-2.amazonaws.com/doordash/deployment-tools.app:latest kubectl apply -f /root/$serviceid/.tmp/app.yaml -n $targetFabric
             """

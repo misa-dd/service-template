@@ -45,9 +45,16 @@ def mkdirp(path):
 
 
 if __name__ == '__main__':
-    src, dst, fabric = sys.argv[1:]
+    # TODO (bliang/jons) all this should eventually be superseded by doorctl
+    src = sys.argv[1]
+    dst = sys.argv[2]
+    fabric = sys.argv[3]
+    if len(sys.argv) > 4:
+        is_branch = sys.argv[4]
     with open("infra/fabric/{}.yaml".format(fabric)) as f:
         context = yaml.load(f)
     context['aws_account'] = aws('sts', 'get-caller-identity', '--output', 'text', '--query', 'Account').strip()
     context['git_sha'] = git('rev-parse', 'HEAD')
+    if is_branch:
+        context['git_sha'] = 'BRANCH-{}'.format(context['git_sha'])
     render(src, dst, context)
