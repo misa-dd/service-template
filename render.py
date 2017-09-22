@@ -49,8 +49,9 @@ if __name__ == '__main__':
     src = sys.argv[1]
     dst = sys.argv[2]
     fabric = sys.argv[3]
+    is_branch = False
     if len(sys.argv) > 4:
-        is_branch = sys.argv[4]
+        is_branch = (sys.argv[4] == 'y')
     with open("infra/fabric/{}.yaml".format(fabric)) as f:
         context = yaml.load(f)
     context['aws_account'] = aws('sts', 'get-caller-identity', '--output', 'text', '--query', 'Account').strip()
