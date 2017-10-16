@@ -108,10 +108,11 @@ stage('Deploy') {
         os.deleteContextDirSubDirsWithExceptions("$WORKSPACE", ["doordash-containertools"])
         git_url = params["GITHUB_REPOSITORY"].toString()
         sha = params["SHA"].toString()
-        is_branch = (params["BRANCH_NAME"] != "master") ? ' y' : ''
+        is_branch = (params["BRANCH_NAME"] != "master") ? ' --is-branch y' : ''
         serviceid = github.extractGitUrlParts(git_url)[1]
         service_dir = "$WORKSPACE/$serviceid"
         github.fastCheckoutScm(git_url, sha, service_dir)
+        aws_account_id = sh(script: "aws sts get-caller-identity --output text --query Account", returnStdout: true).trim()
 
         credentialsId = 'K8S_CONFIG_' + targetCluster.toUpperCase()
         // not pip3 since only used for render.py on Jenkins slaves
@@ -119,11 +120,8 @@ stage('Deploy') {
             sh """
             mkdir -p $WORKSPACE/.kube
             cp \$$credentialsId $WORKSPACE/.kube/config.$targetCluster
-            cd $serviceid
-            pip install -r requirements.txt
-            python render.py infra/k8s .tmp $targetFabric$is_branch
             \$(aws ecr get-login --no-include-email --region us-west-2)
-            docker run -e KUBECONFIG=/root/.kube/config.$targetCluster -v $WORKSPACE/.kube:/root/.kube -v $service_dir:/root/$serviceid 611706558220.dkr.ecr.us-west-2.amazonaws.com/doordash/deployment-tools.app:latest kubectl apply -f /root/$serviceid/.tmp/app.yaml -n $targetFabric
+            docker run -e KUBECONFIG=/root/.kube/config.$targetCluster -v $WORKSPACE/.kube:/root/.kube -v $service_dir:/root/$serviceid 611706558220.dkr.ecr.us-west-2.amazonaws.com/doordash/deployment-tools.app:latest bash -c "cd /root/$serviceid && python3 render.py --src infra/k8s --dst .tmp --fabric $targetFabric$is_branch --aws-account-id $aws_account_id && kubectl apply -f /root/$serviceid/.tmp/app.yaml -n $targetFabric"
             """
         }
     }
