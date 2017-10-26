@@ -109,8 +109,8 @@ stage('Deploy') {
         git_url = params["GITHUB_REPOSITORY"].toString()
         sha = params["SHA"].toString()
         is_branch = (params["BRANCH_NAME"] != "master") ? ' --is-branch y' : ''
-        serviceid = github.extractGitUrlParts(git_url)[1]
-        service_dir = "$WORKSPACE/$serviceid"
+        service_id = github.extractGitUrlParts(git_url)[1]
+        service_dir = "$WORKSPACE/$service_id"
         github.fastCheckoutScm(git_url, sha, service_dir)
         aws_account_id = sh(script: "aws sts get-caller-identity --output text --query Account", returnStdout: true).trim()
 
@@ -121,7 +121,7 @@ stage('Deploy') {
             mkdir -p $WORKSPACE/.kube
             cp \$$credentialsId $WORKSPACE/.kube/config.$targetCluster
             \$(aws ecr get-login --no-include-email --region us-west-2)
-            docker run -e KUBECONFIG=/root/.kube/config.$targetCluster -v $WORKSPACE/.kube:/root/.kube -v $service_dir:/root/$serviceid 611706558220.dkr.ecr.us-west-2.amazonaws.com/doordash/deployment-tools.app:latest bash -c "cd /root/$serviceid && python3 render.py --src infra/k8s --dst .tmp --fabric $targetFabric$is_branch --aws-account-id $aws_account_id && kubectl apply -f /root/$serviceid/.tmp/app.yaml -n $targetFabric"
+            docker run -e KUBECONFIG=/root/.kube/config.$targetCluster -v $WORKSPACE/.kube:/root/.kube -v $service_dir:/root/$service_id 611706558220.dkr.ecr.us-west-2.amazonaws.com/doordash/deployment-tools.app:latest bash -c "cd /root/$service_id && python3 render.py --src infra/k8s --dst .tmp --fabric $targetFabric$is_branch --aws-account-id $aws_account_id && kubectl apply -f /root/$service_id/.tmp/app.yaml -n $targetFabric && timeout 150 kubectl rollout status deployment/$service_id -n $targetFabric --watch"
             """
         }
     }
