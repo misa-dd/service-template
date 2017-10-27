@@ -1,4 +1,4 @@
-@Library('common-pipelines@v6.0.15')
+@Library('common-pipelines@v9.0.3')
 import java.time.Instant
 
 import org.doordash.Docker
