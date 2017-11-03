@@ -108,7 +108,6 @@ stage('Deploy') {
         os.deleteContextDirSubDirsWithExceptions("$WORKSPACE", ["doordash-containertools"])
         gitUrl = params["GITHUB_REPOSITORY"].toString()
         sha = params["SHA"].toString()
-        isBranch = (params["BRANCH_NAME"] != "master") ? ' --is-branch y' : ''
         serviceId = github.extractGitUrlParts(gitUrl)[1]
         serviceDir = "$WORKSPACE/$serviceId"
         github.fastCheckoutScm(gitUrl, sha, serviceDir)
@@ -121,7 +120,7 @@ stage('Deploy') {
             mkdir -p $WORKSPACE/.kube
             cp \$$credentialsId $WORKSPACE/.kube/config.$targetCluster
             \$(aws ecr get-login --no-include-email --region us-west-2)
-            docker run -e KUBECONFIG=/root/.kube/config.$targetCluster -v $WORKSPACE/.kube:/root/.kube -v $serviceDir:/root/$serviceId 611706558220.dkr.ecr.us-west-2.amazonaws.com/doordash/deployment-tools.app:latest bash -c "cd /root/$serviceId && python3 render.py --src infra/k8s --dst .tmp --fabric $targetFabric$isBranch --aws-account-id $awsAccountId && kubectl apply -f /root/$serviceId/.tmp/app.yaml -n $targetFabric && timeout 150 kubectl rollout status deployment/$serviceId -n $targetFabric --watch"
+            docker run -e KUBECONFIG=/root/.kube/config.$targetCluster -v $WORKSPACE/.kube:/root/.kube -v $serviceDir:/root/$serviceId 611706558220.dkr.ecr.us-west-2.amazonaws.com/doordash/deployment-tools.app:latest bash -c "cd /root/$serviceId && python3 render.py --src infra/k8s --dst .tmp --fabric $targetFabric --aws-account-id $awsAccountId && kubectl apply -f /root/$serviceId/.tmp/app.yaml -n $targetFabric && timeout 150 kubectl rollout status deployment/$serviceId -n $targetFabric --watch"
             """
         }
     }

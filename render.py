@@ -52,17 +52,11 @@ if __name__ == '__main__':
     parser.add_argument('--dst', help='destination directory', type=str, default='.tmp')
     parser.add_argument('--fabric', help='fabric', type=str)
     parser.add_argument('--aws-account-id', help='AWS account id (if known)', type=str, required=False)
-    parser.add_argument('--is-branch', help='y if is branch deploy', type=str, required=False)
     args = parser.parse_args()
 
-    is_branch = False
     aws_account_id = args.aws_account_id or aws('sts', 'get-caller-identity', '--output', 'text', '--query', 'Account').strip()
-    if 'is_branch' in args:
-        is_branch = (args.is_branch == 'y')
     with open("infra/fabric/{}.yaml".format(args.fabric)) as f:
         context = yaml.load(f)
     context['aws_account'] = aws_account_id
     context['git_sha'] = git('rev-parse', 'HEAD')
-    if is_branch:
-        context['git_sha'] = 'BRANCH-{}'.format(context['git_sha'])
     render(args.src, args.dst, context)
