@@ -103,6 +103,10 @@ stage('Deploy') {
     } catch(err) {
         error('Aborted due to timeout!')
     }
+    doKubernetesDeploy(targetCluster, targetFabric)
+}
+
+def doKubernetesDeploy(targetCluster, targetFabric) {
     // TODO (bliang) simplify
     genericSlave {
         os.deleteContextDirSubDirsWithExceptions("$WORKSPACE", ["doordash-containertools"])
@@ -114,7 +118,6 @@ stage('Deploy') {
         awsAccountId = sh(script: "aws sts get-caller-identity --output text --query Account", returnStdout: true).trim()
 
         credentialsId = 'K8S_CONFIG_' + targetCluster.toUpperCase()
-        // not pip3 since only used for render.py on Jenkins slaves
         withCredentials([file(credentialsId: credentialsId, variable: credentialsId)]) {
             sh """
             mkdir -p $WORKSPACE/.kube
