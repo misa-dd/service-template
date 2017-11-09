@@ -57,6 +57,6 @@ if __name__ == '__main__':
     aws_account_id = args.aws_account_id or aws('sts', 'get-caller-identity', '--output', 'text', '--query', 'Account').strip()
     with open("infra/fabric/{}.yaml".format(args.fabric)) as f:
         context = yaml.load(f)
-    context['aws_account'] = aws_account_id
+    context['aws_account_id'] = aws_account_id
     context['git_sha'] = git('rev-parse', 'HEAD')
     render(args.src, args.dst, context)
