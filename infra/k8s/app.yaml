@@ -25,7 +25,7 @@ spec:
     spec:
       containers:
       - name: web
-        image: {{aws_account}}.dkr.ecr.us-west-2.amazonaws.com/doordash/{{service}}.app:{{git_sha}}
+        image: {{aws_account_id}}.dkr.ecr.us-west-2.amazonaws.com/doordash/{{service}}.app:{{git_sha}}
         command: ["/root/docker/entrypoint.sh"]
         args: ["/root/docker/run.sh"]
         resources:
