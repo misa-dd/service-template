@@ -83,48 +83,42 @@ stage('Testing'){
     }
 }
 
-stage('Deploy') {
+stage('Deploy to staging') {
+    genericSlave {
+        doKubernetesDeploy('staging', 'staging')
+    }
+}
+
+stage('Deploy to prod') {
     try {
-        timeout(time: 8, unit: 'MINUTES') {
-            def input = input(message: "select a fabric",
-                parameters: [
-                    choice(name: 'target', choices: 'custom\nstaging\nprod', description: 'What fabric to deploy to?'),
-                    [name: 'targetCustom', $class: 'TextParameterDefinition', description: 'specify custom fabric']
-                ]
-            )
-            if (input['target'] == "custom") {
-                targetFabric = input['targetCustom']
-                targetCluster = 'sandbox'
-            } else {
-                targetFabric = input['target']
-                targetCluster = targetFabric
-            }
+        timeout(time: 10, unit: 'MINUTES') {
+            input 'Deploy to production?'
         }
     } catch(err) {
         error('Aborted due to timeout!')
     }
-    doKubernetesDeploy(targetCluster, targetFabric)
+    genericSlave {
+        doKubernetesDeploy('prod', 'prod')
+    }
 }
 
 def doKubernetesDeploy(targetCluster, targetFabric) {
     // TODO (bliang) simplify
-    genericSlave {
-        os.deleteContextDirSubDirsWithExceptions("$WORKSPACE", ["doordash-containertools"])
-        gitUrl = params["GITHUB_REPOSITORY"].toString()
-        sha = params["SHA"].toString()
-        serviceId = github.extractGitUrlParts(gitUrl)[1]
-        serviceDir = "$WORKSPACE/$serviceId"
-        github.fastCheckoutScm(gitUrl, sha, serviceDir)
-        awsAccountId = sh(script: "aws sts get-caller-identity --output text --query Account", returnStdout: true).trim()
+    os.deleteContextDirSubDirsWithExceptions("$WORKSPACE", ["doordash-containertools"])
+    gitUrl = params["GITHUB_REPOSITORY"].toString()
+    sha = params["SHA"].toString()
+    serviceId = github.extractGitUrlParts(gitUrl)[1]
+    serviceDir = "$WORKSPACE/$serviceId"
+    github.fastCheckoutScm(gitUrl, sha, serviceDir)
+    awsAccountId = sh(script: "aws sts get-caller-identity --output text --query Account", returnStdout: true).trim()
 
-        credentialsId = 'K8S_CONFIG_' + targetCluster.toUpperCase()
-        withCredentials([file(credentialsId: credentialsId, variable: credentialsId)]) {
-            sh """
-            mkdir -p $WORKSPACE/.kube
-            cp \$$credentialsId $WORKSPACE/.kube/config.$targetCluster
-            \$(aws ecr get-login --no-include-email --region us-west-2)
-            docker run -e KUBECONFIG=/root/.kube/config.$targetCluster -v $WORKSPACE/.kube:/root/.kube -v $serviceDir:/root/$serviceId 611706558220.dkr.ecr.us-west-2.amazonaws.com/doordash/deployment-tools.app:latest bash -c "cd /root/$serviceId && python3 render.py --src infra/k8s --dst .tmp --fabric $targetFabric --aws-account-id $awsAccountId && kubectl apply -f /root/$serviceId/.tmp/app.yaml -n $targetFabric && timeout 150 kubectl rollout status deployment/$serviceId -n $targetFabric --watch"
-            """
-        }
+    credentialsId = 'K8S_CONFIG_' + targetCluster.toUpperCase()
+    withCredentials([file(credentialsId: credentialsId, variable: credentialsId)]) {
+        sh """
+        mkdir -p $WORKSPACE/.kube
+        cp \$$credentialsId $WORKSPACE/.kube/config.$targetCluster
+        \$(aws ecr get-login --no-include-email --region us-west-2)
+        docker run -e KUBECONFIG=/root/.kube/config.$targetCluster -v $WORKSPACE/.kube:/root/.kube -v $serviceDir:/root/$serviceId 611706558220.dkr.ecr.us-west-2.amazonaws.com/doordash/deployment-tools.app:latest bash -c "cd /root/$serviceId && python3 render.py --src infra/k8s --dst .tmp --fabric $targetFabric --aws-account-id $awsAccountId && kubectl apply -f /root/$serviceId/.tmp/app.yaml -n $targetFabric && timeout 150 kubectl rollout status deployment/$serviceId -n $targetFabric --watch"
+        """
     }
 }
