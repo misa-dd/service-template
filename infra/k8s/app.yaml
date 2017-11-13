@@ -8,9 +8,9 @@ spec:
   selector:
     app: {{service}}
   ports:
-    - protocol: TCP
+    - name: http
+      protocol: TCP
       port: 80
-      name: http
 ---
 apiVersion: apps/v1beta1
 kind: Deployment
@@ -49,3 +49,4 @@ spec:
           value: {{fabric}}
         - name: SERVICE_NAME
           value: {{service}}
+        # APPLICATION SPECIFIC ENVIRONMENT VARIABLES BELOW
