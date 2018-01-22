@@ -60,7 +60,7 @@ stage('Deploy to prod') {
 def doKubernetesDeploy(targetCluster, targetFabric) {
   os.deleteDirContentsAsRoot()
   github.fastCheckoutScm(params["GITHUB_REPOSITORY"], params["SHA"], serviceId)
-  withCredentials([file(credentialsId: 'K8S_CONFIG_' + targetCluster.toUpperCase(), variable: 'k8CredsFile'), string(credentialsId: 'PIP_EXTRA_INDEX_URL', variable: 'PIP_EXTRA_INDEX_URL')]) {
+  withCredentials([file(credentialsId: 'K8S_CONFIG_' + targetCluster.toUpperCase() + '_NEW', variable: 'k8CredsFile'), string(credentialsId: 'PIP_EXTRA_INDEX_URL', variable: 'PIP_EXTRA_INDEX_URL')]) {
     sh """|#!/bin/bash
           |set -x
           |cd ${serviceId}
