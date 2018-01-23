@@ -1,4 +1,4 @@
 fabric: prod
-service: doordash-chick-fil-a-service
+service: service-template
 aws_account: prod
 replicas: 3

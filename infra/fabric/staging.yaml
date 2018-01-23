@@ -1,4 +1,4 @@
 fabric: staging
-service: doordash-chick-fil-a-service
+service: service-template
 aws_account: staging
 replicas: 1
