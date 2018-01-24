@@ -1,7 +1,6 @@
-@Library('common-pipelines@v9.0.33') _
+@Library('common-pipelines@v9.0.36') _
 
 def common
-docker = new org.doordash.Docker()
 github = new org.doordash.Github()
 os = new org.doordash.Os()
 

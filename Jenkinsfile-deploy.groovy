@@ -1,4 +1,4 @@
-@Library('common-pipelines@v9.0.33') _
+@Library('common-pipelines@v9.0.36') _
 
 def common
 docker = new org.doordash.Docker()
@@ -57,18 +57,24 @@ stage('Deploy to prod') {
   }
 }
 
-def doKubernetesDeploy(targetCluster, targetFabric) {
-  os.deleteDirContentsAsRoot()
-  github.fastCheckoutScm(params["GITHUB_REPOSITORY"], params["SHA"], serviceId)
-  withCredentials([file(credentialsId: 'K8S_CONFIG_' + targetCluster.toUpperCase() + '_NEW', variable: 'k8CredsFile'), string(credentialsId: 'PIP_EXTRA_INDEX_URL', variable: 'PIP_EXTRA_INDEX_URL')]) {
-    sh """|#!/bin/bash
-          |set -x
-          |cd ${serviceId}
-          |PIP_EXTRA_INDEX_URL=${PIP_EXTRA_INDEX_URL} make \\
-          | fabric="${targetFabric}" \\
-          | vars="git_sha=${params["SHA"]}" \\
-          | k8-credentials-file="${k8CredsFile}" \\
-          | deploy
-          |""".stripMargin()
+def doKubernetesDeploy(targetCluster, targetNamespace) {
+  genericSlave {
+    deleteDir()
+    def doorCtlPath = doorctl.installIntoWorkspace(DOORCTL_VERSION)
+    github.fastCheckoutScm(params['GITHUB_REPOSITORY'], params['SHA'], serviceId)
+
+    try {
+      withCredentials([file(credentialsId: "K8S_CONFIG_${targetCluster.toUpperCase()}_NEW", variable: 'k8CredsFile')]) {
+        sh """|#!/bin/bash
+              |set -x
+              |cd $serviceId
+              |make kubernetes-cluster=${targetCluster} kubernetes-namespace=${targetNamespace} doorctl=${doorCtlPath} render
+              |KUBECONFIG=${k8CredsFile} make kubernetes-cluster=${targetCluster} kubernetes-namespace=${targetNamespace} doorctl=${doorCtlPath} deploy
+              |""".stripMargin()
+      }
+    } catch (e) {
+      currentBuild.result = "FAILED"
+      throw e
+    }
   }
-} 
+}

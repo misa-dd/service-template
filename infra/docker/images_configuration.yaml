@@ -1,5 +1,0 @@
-# This file is used to figure out what containers must be built
-# during a docker build.
-containers:
-  restapi:
-    ecrName: doordash/service-template.app

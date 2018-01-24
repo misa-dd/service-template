@@ -1,26 +1,32 @@
+doorctl = new org.doordash.Doorctl()
 github = new org.doordash.Github()
-os = new org.doordash.Os()
+
+DOORCTL_VERSION="v0.0.61"
 
 def buildImages(gitUrl, sha, serviceId) {
   stage('Build') {
     buildSlave {
-      github.doClosureWithStatus(
-        {
-          os.deleteDirContentsAsRoot()
-          github.fastCheckoutScm(gitUrl, sha, serviceId)
-          withCredentials([string(credentialsId: 'PIP_EXTRA_INDEX_URL', variable: 'PIP_EXTRA_INDEX_URL')]) {
+      try {
+        github.doClosureWithStatus(
+          {
+            deleteDir()
+            def doorCtlPath = doorctl.installIntoWorkspace(DOORCTL_VERSION)
+            github.fastCheckoutScm(gitUrl, sha, serviceId)
             sh """|#!/bin/bash
                   |set -x
-                  |cd ${serviceId}
-                  |PIP_EXTRA_INDEX_URL=${PIP_EXTRA_INDEX_URL} make dockerbuildtagpush
+                  |cd $serviceId
+                  |make build tag push branch=${params["BRANCH_NAME"]} doorctl=${doorCtlPath}
                   |""".stripMargin()
-          }
-        },
-        gitUrl,
-        sha,
-        "Docker Images",
-        "${BUILD_URL}console"
-      )
+          },
+          gitUrl,
+          sha,
+          "Build",
+          "${BUILD_URL}console"
+        )
+      } catch (e) {
+        currentBuild.result = "FAILED"
+        throw e
+      }
     }
   }
 }
@@ -28,20 +34,25 @@ def buildImages(gitUrl, sha, serviceId) {
 def runTests(gitUrl, sha, serviceId) {
   stage('Testing') {
     genericSlave {
-      github.doClosureWithStatus(
-        {
-          os.deleteDirContentsAsRoot()
+      try {
+        github.doClosureWithStatus({
+          deleteDir()
+          def doorCtlPath = doorctl.installIntoWorkspace(DOORCTL_VERSION)
           github.fastCheckoutScm(gitUrl, sha, serviceId)
           sh """|#!/bin/bash
-                |cd ${serviceId}
+                |set -x
+                |cd $serviceId
                 |make test
                 |""".stripMargin()
         },
         gitUrl,
         sha,
         "Testing",
-        "${BUILD_URL}console"
-      )
+        "${BUILD_URL}console")
+      } catch (e) {
+        currentBuild.result = "FAILED"
+        throw e
+      }
     }
   }
 }
