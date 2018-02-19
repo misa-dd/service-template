@@ -1,5 +1,5 @@
---extra-index-url https://pypi.fury.io/yz9V1xMbioXVDBEQUyay/doordash/
-doordash-secret==0.0.14
+--extra-index-url https://pypi.fury.io/1QsbrfvsG9ZX7g5PXdZv/doordash/
+doordash-secret==0.0.15
 doordash-python-lib
 Flask==0.12.2
 jinja2==2.9
