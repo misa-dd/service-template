@@ -1,0 +1,19 @@
+version: '3'
+services:
+  web:
+    build:
+      context: .
+      args:
+        - PIP_EXTRA_INDEX_URL
+    ports:
+      - 5000:80
+    env_file:
+      - .local.env
+      - .local_secret.env
+    volumes:
+      - $PWD/application:/home/app/application
+      - ${RUNTIME_PATH:-./empty_runtime}/data:/srv/runtime/current/data
+networks:
+  default:
+    external:
+      name: doordash_development

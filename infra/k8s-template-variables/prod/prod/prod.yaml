@@ -1,4 +1,5 @@
-fabric: prod
-service: service-template
 aws_account: prod
-replicas: 3
+env:
+  ENVIRONMENT: prod
+  SERVICE_NAME: service-template
+  ##### APPLICATION SPECIFIC ENVIRONMENT VARIABLES BELOW

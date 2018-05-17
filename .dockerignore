@@ -1,0 +1,2 @@
+root-fs/etc/service.d/*/event
+root-fs/etc/service.d/*/supervise

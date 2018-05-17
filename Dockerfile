@@ -1,31 +1,37 @@
-FROM ubuntu:latest
+FROM python:3.6.4-alpine3.7
 
-RUN apt-get update -y && \
-    apt-get install -y \
-    python3-pip \
-    python3-dev \
-    supervisor \
-    nginx \
-    curl
+ARG PIP_EXTRA_INDEX_URL
+RUN : "${PIP_EXTRA_INDEX_URL?Requires PIP_EXTRA_INDEX_URL}"
 
-ENV LC_ALL C.UTF-8
+ENV S6_SERVICE_PATH=/etc/service.d
+RUN mkdir -vp $S6_SERVICE_PATH
 
-WORKDIR /root
-
+WORKDIR /home/app
 COPY requirements.txt .
+RUN \
+  apk add --no-cache --virtual basics \
+    bash \
+  && apk add --no-cache --virtual celery-deps curl-dev libressl-dev \
+  && apk add --no-cache --virtual Flask-deps build-base \
+  && apk add --no-cache --virtual uWSGI-deps linux-headers pcre pcre-dev \
+  && apk add --no-cache \
+    s6 \
+    nginx \
+  && pip install --extra-index-url $PIP_EXTRA_INDEX_URL \
+    -r requirements.txt \
+  && rm -v \
+    /etc/nginx/nginx.conf \
+    /etc/nginx/conf.d/default.conf \
+  && apk del --quiet Flask-deps uWSGI-deps
 
-RUN pip3 install -r requirements.txt
+COPY root-fs/ /
+COPY application /home/app/application
+COPY \
+  Dockerfile \
+  entrypoint.sh \
+  run*.sh ./
 
-EXPOSE 5000
 
-COPY . /root/
+EXPOSE 80
 
-RUN rm /etc/nginx/nginx.conf
-RUN ln -s /root/docker/nginx.conf /etc/nginx/
-RUN ln -s /root/docker/nginx-app.conf /etc/nginx/conf.d/
-
-RUN cp /root/docker/supervisor*.conf /etc/supervisor/conf.d/
-
-WORKDIR /root
-
-CMD ["/root/docker/run.sh"]
+CMD ["./run.sh"]

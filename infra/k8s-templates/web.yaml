@@ -1,0 +1,91 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ env.SERVICE_NAME }}-web
+  labels:
+    service: {{ env.SERVICE_NAME }}
+    app: web
+spec:
+  selector:
+    service: {{ env.SERVICE_NAME }}
+    app: web
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+---
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ env.SERVICE_NAME }}-web
+spec:
+  replicas: {{ web.replicas }}
+  revisionHistoryLimit: {{ revisionHistoryLimit | default(10) }}
+  selector:
+    matchLabels:
+      service: {{ env.SERVICE_NAME }}
+      app: web
+  template:
+    metadata:
+      labels:
+        service: {{ env.SERVICE_NAME }}
+        app: web
+    spec:
+      volumes:
+      - name: runtime-volume
+        emptyDir: {}
+      containers:
+      - name: web
+        image: 611706558220.dkr.ecr.us-west-2.amazonaws.com/doordash/{{ env.SERVICE_NAME }}:{{ git_sha }}
+        command: ["/home/app/entrypoint.sh"]
+        args: ["/home/app/run.sh"]
+        resources:
+          requests:
+            cpu: {{ web.cpu }}
+            memory: {{ web.memory }}
+          limits:
+            cpu: {{ web.cpu }}
+            memory: {{ web.memory }}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 80
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 80
+        volumeMounts:
+        - name: runtime-volume
+          mountPath: /srv/runtime
+          readOnly: true
+        env:
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: {{ env.SERVICE_NAME }}-aws-credentials
+              key: AWS_ACCESS_KEY_ID
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ env.SERVICE_NAME }}-aws-credentials
+              key: AWS_SECRET_ACCESS_KEY
+        {% for key, value in env|dictsort -%}
+        - name: {{ key }}
+          value: "{{ value }}"
+        {% endfor %}
+        ##### APPLICATION SPECIFIC STATIC ENVIRONMENT VARIABLES BELOW
+
+      - name: runtime
+        image: 611706558220.dkr.ecr.us-west-2.amazonaws.com/runtime:v0.0.6
+        imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: 10m
+            memory: 48Mi
+          requests:
+            cpu: 10m
+            memory: 48Mi
+        volumeMounts:
+        - name: runtime-volume
+          mountPath: /srv/runtime
+---

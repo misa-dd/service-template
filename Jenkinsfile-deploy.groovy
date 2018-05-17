@@ -1,9 +1,5 @@
-@Library('common-pipelines@v9.0.36') _
-
-def common
-docker = new org.doordash.Docker()
-github = new org.doordash.Github()
-os = new org.doordash.Os()
+// INFRA HEADER -- DO NOT EDIT. metadata: {"checksum": "26a3f627b315d0291c1e5d6a8b1a9db5"}
+@Library('common-pipelines@v9.1.26') _
 
 // -----------------------------------------------------------------------------------
 // The following params are automatically provided by the callback gateway as inputs
@@ -17,64 +13,43 @@ os = new org.doordash.Os()
 // params["GITHUB_REPOSITORY"]      - GitHub ssh url of repository (git://....)
 // -----------------------------------------------------------------------------------
 
-serviceId = github.describeGitUrlParts(params["GITHUB_REPOSITORY"])["repository"]
+common = new org.doordash.utils.experimental.Common()
+gitUrl = params['GITHUB_REPOSITORY']
+sha = params['SHA']
 
-stage('Startup') {
+stage('GitHub Status') {
   curlSlave {
-    os.deleteDirContentsAsRoot()
-    github.fastCheckoutScm(params["GITHUB_REPOSITORY"], params["SHA"])
-    common = (new org.doordash.PipelineHelper()).loadLocalFile("Jenkinsfile-common.groovy")
-    github.sendStatusToGitHub(
-      params["SHA"],
-      params["GITHUB_REPOSITORY"],
-      "Started.",
-      "Start Jenkinsfile-deploy Pipeline",
-      "${BUILD_URL}console"
-    )
+    common.setGitHubShaStatus(gitUrl, sha, message: 'Start Jenkinsfile-deploy Pipeline')
   }
 }
 
-common.buildImages(params["GITHUB_REPOSITORY"], params["SHA"], serviceId)
+stage('Build') {
+  buildSlave {
+    common.dockerBuildTagPush(gitUrl, sha, branch: params['BRANCH_NAME'])
+  }
+}
 
-common.runTests(params["GITHUB_REPOSITORY"], params["SHA"], serviceId)
+stage('Testing') {
+  genericSlave {
+    common.runCommand(gitUrl, sha, command: 'echo "test placeholder"')
+  }
+}
 
 stage('Deploy to staging') {
   genericSlave {
-    doKubernetesDeploy('staging', 'staging')
+    common.deploy(gitUrl, sha, targetCluster: 'staging', targetNamespace: 'staging')
   }
 }
 
 stage('Deploy to prod') {
   try {
     timeout(time: 10, unit: 'MINUTES') {
-        input 'Deploy to production?'
+      input 'Deploy to production?'
     }
   } catch(err) {
     error('Aborted due to timeout!')
   }
   genericSlave {
-    doKubernetesDeploy('prod', 'prod')
-  }
-}
-
-def doKubernetesDeploy(targetCluster, targetNamespace) {
-  genericSlave {
-    deleteDir()
-    def doorCtlPath = doorctl.installIntoWorkspace(DOORCTL_VERSION)
-    github.fastCheckoutScm(params['GITHUB_REPOSITORY'], params['SHA'], serviceId)
-
-    try {
-      withCredentials([file(credentialsId: "K8S_CONFIG_${targetCluster.toUpperCase()}_NEW", variable: 'k8CredsFile')]) {
-        sh """|#!/bin/bash
-              |set -x
-              |cd $serviceId
-              |make kubernetes-cluster=${targetCluster} kubernetes-namespace=${targetNamespace} doorctl=${doorCtlPath} render
-              |KUBECONFIG=${k8CredsFile} make kubernetes-cluster=${targetCluster} kubernetes-namespace=${targetNamespace} doorctl=${doorCtlPath} deploy
-              |""".stripMargin()
-      }
-    } catch (e) {
-      currentBuild.result = "FAILED"
-      throw e
-    }
+    common.deploy(gitUrl, sha, targetCluster: 'prod', targetNamespace: 'prod')
   }
 }

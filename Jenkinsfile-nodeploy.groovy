@@ -1,8 +1,5 @@
-@Library('common-pipelines@v9.0.36') _
-
-def common
-github = new org.doordash.Github()
-os = new org.doordash.Os()
+// INFRA HEADER -- DO NOT EDIT. metadata: {"checksum": "78658a2266431523aae62eca746b37aa"}
+@Library('common-pipelines@v9.1.26') _
 
 // -----------------------------------------------------------------------------------
 // The following params are automatically provided by the callback gateway as inputs
@@ -16,23 +13,24 @@ os = new org.doordash.Os()
 // params["GITHUB_REPOSITORY"]      - GitHub ssh url of repository (git://....)
 // -----------------------------------------------------------------------------------
 
-serviceId = github.describeGitUrlParts(params["GITHUB_REPOSITORY"])["repository"]
+common = new org.doordash.utils.experimental.Common()
+gitUrl = params['GITHUB_REPOSITORY']
+sha = params['SHA']
 
-stage('Startup') {
+stage('GitHub Status') {
   curlSlave {
-    os.deleteDirContentsAsRoot()
-    github.fastCheckoutScm(params["GITHUB_REPOSITORY"], params["SHA"])
-    common = (new org.doordash.PipelineHelper()).loadLocalFile("Jenkinsfile-common.groovy")
-    github.sendStatusToGitHub(
-      params["SHA"],
-      params["GITHUB_REPOSITORY"],
-      "Started.",
-      "Start Jenkinsfile-deploy Pipeline",
-      "${BUILD_URL}console"
-    )
+    common.setGitHubShaStatus(gitUrl, sha, message: 'Start Jenkinsfile-nodeploy Pipeline')
   }
 }
 
-common.buildImages(params["GITHUB_REPOSITORY"], params["SHA"], serviceId)
+stage('Build') {
+  buildSlave {
+    common.dockerBuildTagPush(gitUrl, sha, branch: params['BRANCH_NAME'])
+  }
+}
 
-common.runTests(params["GITHUB_REPOSITORY"], params["SHA"], serviceId)
+stage('Testing') {
+  genericSlave {
+    common.runCommand(gitUrl, sha, command: 'echo "test placeholder"')
+  }
+}

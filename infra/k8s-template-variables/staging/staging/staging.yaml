@@ -1,4 +1,5 @@
-fabric: staging
-service: service-template
 aws_account: staging
-replicas: 1
+env:
+  ENVIRONMENT: staging
+  SERVICE_NAME: service-template
+  ##### APPLICATION SPECIFIC ENVIRONMENT VARIABLES BELOW

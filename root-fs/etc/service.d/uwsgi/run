@@ -1,0 +1,5 @@
+#! /bin/bash
+# INFRA HEADER -- DO NOT EDIT. metadata: {"checksum": "ba56cc0732e056953f4dad3dc310e2c3"}
+
+exec 2>&1
+exec uwsgi --ini /etc/uwsgi/uwsgi.ini

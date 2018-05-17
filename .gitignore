@@ -1,4 +1,22 @@
+# envvars
+.local_secret.env
+
+# python
 __pycache__
-.tmp
 venv
 *.pyc
+
+# terraform
+.terraform.d*
+secret*.auto.tfvars
+terraform.tfstate.backup
+
+# kubernetes
+helm/*/packaged*
+
+# misc
+.tmp
+build-infra2
+empty_runtime
+**/service.d/*/event
+**/service.d/*/supervise

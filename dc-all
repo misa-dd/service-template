@@ -1,0 +1,12 @@
+#!/bin/bash
+# INFRA HEADER -- DO NOT EDIT. metadata: {"checksum": "01cfcb41f16e0927ae224692b7019cc8"}
+set -euo pipefail
+
+# Usage: ./dc-all [args]
+# Runs docker-compose [args] against all docker-compose*.y[a]ml files in the current directory.
+CMD="docker-compose"
+for filename in $(ls docker-compose*ml); do
+  CMD="$CMD -f $filename"
+done
+echo $CMD $@
+$CMD $@
