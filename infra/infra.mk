@@ -1,4 +1,4 @@
-# INFRA HEADER -- DO NOT EDIT. metadata: {"checksum": "3e41ce0e526af34042ae82e7b932084c"}
+# INFRA HEADER -- DO NOT EDIT. metadata: {"checksum": "a0f8f6434a7d9d4258eb20fc2fba1726"}
 SHA = $(shell git rev-parse HEAD)
 DOCKER_IMAGE_URL="611706558220.dkr.ecr.us-west-2.amazonaws.com/doordash/service-template"
 LOCAL_TAG="service-template:localbuild"
@@ -19,7 +19,7 @@ push:
 render:
 	rm -rf build-infra2
 	mkdir build-infra2
-	awk 'FNR==1{print ""}1' infra/k8s-template-variables/$(kubernetes-cluster)/$(kubernetes-namespace)/*.yaml > build-infra2/variables.yaml
+	awk 'FNR==1{print ""}1' infra/k8s-template-variables/$(kubernetes-cluster)/$(kubernetes-namespace)/*.y*ml > build-infra2/variables.yaml
 	cat infra/k8s-templates/*.yaml | BINDMOUNT1=${PWD}/build-infra2/variables.yaml:/variables.yaml $(doorctl) exec python /home/app/rendering/cli.py render $(maybe-istio) --yml_variables_file=/variables.yaml --var="git_sha=$(SHA)" > build-infra2/deploy.yaml
 
 .PHONY: deploy
