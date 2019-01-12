@@ -45,6 +45,8 @@ spec:
             mountPath: /srv/runtime
             readOnly: true
         envFrom:
+        - secretRef:
+            name: {{ .Chart.Name }}-aws-credentials
         - configMapRef:
             name: {{ .Chart.Name }}-environment
       - name: runtime
