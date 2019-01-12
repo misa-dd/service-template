@@ -1,5 +1,4 @@
 #!/bin/bash
-# INFRA HEADER -- DO NOT EDIT. metadata: {"checksum": "9f7300c71816ebda84a30c73c7bdf3e5"}
 
 set -euo pipefail
 

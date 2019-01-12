@@ -1,5 +1,0 @@
-aws_account: prod
-env:
-  ENVIRONMENT: prod
-  SERVICE_NAME: service-template
-  ##### APPLICATION SPECIFIC ENVIRONMENT VARIABLES BELOW

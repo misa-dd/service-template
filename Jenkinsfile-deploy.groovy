@@ -1,4 +1,3 @@
-// INFRA HEADER -- DO NOT EDIT. metadata: {"checksum": "26a3f627b315d0291c1e5d6a8b1a9db5"}
 @Library('common-pipelines@v9.1.26') _
 
 // -----------------------------------------------------------------------------------
@@ -37,7 +36,7 @@ stage('Testing') {
 
 stage('Deploy to staging') {
   genericSlave {
-    common.deploy(gitUrl, sha, targetCluster: 'staging', targetNamespace: 'staging')
+    deployHelm(gitUrl, sha, targetCluster: 'staging', targetNamespace: 'staging')
   }
 }
 
@@ -50,6 +49,24 @@ stage('Deploy to prod') {
     error('Aborted due to timeout!')
   }
   genericSlave {
-    common.deploy(gitUrl, sha, targetCluster: 'prod', targetNamespace: 'prod')
+    deployHelm(gitUrl, sha, targetCluster: 'prod', targetNamespace: 'prod')
+  }
+}
+
+def deployHelm(Map optArgs = [:], String gitUrl, String sha) {
+  optArgs = [targetCluster: 'default', targetNamespace: 'default', targetConfig: '*', doorctlVersion: 'v0.0.104'] << optArgs
+
+  github = new org.doordash.Github()
+  os = new org.doordash.Os()
+
+  os.deleteDirContentsAsRoot()
+  github.fastCheckoutScm(gitUrl, sha, "service")
+  withCredentials([file(credentialsId: "K8S_CONFIG_${optArgs.targetCluster.toUpperCase()}_NEW", variable: 'k8sCredsFile')]) {
+    sh """|#!/bin/bash
+          |cd service
+          |set -ex
+          |
+          |docker run --rm -v $k8sCredsFile:/root/.kube/config -v $WORKSPACE/service:/apps alpine/helm:2.10.0 upgrade service-template _infra/charts/service-template/ --tiller-namespace ${optArgs.targetNamespace} --namespace ${optArgs.targetNamespace} --install --devel --recreate-pods --set image.tag=$sha -f _infra/charts/service-template/values-${optArgs.targetCluster}.yaml
+          |""".stripMargin()
   }
 }

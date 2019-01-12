@@ -1,4 +1,4 @@
-include infra/infra*.mk
+include _infra/infra*.mk
 
 .PHONY: test
 test:

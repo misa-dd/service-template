@@ -12,7 +12,7 @@ secret*.auto.tfvars
 terraform.tfstate.backup
 
 # kubernetes
-helm/*/packaged*
+_infra/*/packaged*
 
 # misc
 .tmp

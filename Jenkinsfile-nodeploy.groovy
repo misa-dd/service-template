@@ -1,4 +1,3 @@
-// INFRA HEADER -- DO NOT EDIT. metadata: {"checksum": "78658a2266431523aae62eca746b37aa"}
 @Library('common-pipelines@v9.1.26') _
 
 // -----------------------------------------------------------------------------------
