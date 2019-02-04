@@ -1,12 +1,2 @@
 image:
   repository: 611706558220.dkr.ecr.us-west-2.amazonaws.com/doordash/service-template
-
-web:
-  replicaCount: 1
-  resources:
-    limits:
-      cpu: 100m
-      memory: 128Mi
-    requests:
-      cpu: 100m
-      memory: 128Mi

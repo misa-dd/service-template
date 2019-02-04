@@ -55,6 +55,7 @@ stage('Deploy to prod') {
 
 def deployHelm(Map optArgs = [:], String gitUrl, String sha) {
   optArgs = [targetCluster: 'default', targetNamespace: 'default', targetConfig: '*', doorctlVersion: 'v0.0.104'] << optArgs
+  serviceName = 'service-template'
 
   github = new org.doordash.Github()
   os = new org.doordash.Os()
@@ -66,7 +67,10 @@ def deployHelm(Map optArgs = [:], String gitUrl, String sha) {
           |cd service
           |set -ex
           |
-          |docker run --rm -v $k8sCredsFile:/root/.kube/config -v $WORKSPACE/service:/apps alpine/helm:2.10.0 upgrade service-template _infra/charts/service-template/ --tiller-namespace ${optArgs.targetNamespace} --namespace ${optArgs.targetNamespace} --install --devel --recreate-pods --set image.tag=$sha -f _infra/charts/service-template/values-${optArgs.targetCluster}.yaml
+          |# log manifest to CI/CD
+          |docker run --rm -v $k8sCredsFile:/root/.kube/config -v $WORKSPACE/service:/apps alpine/helm:2.10.0 upgrade $serviceName _infra/charts/$serviceName/ --tiller-namespace ${optArgs.targetNamespace} --namespace ${optArgs.targetNamespace} --force --install --recreate-pods --set image.tag=$sha -f _infra/charts/$serviceName/values-${optArgs.targetCluster}.yaml --wait --debug --dry-run
+          |
+          |docker run --rm -v $k8sCredsFile:/root/.kube/config -v $WORKSPACE/service:/apps alpine/helm:2.10.0 upgrade $serviceName _infra/charts/$serviceName/ --tiller-namespace ${optArgs.targetNamespace} --namespace ${optArgs.targetNamespace} --force --install --recreate-pods --set image.tag=$sha -f _infra/charts/$serviceName/values-${optArgs.targetCluster}.yaml --wait
           |""".stripMargin()
   }
 }

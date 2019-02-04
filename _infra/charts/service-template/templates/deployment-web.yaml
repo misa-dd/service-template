@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: {{ .Chart.Name }}-web
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ .Values.web.replicaCount }}
   revisionHistoryLimit: {{ .Values.revisionHistoryLimit | default 10 }}
   selector:
     matchLabels:
@@ -14,7 +14,7 @@ spec:
       labels:
         service: {{ .Chart.Name }}
         app: web
-        chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+        helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
     spec:
       volumes:
       - name: runtime-volume
@@ -26,12 +26,7 @@ spec:
         command: ["/home/app/entrypoint.sh"]
         args: ["/home/app/run.sh"]
         resources:
-          limits:
-            cpu: {{ .Values.web.resources.limits.cpu }}
-            memory: {{ .Values.web.resources.limits.memory }}
-          requests:
-            cpu: {{ .Values.web.resources.requests.cpu }}
-            memory: {{ .Values.web.resources.requests.memory }}
+{{ toYaml .Values.web.resources | indent 10 }}
         livenessProbe:
           httpGet:
             path: /health
@@ -53,12 +48,15 @@ spec:
         image: ddartifacts-docker.jfrog.io/runtime:v0.1.3
         imagePullPolicy: Always
         resources:
-          limits:
-            cpu: 10m
-            memory: 48Mi
           requests:
             cpu: 10m
-            memory: 48Mi
+            memory: 64Mi
+          limits:
+            cpu: 25m
+            memory: 128Mi
+        envFrom:
+        - configMapRef:
+            name: global-runtime-environment
         volumeMounts:
         - name: runtime-volume
           mountPath: /srv/runtime

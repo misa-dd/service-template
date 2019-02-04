@@ -3,9 +3,9 @@ env:
 web:
   replicaCount: 1
   resources:
-    limits:
+    requests:
       cpu: 100m
       memory: 128Mi
-    requests:
+    limits:
       cpu: 100m
       memory: 128Mi
