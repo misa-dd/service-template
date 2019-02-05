@@ -27,10 +27,6 @@ spec:
         args: ["/home/app/run.sh"]
         resources:
 {{ toYaml .Values.web.resources | indent 10 }}
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 80
         readinessProbe:
           httpGet:
             path: /health
