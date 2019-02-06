@@ -1,5 +1,4 @@
-@Library('common-pipelines@v9.1.26') _
-
+@Library('common-pipelines@v10.0.22') _
 // -----------------------------------------------------------------------------------
 // The following params are automatically provided by the callback gateway as inputs
 // to the Jenkins pipeline that starts this job.
@@ -15,6 +14,8 @@
 common = new org.doordash.utils.experimental.Common()
 gitUrl = params['GITHUB_REPOSITORY']
 sha = params['SHA']
+
+def commonUtils
 
 stage('GitHub Status') {
   curlSlave {
@@ -36,7 +37,7 @@ stage('Testing') {
 
 stage('Deploy to staging') {
   genericSlave {
-    deployHelm(gitUrl, sha, targetCluster: 'staging', targetNamespace: 'staging')
+    commonUtils.deployHelm(gitUrl, sha, targetCluster: 'staging', targetNamespace: 'staging')
   }
 }
 
@@ -49,28 +50,8 @@ stage('Deploy to prod') {
     error('Aborted due to timeout!')
   }
   genericSlave {
-    deployHelm(gitUrl, sha, targetCluster: 'prod', targetNamespace: 'prod')
+    commonUtils.deployHelm(gitUrl, sha, targetCluster: 'prod', targetNamespace: 'prod')
   }
 }
 
-def deployHelm(Map optArgs = [:], String gitUrl, String sha) {
-  optArgs = [targetCluster: 'default', targetNamespace: 'default', targetConfig: '*', doorctlVersion: 'v0.0.104'] << optArgs
-  serviceName = 'service-template'
 
-  github = new org.doordash.Github()
-  os = new org.doordash.Os()
-
-  os.deleteDirContentsAsRoot()
-  github.fastCheckoutScm(gitUrl, sha, "service")
-  withCredentials([file(credentialsId: "K8S_CONFIG_${optArgs.targetCluster.toUpperCase()}_NEW", variable: 'k8sCredsFile')]) {
-    sh """|#!/bin/bash
-          |cd service
-          |set -ex
-          |
-          |# log manifest to CI/CD
-          |docker run --rm -v $k8sCredsFile:/root/.kube/config -v $WORKSPACE/service:/apps alpine/helm:2.10.0 upgrade $serviceName _infra/charts/$serviceName/ --tiller-namespace ${optArgs.targetNamespace} --namespace ${optArgs.targetNamespace} --force --install --recreate-pods --set image.tag=$sha -f _infra/charts/$serviceName/values-${optArgs.targetCluster}.yaml --wait --debug --dry-run
-          |
-          |docker run --rm -v $k8sCredsFile:/root/.kube/config -v $WORKSPACE/service:/apps alpine/helm:2.10.0 upgrade $serviceName _infra/charts/$serviceName/ --tiller-namespace ${optArgs.targetNamespace} --namespace ${optArgs.targetNamespace} --force --install --recreate-pods --set image.tag=$sha -f _infra/charts/$serviceName/values-${optArgs.targetCluster}.yaml --wait
-          |""".stripMargin()
-  }
-}

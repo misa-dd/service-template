@@ -20,3 +20,4 @@ build-infra2
 empty_runtime
 **/service.d/*/event
 **/service.d/*/supervise
+.idea

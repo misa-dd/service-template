@@ -1,5 +1,4 @@
-@Library('common-pipelines@v9.1.26') _
-
+@Library('common-pipelines@v10.0.22') _
 // -----------------------------------------------------------------------------------
 // The following params are automatically provided by the callback gateway as inputs
 // to the Jenkins pipeline that starts this job.
@@ -16,9 +15,12 @@ common = new org.doordash.utils.experimental.Common()
 gitUrl = params['GITHUB_REPOSITORY']
 sha = params['SHA']
 
+def commonUtils
+
 stage('GitHub Status') {
   curlSlave {
     common.setGitHubShaStatus(gitUrl, sha, message: 'Start Jenkinsfile-nodeploy Pipeline')
+    commonUtils = (new org.doordash.PipelineHelper()).loadRemoteGroovyFile(gitUrl, sha, "Jenkinsfile-common.groovy")
   }
 }
 
