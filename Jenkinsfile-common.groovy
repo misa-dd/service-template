@@ -19,17 +19,17 @@ def deployHelm(Map optArgs = [:], String gitUrl, String sha) {
     os = new org.doordash.Os()
 
     os.deleteDirContentsAsRoot()
-    github.fastCheckoutScm(gitUrl, sha, "service")
+    github.fastCheckoutScm(gitUrl, sha, serviceName)
     withCredentials([file(credentialsId: "K8S_CONFIG_${optArgs.targetCluster.toUpperCase()}_NEW", variable: 'k8sCredsFile')]) {
         sh """|#!/bin/bash
-          |cd service
-          |set -ex
-          |
-          |# log manifest to CI/CD
-          |docker run --rm -v $k8sCredsFile:/root/.kube/config -v $WORKSPACE/service:/apps alpine/helm:2.10.0 upgrade $serviceName _infra/charts/$serviceName/ --tiller-namespace ${optArgs.targetNamespace} --namespace ${optArgs.targetNamespace} --force --install --recreate-pods --set image.tag=$sha -f _infra/charts/$serviceName/values-${optArgs.targetCluster}.yaml --wait --debug --dry-run
-          |
-          |docker run --rm -v $k8sCredsFile:/root/.kube/config -v $WORKSPACE/service:/apps alpine/helm:2.10.0 upgrade $serviceName _infra/charts/$serviceName/ --tiller-namespace ${optArgs.targetNamespace} --namespace ${optArgs.targetNamespace} --force --install --recreate-pods --set image.tag=$sha -f _infra/charts/$serviceName/values-${optArgs.targetCluster}.yaml --wait
-          |""".stripMargin()
+              |cd $serviceName
+              |set -ex
+              |
+              |# log manifest to CI/CD
+              |docker run --rm -v $k8sCredsFile:/root/.kube/config -v $WORKSPACE/$serviceName:/apps alpine/helm:2.10.0 upgrade $serviceName _infra/charts/$serviceName/ --tiller-namespace ${optArgs.targetNamespace} --namespace ${optArgs.targetNamespace} --force --install --recreate-pods --set image.tag=$sha -f _infra/charts/$serviceName/values-${optArgs.targetCluster}.yaml --wait --debug --dry-run
+              |
+              |docker run --rm -v $k8sCredsFile:/root/.kube/config -v $WORKSPACE/$serviceName:/apps alpine/helm:2.10.0 upgrade $serviceName _infra/charts/$serviceName/ --tiller-namespace ${optArgs.targetNamespace} --namespace ${optArgs.targetNamespace} --force --install --recreate-pods --set image.tag=$sha -f _infra/charts/$serviceName/values-${optArgs.targetCluster}.yaml --wait
+              |""".stripMargin()
     }
 }
 
