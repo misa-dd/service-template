@@ -17,9 +17,10 @@ sha = params['SHA']
 
 def commonUtils
 
-stage('GitHub Status') {
+stage('Bootstrap') {
   curlSlave {
     common.setGitHubShaStatus(gitUrl, sha, message: 'Start Jenkinsfile-deploy Pipeline')
+    commonUtils = (new org.doordash.PipelineHelper()).loadRemoteGroovyFile(gitUrl, sha, "Jenkinsfile-common.groovy")
   }
 }
 
