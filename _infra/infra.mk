@@ -1,3 +1,5 @@
+# NOTE: SERVICE OWNERS SHOULD GENERALLY NOT NEED TO MODIFY THIS FILE.
+# Instead, place your tasks in the root Makefile
 SHA = $(shell git rev-parse HEAD)
 DOCKER_IMAGE_URL="611706558220.dkr.ecr.us-west-2.amazonaws.com/doordash/service-template"
 LOCAL_TAG="service-template:localbuild"

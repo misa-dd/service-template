@@ -54,5 +54,3 @@ stage('Deploy to prod') {
     commonUtils.deployHelm(gitUrl, sha, targetCluster: 'prod', targetNamespace: 'prod')
   }
 }
-
-

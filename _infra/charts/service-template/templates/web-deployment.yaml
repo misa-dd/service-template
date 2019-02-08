@@ -2,6 +2,11 @@ apiVersion: apps/v1beta2
 kind: Deployment
 metadata:
   name: {{ .Chart.Name }}-web
+  labels:
+    service: {{ .Chart.Name }}
+    app: web
+    # https://docs.helm.sh/chart_best_practices/#labels
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
 spec:
   replicas: {{ .Values.web.replicaCount }}
   revisionHistoryLimit: {{ .Values.revisionHistoryLimit | default 10 }}
@@ -14,6 +19,7 @@ spec:
       labels:
         service: {{ .Chart.Name }}
         app: web
+        # https://docs.helm.sh/chart_best_practices/#labels
         helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
     spec:
       volumes:

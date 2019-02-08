@@ -26,9 +26,9 @@ def deployHelm(Map optArgs = [:], String gitUrl, String sha) {
               |set -ex
               |
               |# log manifest to CI/CD
-              |docker run --rm -v $k8sCredsFile:/root/.kube/config -v $WORKSPACE/$serviceName:/apps alpine/helm:2.10.0 upgrade $serviceName _infra/charts/$serviceName/ --tiller-namespace ${optArgs.targetNamespace} --namespace ${optArgs.targetNamespace} --force --install --recreate-pods --set image.tag=$sha -f _infra/charts/$serviceName/values-${optArgs.targetCluster}.yaml --wait --debug --dry-run
+              |docker run --rm -v $k8sCredsFile:/root/.kube/config -v $WORKSPACE/$serviceName:/apps alpine/helm:2.10.0 upgrade $serviceName _infra/charts/$serviceName/ --tiller-namespace ${optArgs.targetNamespace} --namespace ${optArgs.targetNamespace} --force --install --recreate-pods --set image.tag=$sha -f _infra/charts/$serviceName/values-${optArgs.targetCluster}.yaml --wait --timeout 600 --debug --dry-run
               |
-              |docker run --rm -v $k8sCredsFile:/root/.kube/config -v $WORKSPACE/$serviceName:/apps alpine/helm:2.10.0 upgrade $serviceName _infra/charts/$serviceName/ --tiller-namespace ${optArgs.targetNamespace} --namespace ${optArgs.targetNamespace} --force --install --recreate-pods --set image.tag=$sha -f _infra/charts/$serviceName/values-${optArgs.targetCluster}.yaml --wait
+              |docker run --rm -v $k8sCredsFile:/root/.kube/config -v $WORKSPACE/$serviceName:/apps alpine/helm:2.10.0 upgrade $serviceName _infra/charts/$serviceName/ --tiller-namespace ${optArgs.targetNamespace} --namespace ${optArgs.targetNamespace} --force --install --recreate-pods --set image.tag=$sha -f _infra/charts/$serviceName/values-${optArgs.targetCluster}.yaml --wait --timeout 600
               |""".stripMargin()
     }
 }
