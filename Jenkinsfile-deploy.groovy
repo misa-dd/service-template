@@ -12,6 +12,10 @@
 // -----------------------------------------------------------------------------------
 
 common = new org.doordash.utils.experimental.Common()
+doorctl = new org.doordash.Doorctl()
+github = new org.doordash.Github()
+pulse = new org.doordash.Pulse()
+
 gitUrl = params['GITHUB_REPOSITORY']
 sha = params['SHA']
 
@@ -39,6 +43,26 @@ stage('Testing') {
 stage('Deploy to staging') {
   genericSlave {
     commonUtils.deployHelm(gitUrl, sha, targetCluster: 'staging', targetNamespace: 'staging')
+  }
+}
+
+stage('Deploy Pulse to staging') {
+  genericSlave {
+    PULSE_VERSION = "0.1"
+    SERVICE_NAME = "service-template"
+    KUBERNETES_CLUSTER = "staging"
+    DOORCTL_VERSION="v0.0.113"
+    PULSE_ROOT_DIR="pulse"
+    PULSE_DIR = SERVICE_NAME+"/"+PULSE_ROOT_DIR
+
+    sshagent(credentials: ['DDGHMACHINEUSER_PRIVATE_KEY']) {
+      // checkout the repo
+      github.fastCheckoutScm(gitUrl, sha, SERVICE_NAME)
+      // install doorctl and grab its executable path
+      def doorctlPath = doorctl.installIntoWorkspace(DOORCTL_VERSION)
+      // deploy Pulse
+      pulse.deploy(PULSE_VERSION, SERVICE_NAME, KUBERNETES_CLUSTER, doorctlPath, PULSE_DIR)
+    }
   }
 }
 

@@ -1,0 +1,7 @@
+service_name: service-template
+
+service_env:
+  SERVICE_TEAM_EMAIL: "eng-devprod@doordash.com"
+  SERVICE_TEAM_SLACK_CHANNEL: "#pulse-svc-template"
+  SERVICE_GIT_URL: "https://github.com/doordash/service-template/"
+  REPORT_ENABLED: false

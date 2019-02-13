@@ -1,0 +1,11 @@
+service_name: service-template
+
+service_runtime_config:
+  example_service_runtime_config: "this is a runtime config"
+
+service_env:
+  SERVICE_TEAM_EMAIL: "eng-devprod@doordash.com"
+  SERVICE_TEAM_SLACK_CHANNEL: "#pulse-svc-template"
+  SERVICE_GIT_URL: "https://github.com/doordash/service-template/"
+  SERVICE_URI: "http://service-template-web.staging.svc.cluster.local"
+
