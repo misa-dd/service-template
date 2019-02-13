@@ -17,13 +17,13 @@ Setup Docker to use Helm to deploy local builds into a local Kubernetes cluster:
 
 To build a local Docker image: `make docker-build`
 
-To run *using* Docker: `make docker-deploy-local`
+To run *using* Docker: `make local-deploy`
 
-To check status *using* Docker: `make docker-status-local`
+To check status *using* Docker: `make local-status`
 
-To tail logs *using* Docker: `make docker-tail-local`
+To tail logs *using* Docker: `make local-tail`
 
-To stop *using* Docker: `make docker-clean-local`
+To stop *using* Docker: `make local-clean`
 
 # Running locally
 
