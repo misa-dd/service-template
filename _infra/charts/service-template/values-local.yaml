@@ -6,6 +6,8 @@ image:
 service:
   type: LoadBalancer
 web:
+  command: ["/home/app/run.sh"]
+  args: []
   secretRef:
     awsCredentialsEnabled: false
   runtime:

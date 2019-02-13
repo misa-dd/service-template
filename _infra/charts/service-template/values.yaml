@@ -4,9 +4,9 @@ service:
   type: ClusterIP
   port: 80
   targetPort: 80
+web:
   command: ["/home/app/entrypoint.sh"]
   args: ["/home/app/run.sh"]
-web:
   replicaCount: 1
   resources:
     requests:
