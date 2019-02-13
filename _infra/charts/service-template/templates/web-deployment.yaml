@@ -36,7 +36,7 @@ spec:
         readinessProbe:
           httpGet:
             path: {{ .Values.web.readinessProbe.path }}
-            port: {{ .Values.service.port }}
+            port: {{ .Values.service.targetPort }}
         volumeMounts:
           - name: runtime-volume
             mountPath: {{ .Values.web.runtime.path }}
