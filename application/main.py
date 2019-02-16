@@ -1,3 +1,20 @@
+#!/usr/bin/python3
+
+# To debug a Docker container remotely...
+# 1. In PyCharm menu, click Run > Edit Configurations... > + > Python Remote Debug
+# 2. Add a path mapping from /Users/.../Projects/risk-service to /home/app
+# 3. Uncheck "Suspend  after connect"
+# 4. Copy the PyCharm Python3 debug egg: cp -rfp /Applications/PyCharm.app/Contents/debug-eggs/pycharm-debug-py3k.egg .
+# 5. Uncomment the "#COPY pycharm-debug-py3k.egg ." line in the Dockerfile file.
+# 6. Set "master = false" in the uwsgi.ini file.
+# 7. Start your Python Remote Debug server and take note of its port.
+# 8. Uncomment the next 4 code lines and update the IP to your laptops IP and the port to the debug server port.
+# 9. Build and Deploy: make docker-build local-deploy
+#import sys
+#sys.path.append('/home/app/pycharm-debug-py3k.egg')
+#import pydevd
+#pydevd.settrace('172.16.60.178', port=53061, stdoutToServer=True, stderrToServer=True, suspend=False)
+
 import logging
 import sys
 

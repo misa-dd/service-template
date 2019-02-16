@@ -24,41 +24,25 @@ spec:
     spec:
       volumes:
       - name: runtime-volume
-        emptyDir: {}
+        {{- template "service-template.volumes.runtime" . }}
       containers:
       - name: web
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
-        command: ["/home/app/entrypoint.sh"]
-        args: ["/home/app/run.sh"]
+        command: {{ .Values.web.command }}
+        args: {{ .Values.web.args }}
         resources:
-{{ toYaml .Values.web.resources | indent 10 }}
+          {{- toYaml .Values.web.resources | nindent 10 }}
         readinessProbe:
           httpGet:
-            path: /health
-            port: 80
+            path: {{ .Values.web.readinessProbe.path }}
+            port: {{ .Values.service.targetPort }}
         volumeMounts:
           - name: runtime-volume
-            mountPath: /srv/runtime
+            mountPath: {{ .Values.web.runtime.path }}
             readOnly: true
         envFrom:
-        - secretRef:
-            name: {{ .Chart.Name }}-aws-credentials
         - configMapRef:
             name: {{ .Chart.Name }}-environment
-      - name: runtime
-        image: ddartifacts-docker.jfrog.io/runtime:v0.1.3
-        imagePullPolicy: Always
-        resources:
-          requests:
-            cpu: 10m
-            memory: 64Mi
-          limits:
-            cpu: 25m
-            memory: 128Mi
-        envFrom:
-        - configMapRef:
-            name: global-runtime-environment
-        volumeMounts:
-        - name: runtime-volume
-          mountPath: /srv/runtime
+        {{- template "service-template.containers.web.envFrom.secretRef.aws-credentials" . }}
+      {{- template "service-template.containers.runtime" . }}
