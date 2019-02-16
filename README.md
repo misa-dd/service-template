@@ -1,6 +1,6 @@
-# Service Template
+# service-template
 
-As of 2019/01, this service template has been un-deprecated. [doorctl](https://github.com/doordash/doorctl) is a scaffolding + injector generator that may be useful to be continued on if deemed sufficiently useful and worthwhile to maintain.
+As of 2019/01, this service-template has been un-deprecated. [doorctl](https://github.com/doordash/doorctl) is a scaffolding + injector generator that may be useful to be continued on if deemed sufficiently useful and worthwhile to maintain.
 
 Tech stack:
  * [Python 3](https://docs.python.org/3/)
@@ -27,9 +27,17 @@ To tail logs *using* Kubernetes: `make local-tail`
 
 To stop and clean up *using* Helm: `make local-clean`
 
+# Without Docker
+
+Install requirements using pip3: `pip3 install -r requirements.txt`
+
+To run using python3: `bash runlocal.sh`
+
+To run using uWSGI: `bash runuwsgi.sh`
+
 # Running locally
 
-Run a server locally with or without Docker (you can also do it from PyCharm)
+Run a server locally with Docker (use port 80) or without Docker (use port 5000) (you can also do it from PyCharm)
 
 Sample request:
 

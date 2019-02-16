@@ -12,7 +12,7 @@ endif
 
 .PHONY: docker-build
 docker-build:
-	docker build . -t ${LOCAL_TAG} --build-arg PIP_EXTRA_INDEX_URL=$(PIP_EXTRA_INDEX_URL)
+	docker build . -t ${LOCAL_TAG} --build-arg "PIP_EXTRA_INDEX_URL=$(PIP_EXTRA_INDEX_URL)"
 
 .PHONY: local-deploy
 local-deploy:
