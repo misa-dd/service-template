@@ -1,4 +1,4 @@
-@Library('common-pipelines@v10.0.29') _
+@Library('common-pipelines@v10.0.22') _
 // -----------------------------------------------------------------------------------
 // The following params are automatically provided by the callback gateway as inputs
 // to the Jenkins pipeline that starts this job.
@@ -33,31 +33,5 @@ stage('Build') {
 stage('Testing') {
   genericSlave {
     common.runCommand(gitUrl, sha, command: 'echo "test placeholder"')
-  }
-}
-
-stage('Deploy to staging') {
-  genericSlave {
-    commonUtils.deployHelm(gitUrl, sha, targetCluster: 'staging', targetNamespace: 'staging')
-  }
-}
-
-stage('Deploy Pulse to staging') {
-  genericSlave {
-    PULSE_VERSION = "222fcc2bbf2339d18b73c0cff56a91b2958f3c95"
-    SERVICE_NAME = "service-template"
-    KUBERNETES_CLUSTER = "staging"
-    DOORCTL_VERSION="v0.0.113"
-    PULSE_ROOT_DIR="pulse"
-    PULSE_DIR = SERVICE_NAME+"/"+PULSE_ROOT_DIR
-
-    sshagent(credentials: ['DDGHMACHINEUSER_PRIVATE_KEY']) {
-      // checkout the repo
-      github.fastCheckoutScm(gitUrl, sha, SERVICE_NAME)
-      // install doorctl and grab its executable path
-      def doorctlPath = doorctl.installIntoWorkspace(DOORCTL_VERSION)
-      // deploy Pulse
-      pulse.deploy(PULSE_VERSION, SERVICE_NAME, KUBERNETES_CLUSTER, doorctlPath, PULSE_DIR)
-    }
   }
 }
