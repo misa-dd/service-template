@@ -10,12 +10,14 @@ Tech stack:
  * [Helm](https://docs.helm.sh/)
     
 Setup Docker to use Helm to deploy local builds into a local Kubernetes cluster: 
-  1. Enable Kubernetes: Click on Docker whale icon > `Kubernetes` > `Enable local cluster`
+  1. Enable Kubernetes: Click on Docker whale icon > `Preferences...` > `Kubernetes` > `Enable Kubernetes`
   2. Select Context: `kubectl config use-context docker-for-desktop`<br>
      Note: If no context exists with the name `docker-for-desktop context`, then restart the cluster...<br>
      Docker whale icon > `Kubernetes` > `Disable local cluster` and then `Enable local cluster`.
   3. Install Helm: `brew install kubernetes-helm`
   4. Init Helm: `helm init`
+
+All of the following should be executed within the service-template directory...
 
 To build a local Docker image: `make docker-build`
 
@@ -23,7 +25,15 @@ To deploy the Docker image *using* Helm to Kubernetes: `make local-deploy`
 
 To check status *using* Helm: `make local-status`
 
+ * Note: you are looking for the following
+ ```bash
+NAME                  READY  UP-TO-DATE  AVAILABLE  AGE
+service-template-web  1/1    1           1          24s
+ ```
+
 To tail logs *using* Kubernetes: `make local-tail`
+
+ * Note: Press CTRL+C to quit tailing logs
 
 To stop and clean up *using* Helm: `make local-clean`
 
