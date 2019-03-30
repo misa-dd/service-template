@@ -29,8 +29,10 @@ spec:
       - name: web
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
-        command: {{ .Values.web.command }}
-        args: {{ .Values.web.args }}
+        command:
+          {{- toYaml .Values.web.command | nindent 10 }}
+        args:
+          {{- toYaml .Values.web.args | nindent 10 }}        
         resources:
           {{- toYaml .Values.web.resources | nindent 10 }}
         readinessProbe:
