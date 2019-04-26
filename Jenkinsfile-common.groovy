@@ -1,4 +1,4 @@
-@Library('common-pipelines@v10.0.32') _
+@Library('common-pipelines@v10.0.78') _
 
 def deployHelm(Map optArgs = [:], String gitUrl, String sha) {
     optArgs = [targetCluster: 'default', targetNamespace: 'default', targetConfig: '*', doorctlVersion: 'v0.0.104'] << optArgs

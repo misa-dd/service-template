@@ -1,4 +1,4 @@
-@Library('common-pipelines@v10.0.32') _
+@Library('common-pipelines@v10.0.78') _
 // -----------------------------------------------------------------------------------
 // The following params are automatically provided by the callback gateway as inputs
 // to the Jenkins pipeline that starts this job.

@@ -1,4 +1,4 @@
-@Library('common-pipelines@v10.0.32') _
+@Library('common-pipelines@v10.0.78') _
 // -----------------------------------------------------------------------------------
 // The following params are automatically provided by the callback gateway as inputs
 // to the Jenkins pipeline that starts this job.
@@ -48,7 +48,7 @@ stage('Deploy to staging') {
 
 stage('Deploy Pulse to staging') {
   genericSlave {
-    PULSE_VERSION = "1.0"
+    PULSE_VERSION = "2.1"
     SERVICE_NAME = "service-template"
     KUBERNETES_CLUSTER = "staging"
     DOORCTL_VERSION="v0.0.113"
