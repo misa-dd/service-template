@@ -1,4 +1,6 @@
-@Library('common-pipelines@v10.0.78') _
+@Library('common-pipelines@v10.0.90') _
+import org.doordash.DateTime
+
 // -----------------------------------------------------------------------------------
 // The following params are automatically provided by the callback gateway as inputs
 // to the Jenkins pipeline that starts this job.
@@ -11,70 +13,68 @@
 // params["GITHUB_REPOSITORY"]      - GitHub ssh url of repository (git://....)
 // -----------------------------------------------------------------------------------
 
-common = new org.doordash.utils.experimental.Common()
-doorctl = new org.doordash.Doorctl()
-github = new org.doordash.Github()
-pulse = new org.doordash.Pulse()
-
-gitUrl = params['GITHUB_REPOSITORY']
-sha = params['SHA']
-
-def commonUtils
-
-stage('Bootstrap') {
-  curlSlave {
-    common.setGitHubShaStatus(gitUrl, sha, message: 'Start Jenkinsfile-deploy Pipeline')
-    commonUtils = (new org.doordash.PipelineHelper()).loadRemoteGroovyFile(gitUrl, sha, "Jenkinsfile-common.groovy")
+pipeline {
+  options {
+    skipStagesAfterUnstable()
   }
-}
-
-stage('Build') {
-  buildSlave {
-    common.dockerBuildTagPush(gitUrl, sha, branch: params['BRANCH_NAME'])
+  agent {
+    label 'universal'
   }
-}
-
-stage('Testing') {
-  genericSlave {
-    common.runCommand(gitUrl, sha, command: 'echo "test placeholder"')
-  }
-}
-
-stage('Deploy to staging') {
-  genericSlave {
-    commonUtils.deployHelm(gitUrl, sha, targetCluster: 'staging', targetNamespace: 'staging')
-  }
-}
-
-stage('Deploy Pulse to staging') {
-  genericSlave {
-    PULSE_VERSION = "2.1"
-    SERVICE_NAME = "service-template"
-    KUBERNETES_CLUSTER = "staging"
-    DOORCTL_VERSION="v0.0.113"
-    PULSE_ROOT_DIR="pulse"
-    PULSE_DIR = SERVICE_NAME+"/"+PULSE_ROOT_DIR
-
-    sshagent(credentials: ['DDGHMACHINEUSER_PRIVATE_KEY']) {
-      // checkout the repo
-      github.fastCheckoutScm(gitUrl, sha, SERVICE_NAME)
-      // install doorctl and grab its executable path
-      def doorctlPath = doorctl.installIntoWorkspace(DOORCTL_VERSION)
-      // deploy Pulse
-      pulse.deploy(PULSE_VERSION, SERVICE_NAME, KUBERNETES_CLUSTER, doorctlPath, PULSE_DIR)
+  stages {
+    stage('Startup') {
+      steps {
+        setGitHubStatus 'Start Jenkinsfile-deploy Pipeline', 'Dequeued after ${new DateTime().getUnixTimestamp() - params['ENQUEUED_AT_TIMESTAMP'].toInteger()} seconds'
+        artifactoryLogin
+        script {
+          common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
+          String gitUrl = params['GITHUB_REPOSITORY']
+          String sha = params['SHA']
+          String branch = params['BRANCH_NAME']
+          String serviceName = common.SERVICE_NAME
+        }
+      }
     }
-  }
-}
-
-stage('Deploy to prod') {
-  try {
-    timeout(time: 10, unit: 'MINUTES') {
-      input 'Deploy to production?'
+    stage('Docker Build') {
+      steps {
+        reportClosureAsGitHubStatus({
+          common.dockerBuild(gitUrl, sha, branch, serviceName)
+        })
+      }
     }
-  } catch(err) {
-    error('Aborted due to timeout!')
-  }
-  genericSlave {
-    commonUtils.deployHelm(gitUrl, sha, targetCluster: 'prod', targetNamespace: 'prod')
+    stage('Deploy to staging') {
+      steps {
+        reportClosureAsGitHubStatus({
+          common.deployHelm(gitUrl, sha, branch, serviceName, 'staging')
+        })
+      }
+    }
+    stage('Deploy Pulse to staging') {
+      steps {
+        reportClosureAsGitHubStatus({
+          common.deployPulse(gitUrl, sha, branch, serviceName, 'staging')
+        })
+      }
+    }
+    stage('Deploy to prod') {
+      steps {
+        try {
+          timeout(time: 10, unit: 'MINUTES') {
+            input 'Deploy to production?'
+          }
+        } catch(err) {
+          error('Aborted due to timeout!')
+        }
+        reportClosureAsGitHubStatus({
+          common.deployHelm(gitUrl, sha, branch, serviceName, 'prod')
+        })
+      }
+    }
+    stage('Deploy Pulse to prod') {
+      steps {
+        reportClosureAsGitHubStatus({
+          common.deployPulse(gitUrl, sha, branch, serviceName, 'prod')
+        })
+      }
+    }
   }
 }

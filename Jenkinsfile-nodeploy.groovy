@@ -1,4 +1,6 @@
-@Library('common-pipelines@v10.0.78') _
+@Library('common-pipelines@v10.0.90') _
+import org.doordash.DateTime
+
 // -----------------------------------------------------------------------------------
 // The following params are automatically provided by the callback gateway as inputs
 // to the Jenkins pipeline that starts this job.
@@ -11,27 +13,33 @@
 // params["GITHUB_REPOSITORY"]      - GitHub ssh url of repository (git://....)
 // -----------------------------------------------------------------------------------
 
-common = new org.doordash.utils.experimental.Common()
-gitUrl = params['GITHUB_REPOSITORY']
-sha = params['SHA']
-
-def commonUtils
-
-stage('GitHub Status') {
-  curlSlave {
-    common.setGitHubShaStatus(gitUrl, sha, message: 'Start Jenkinsfile-nodeploy Pipeline')
-    commonUtils = (new org.doordash.PipelineHelper()).loadRemoteGroovyFile(gitUrl, sha, "Jenkinsfile-common.groovy")
+pipeline {
+  options {
+    skipStagesAfterUnstable()
   }
-}
-
-stage('Build') {
-  buildSlave {
-    common.dockerBuildTagPush(gitUrl, sha, branch: params['BRANCH_NAME'])
+  agent {
+    label 'universal'
   }
-}
-
-stage('Testing') {
-  genericSlave {
-    common.runCommand(gitUrl, sha, command: 'echo "test placeholder"')
+  stages {
+    stage('Startup') {
+      steps {
+        setGitHubStatus 'Start Jenkinsfile-nodeploy Pipeline', 'Dequeued after ${new DateTime().getUnixTimestamp() - params['ENQUEUED_AT_TIMESTAMP'].toInteger()} seconds'
+        artifactoryLogin
+        script {
+          common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
+          String gitUrl = params['GITHUB_REPOSITORY']
+          String sha = params['SHA']
+          String branch = params['BRANCH_NAME']
+          String serviceName = common.SERVICE_NAME
+        }
+      }
+    }
+    stage('Docker Build') {
+      steps {
+        reportClosureAsGitHubStatus({
+          common.dockerBuild(gitUrl, sha, branch, serviceName)
+        })
+      }
+    }
   }
 }

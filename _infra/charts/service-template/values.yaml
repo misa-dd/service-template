@@ -1,5 +1,5 @@
 image:
-  repository: 611706558220.dkr.ecr.us-west-2.amazonaws.com/doordash/service-template
+  repository: ddartifacts-docker.jfrog.io/doordash/service-template
 service:
   type: ClusterIP
   port: 80
