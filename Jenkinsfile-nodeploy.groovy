@@ -23,7 +23,7 @@ pipeline {
   stages {
     stage('Startup') {
       steps {
-        setGitHubStatus 'Start Jenkinsfile-nodeploy Pipeline', 'Dequeued after ${new DateTime().getUnixTimestamp() - params['ENQUEUED_AT_TIMESTAMP'].toInteger()} seconds'
+        setGitHubStatus('Start Jenkinsfile-nodeploy Pipeline', 'Dequeued after ${new DateTime().getUnixTimestamp() - params['ENQUEUED_AT_TIMESTAMP'].toInteger()} seconds')
         artifactoryLogin()
         script {
           common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
