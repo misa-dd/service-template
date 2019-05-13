@@ -36,9 +36,11 @@ pipeline {
     }
     stage('Docker Build') {
       steps {
-        reportClosureAsGitHubStatus({
-          common.dockerBuild(gitUrl, sha, branch, serviceName)
-        })
+        reportClosureAsGitHubStatus {
+          script {
+            common.dockerBuild(gitUrl, sha, branch, serviceName)
+          }
+        }
       }
     }
   }

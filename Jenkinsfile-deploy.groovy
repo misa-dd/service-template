@@ -36,44 +36,56 @@ pipeline {
     }
     stage('Docker Build') {
       steps {
-        reportClosureAsGitHubStatus({
-          common.dockerBuild(gitUrl, sha, branch, serviceName)
-        })
+        reportClosureAsGitHubStatus {
+          script {
+            common.dockerBuild(gitUrl, sha, branch, serviceName)
+          }
+        }
       }
     }
     stage('Deploy to staging') {
       steps {
-        reportClosureAsGitHubStatus({
-          common.deployHelm(gitUrl, sha, branch, serviceName, 'staging')
-        })
+        reportClosureAsGitHubStatus{
+          script {
+            common.deployHelm(gitUrl, sha, branch, serviceName, 'staging')
+          }
+        }
       }
     }
     stage('Deploy Pulse to staging') {
       steps {
-        reportClosureAsGitHubStatus({
-          common.deployPulse(gitUrl, sha, branch, serviceName, 'staging')
-        })
+        reportClosureAsGitHubStatus {
+          script {
+            common.deployPulse(gitUrl, sha, branch, serviceName, 'staging')
+          }
+        }
       }
     }
     stage('Deploy to prod') {
       steps {
-        try {
-          timeout(time: 10, unit: 'MINUTES') {
-            input 'Deploy to production?'
+        script {
+          try {
+            timeout(time: 10, unit: 'MINUTES') {
+              input 'Deploy to production?'
+            }
+          } catch(err) {
+            error('Aborted due to timeout!')
           }
-        } catch(err) {
-          error('Aborted due to timeout!')
         }
-        reportClosureAsGitHubStatus({
-          common.deployHelm(gitUrl, sha, branch, serviceName, 'prod')
-        })
+        reportClosureAsGitHubStatus {
+          script {
+            common.deployHelm(gitUrl, sha, branch, serviceName, 'prod')
+          }
+        }
       }
     }
     stage('Deploy Pulse to prod') {
       steps {
-        reportClosureAsGitHubStatus({
-          common.deployPulse(gitUrl, sha, branch, serviceName, 'prod')
-        })
+        reportClosureAsGitHubStatus {
+          script {
+            common.deployPulse(gitUrl, sha, branch, serviceName, 'prod')
+          }
+        }
       }
     }
   }
