@@ -24,7 +24,7 @@ pipeline {
     stage('Startup') {
       steps {
         setGitHubStatus 'Start Jenkinsfile-nodeploy Pipeline', 'Dequeued after ${new DateTime().getUnixTimestamp() - params['ENQUEUED_AT_TIMESTAMP'].toInteger()} seconds'
-        artifactoryLogin
+        artifactoryLogin()
         script {
           common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
           String gitUrl = params['GITHUB_REPOSITORY']
@@ -36,11 +36,11 @@ pipeline {
     }
     stage('Docker Build') {
       steps {
-        reportClosureAsGitHubStatus {
+        reportClosureAsGitHubStatus({
           script {
             common.dockerBuild(gitUrl, sha, branch, serviceName)
           }
-        }
+        })
       }
     }
   }

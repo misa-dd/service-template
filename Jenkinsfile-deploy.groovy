@@ -23,8 +23,8 @@ pipeline {
   stages {
     stage('Startup') {
       steps {
-        setGitHubStatus 'Start Jenkinsfile-deploy Pipeline', 'Dequeued after ${new DateTime().getUnixTimestamp() - params['ENQUEUED_AT_TIMESTAMP'].toInteger()} seconds'
-        artifactoryLogin
+        setGitHubStatus('Start Jenkinsfile-deploy Pipeline', 'Dequeued after ${new DateTime().getUnixTimestamp() - params['ENQUEUED_AT_TIMESTAMP'].toInteger()} seconds')
+        artifactoryLogin()
         script {
           common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
           String gitUrl = params['GITHUB_REPOSITORY']
@@ -36,29 +36,29 @@ pipeline {
     }
     stage('Docker Build') {
       steps {
-        reportClosureAsGitHubStatus {
+        reportClosureAsGitHubStatus({
           script {
             common.dockerBuild(gitUrl, sha, branch, serviceName)
           }
-        }
+        })
       }
     }
     stage('Deploy to staging') {
       steps {
-        reportClosureAsGitHubStatus{
+        reportClosureAsGitHubStatus({
           script {
             common.deployHelm(gitUrl, sha, branch, serviceName, 'staging')
           }
-        }
+        })
       }
     }
     stage('Deploy Pulse to staging') {
       steps {
-        reportClosureAsGitHubStatus {
+        reportClosureAsGitHubStatus({
           script {
             common.deployPulse(gitUrl, sha, branch, serviceName, 'staging')
           }
-        }
+        })
       }
     }
     stage('Deploy to prod') {
@@ -72,20 +72,20 @@ pipeline {
             error('Aborted due to timeout!')
           }
         }
-        reportClosureAsGitHubStatus {
+        reportClosureAsGitHubStatus({
           script {
             common.deployHelm(gitUrl, sha, branch, serviceName, 'prod')
           }
-        }
+        })
       }
     }
     stage('Deploy Pulse to prod') {
       steps {
-        reportClosureAsGitHubStatus {
+        reportClosureAsGitHubStatus({
           script {
             common.deployPulse(gitUrl, sha, branch, serviceName, 'prod')
           }
-        }
+        })
       }
     }
   }
