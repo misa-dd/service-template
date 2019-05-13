@@ -9,7 +9,7 @@ String SERVICE_NAME = 'service-template'
 
 def dockerBuild(Map optArgs = [:], String gitUrl, String sha, String branch, String serviceName) {
   Map o = [
-    dockerDoorctlVersion: 'v0.0.104'
+    dockerDoorctlVersion: 'v0.0.104',
     dockerImageUrl: "ddartifacts-docker.jfrog.io/doordash/${serviceName}"
   ] << optArgs
   String doorctlPath = doorctl.installIntoWorkspace(o.dockerDoorctlVersion)
