@@ -16,6 +16,7 @@ pipeline {
   options {
     timestamps()
     skipStagesAfterUnstable()
+    timeout(time: 30, unit: 'MINUTES')
   }
   agent {
     label 'universal'
@@ -23,24 +24,20 @@ pipeline {
   stages {
     stage('Startup') {
       steps {
-        setGitHubStatus('Start Jenkinsfile-nodeploy Pipeline', 'Started')
+        setGitHubStatus 'Start Jenkinsfile-nodeploy Pipeline', 'Started'
         artifactoryLogin()
         script {
           common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
-          gitUrl = params['GITHUB_REPOSITORY']
-          sha = params['SHA']
-          branch = params['BRANCH_NAME']
-          serviceName = common.getServiceName()
         }
       }
     }
     stage('Docker Build') {
       steps {
-        reportClosureAsGitHubStatus({
-          script {
-            common.dockerBuild(gitUrl, sha, branch, serviceName)
+        script {
+          reportClosureAsGitHubStatus {
+            common.dockerBuild(params['GITHUB_REPOSITORY'], params['SHA'], params['BRANCH_NAME'], common.getServiceName())
           }
-        })
+        }
       }
     }
   }

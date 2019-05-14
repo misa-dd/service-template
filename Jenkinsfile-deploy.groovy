@@ -16,6 +16,7 @@ pipeline {
   options {
     timestamps()
     skipStagesAfterUnstable()
+    timeout(time: 30, unit: 'MINUTES')
   }
   agent {
     label 'universal'
@@ -26,31 +27,27 @@ pipeline {
         artifactoryLogin()
         script {
           common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
-          gitUrl = params['GITHUB_REPOSITORY']
-          sha = params['SHA']
-          branch = params['BRANCH_NAME']
-          serviceName = common.getServiceName()
         }
       }
     }
     stage('Docker Build') {
       steps {
         script {
-          common.dockerBuild(gitUrl, sha, branch, serviceName)
+          common.dockerBuild(params['GITHUB_REPOSITORY'], params['SHA'], params['BRANCH_NAME'], common.getServiceName())
         }
       }
     }
     stage('Deploy to staging') {
       steps {
         script {
-          common.deployHelm(gitUrl, sha, branch, serviceName, 'staging')
+          common.deployHelm(params['GITHUB_REPOSITORY'], params['SHA'], params['BRANCH_NAME'], common.getServiceName(), 'staging')
         }
       }
     }
     stage('Deploy Pulse to staging') {
       steps {
         script {
-          common.deployPulse(gitUrl, sha, branch, serviceName, 'staging')
+          common.deployPulse(params['GITHUB_REPOSITORY'], params['SHA'], params['BRANCH_NAME'], common.getServiceName(), 'staging')
         }
       }
     }
@@ -93,7 +90,7 @@ pipeline {
       }
       steps {
         script {
-          common.deployHelm(gitUrl, sha, branch, serviceName, 'prod')
+          common.deployHelm(params['GITHUB_REPOSITORY'], params['SHA'], params['BRANCH_NAME'], common.getServiceName(), 'prod')
         }
       }
     }
@@ -106,7 +103,7 @@ pipeline {
       }
       steps {
         script {
-          common.deployPulse(gitUrl, sha, branch, serviceName, 'prod')
+          common.deployPulse(params['GITHUB_REPOSITORY'], params['SHA'], params['BRANCH_NAME'], common.getServiceName(), 'prod')
         }
       }
     }

@@ -1,10 +1,13 @@
 @Library('common-pipelines@v10.0.90') _
 
-docker = new org.doordash.Docker()
-doorctl = new org.doordash.Doorctl()
-github = new org.doordash.Github()
-pulse = new org.doordash.Pulse()
+import org.doordash.Docker
+import org.doordash.Doorctl
+import org.doordash.Github
+import org.doordash.Pulse
 
+/**
+ * Returns the service name which is useful for builds and deployments.
+ */
 def getServiceName() {
   return 'service-template'
 }
@@ -16,7 +19,7 @@ def dockerBuild(Map optArgs = [:], String gitUrl, String sha, String branch, Str
   ] << optArgs
   String doorctlPath
   sshagent (credentials: ['DDGHMACHINEUSER_PRIVATE_KEY']) {
-    doorctlPath = doorctl.installIntoWorkspace(o.dockerDoorctlVersion)
+    doorctlPath = new Doorctl().installIntoWorkspace(o.dockerDoorctlVersion)
   }
   String loadedCacheDockerTag
   try {
@@ -30,7 +33,7 @@ def dockerBuild(Map optArgs = [:], String gitUrl, String sha, String branch, Str
     println "No pullable docker image was found for ${o.dockerImageUrl}:${sha}"
   }
   if (loadedCacheDockerTag == null) {
-    loadedCacheDockerTag = docker.findAvailableCacheFrom(gitUrl, sha, o.dockerImageUrl)
+    loadedCacheDockerTag = new Docker().findAvailableCacheFrom(gitUrl, sha, o.dockerImageUrl)
   }
   if (loadedCacheDockerTag == null) {
     loadedCacheDockerTag = "noCacheFoundxxxxxxx"
@@ -98,11 +101,11 @@ def deployPulse(Map optArgs = [:], String gitUrl, String sha, String branch, Str
 
   sshagent(credentials: ['DDGHMACHINEUSER_PRIVATE_KEY']) {
     // checkout the repo
-    github.fastCheckoutScm(gitUrl, sha, serviceName)
+    new Github().fastCheckoutScm(gitUrl, sha, serviceName)
     // install doorctl and grab its executable path
-    String doorctlPath = doorctl.installIntoWorkspace(DOORCTL_VERSION)
+    String doorctlPath = new Doorctl().installIntoWorkspace(DOORCTL_VERSION)
     // deploy Pulse
-    pulse.deploy(PULSE_VERSION, SERVICE_NAME, KUBERNETES_CLUSTER, doorctlPath, PULSE_DIR)
+    new Pulse().deploy(PULSE_VERSION, SERVICE_NAME, KUBERNETES_CLUSTER, doorctlPath, PULSE_DIR)
   }
 }
 
