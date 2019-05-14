@@ -71,7 +71,7 @@ pipeline {
                 description: ''
               ]]
             )
-            deployToProd = (userInput?.deployToProd == 'Yes')
+            deployToProd = ('Yes' == userInput.get('deployToProd'))
           }
         }
       }
