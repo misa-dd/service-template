@@ -29,6 +29,7 @@ pipeline {
           sha = params['SHA']
           branch = params['BRANCH_NAME']
           serviceName = common.getServiceName()
+          deployToProd = 'No'
         }
       }
     }
@@ -70,6 +71,7 @@ pipeline {
                 choices: 'Yes?No'
               ]]
             )
+            deployToProd = userInput?.deployToProd
           }
         }
       }
@@ -78,7 +80,7 @@ pipeline {
       when {
         allOf {
           branch 'master'
-          equals expected: 'Yes', actual: userInput.deployToProd
+          equals expected: 'Yes', actual: deployToProd
         }
       }
       steps {
@@ -91,7 +93,7 @@ pipeline {
       when {
         allOf {
           branch 'master'
-          equals expected: 'Yes', actual: userInput.deployToProd
+          equals expected: 'Yes', actual: deployToProd
         }
       }
       steps {
