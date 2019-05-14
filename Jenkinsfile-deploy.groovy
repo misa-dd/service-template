@@ -56,22 +56,27 @@ pipeline {
     }
     stage('Continue to prod?') {
       when {
-        branch 'master'
+        branch 'carlos-service-template-updates'
       }
       steps {
-        timeout(time: 10, unit: 'MINUTES') {
-          script {
-            def userInput = input(
-              id: 'userInput',
-              message: 'Deploy to production?',
-              parameters: [[
-                $class: 'ChoiceParameterDefinition',
-                name: 'deployToProd',
-                choices: 'No\nYes',
-                description: ''
-              ]]
-            )
-            deployToProd = ('Yes' == userInput)
+        script {
+          try {
+            timeout(time: 10, unit: 'SECONDS') {
+              def userInput = input(
+                id: 'userInput',
+                message: 'Deploy to production?',
+                parameters: [[
+                  $class: 'ChoiceParameterDefinition',
+                  name: 'deployToProd',
+                  choices: 'No\nYes',
+                  description: ''
+                ]]
+              )
+              deployToProd = ('Yes' == userInput)
+            }
+          }
+          catch (err) {
+            println "Timed out or Aborted! Will not deploy to prod."
           }
         }
       }
@@ -79,26 +84,26 @@ pipeline {
     stage('Deploy to prod') {
       when {
         allOf {
-          branch 'master'
+          branch 'carlos-service-template-updates'
           expression { return deployToProd }
         }
       }
       steps {
         script {
-          common.deployHelm(gitUrl, sha, branch, serviceName, 'prod')
+          common.deployHelm(gitUrl, sha, branch, serviceName, 'staging')
         }
       }
     }
     stage('Deploy Pulse to prod') {
       when {
         allOf {
-          branch 'master'
+          branch 'carlos-service-template-updates'
           expression { return deployToProd }
         }
       }
       steps {
         script {
-          common.deployPulse(gitUrl, sha, branch, serviceName, 'prod')
+          common.deployPulse(gitUrl, sha, branch, serviceName, 'staging')
         }
       }
     }
