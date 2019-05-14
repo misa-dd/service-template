@@ -18,7 +18,20 @@ def dockerBuild(Map optArgs = [:], String gitUrl, String sha, String branch, Str
   sshagent (credentials: ['DDGHMACHINEUSER_PRIVATE_KEY']) {
     doorctlPath = doorctl.installIntoWorkspace(o.dockerDoorctlVersion)
   }
-  String loadedCacheDockerTag = docker.findAvailableCacheFrom(gitUrl, sha, o.dockerImageUrl)
+  String loadedCacheDockerTag
+  try {
+    sh """|#!/bin/bash
+          |set -ex
+          |docker pull ${o.dockerImageUrl}:${sha}
+          |""".stripMargin()
+    println "${sha} has been loaded into docker engine for --from-cache purposes in ${o.dockerImageUrl}"
+    loadedCacheDockerTag = sha
+  } catch (oops) {
+    println "No pullable docker image was found for ${o.dockerImageUrl}:${sha}"
+  }
+  if (loadedCacheDockerTag == null) {
+    loadedCacheDockerTag = docker.findAvailableCacheFrom(gitUrl, sha, o.dockerImageUrl)
+  }
   if (loadedCacheDockerTag == null) {
     loadedCacheDockerTag = "noCacheFoundxxxxxxx"
   }
@@ -44,13 +57,13 @@ def deployHelm(Map optArgs = [:], String gitUrl, String sha, String branch, Stri
     helmFlags: '--install',
     helmChartPath: "_infra/charts/${serviceName}",
     helmValuesFile: "values-${env}.yaml",
-    helmRelease: ${serviceName},
-    k8sCredFileCredentialId: 'K8S_CONFIG_${env.toUpperCase()}_NEW',
-    k8sNamespace: ${env},
-    tillerNamespace: ${env},
+    helmRelease: serviceName,
+    k8sCredFileCredentialId: "K8S_CONFIG_${env.toUpperCase()}_NEW",
+    k8sNamespace: env,
+    tillerNamespace: env,
     timeoutSeconds: 600
   ] << serviceNameEnvToOptArgs(serviceName, env) << optArgs
-  withCredentials([file(credentialsId: ${o.k8sCredFileCredentialId}, variable: 'k8sCredsFile')]) {
+  withCredentials([file(credentialsId: o.k8sCredFileCredentialId, variable: 'k8sCredsFile')]) {
     sh """|#!/bin/bash
           |set -ex
           |
@@ -70,7 +83,7 @@ def deployHelm(Map optArgs = [:], String gitUrl, String sha, String branch, Stri
 
 def deployPulse(Map optArgs = [:], String gitUrl, String sha, String branch, String serviceName, String env) {
   Map o = [
-    k8sNamespace: ${env},
+    k8sNamespace: env,
     pulseVersion: '2.1',
     pulseDoorctlVersion: 'v0.0.113',
     pulseRootDir: 'pulse'
@@ -111,7 +124,7 @@ def serviceNameEnvToOptArgs(String serviceName, String env) {
     return [
       helmFlags: '--install --force',
       helmValuesFile: 'values-staging.yaml',
-      helmRelease: ${serviceName},
+      helmRelease: serviceName,
       k8sCredFileCredentialId: 'K8S_CONFIG_STAGING_NEW',
       k8sNamespace: 'staging',
       tillerNamespace: 'staging'
@@ -120,7 +133,7 @@ def serviceNameEnvToOptArgs(String serviceName, String env) {
     return [
       helmFlags: '--install',
       helmValuesFile: 'values-prod.yaml',
-      helmRelease: ${serviceName},
+      helmRelease: serviceName,
       k8sCredFileCredentialId: 'K8S_CONFIG_PROD_NEW',
       k8sNamespace: 'prod',
       tillerNamespace: 'prod'

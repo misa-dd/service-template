@@ -1,5 +1,4 @@
 @Library('common-pipelines@v10.0.90') _
-import org.doordash.DateTime
 
 // -----------------------------------------------------------------------------------
 // The following params are automatically provided by the callback gateway as inputs
