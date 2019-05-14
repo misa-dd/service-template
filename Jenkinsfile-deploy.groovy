@@ -61,7 +61,7 @@ pipeline {
       steps {
         script {
           try {
-            timeout(time: 10, unit: 'SECONDS') {
+            timeout(time: 10, unit: 'MINUTES') {
               def userInput = input(
                 id: 'userInput',
                 message: 'Deploy to production?',
