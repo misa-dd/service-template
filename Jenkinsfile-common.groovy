@@ -67,16 +67,16 @@ def deployHelm(Map optArgs = [:], String gitUrl, String sha, String branch, Stri
     sh """|#!/bin/bash
           |set -ex
           |
-          |alias helm="docker run --rm -v ${k8sCredsFile}:/root/.kube/config -v ${WORKSPACE}:/apps alpine/helm:2.10.0"
+          |helm="docker run --rm -v ${k8sCredsFile}:/root/.kube/config -v ${WORKSPACE}:/apps alpine/helm:2.10.0"
           |HELM_OPTIONS="${o.helmCommand} ${o.helmRelease} ${o.helmChartPath} \\
           | --values ${o.helmChartPath}/${o.helmValuesFile} --set image.tag=${sha} ${o.helmFlags} \\
           | --tiller-namespace ${o.tillerNamespace} --namespace ${o.k8sNamespace} \\
           | --wait --timeout ${o.timeoutSeconds}"
           |
           |# log manifest to CI/CD
-          |helm \${HELM_OPTIONS} --debug --dry-run
+          |\${helm} \${HELM_OPTIONS} --debug --dry-run
           |
-          |helm \${HELM_OPTIONS}
+          |\${helm} \${HELM_OPTIONS}
           |""".stripMargin()
   }
 }
