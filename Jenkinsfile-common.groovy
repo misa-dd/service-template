@@ -13,7 +13,7 @@ def dockerBuild(Map optArgs = [:], String gitUrl, String sha, String branch, Str
     dockerImageUrl: "ddartifacts-docker.jfrog.io/doordash/${serviceName}"
   ] << optArgs
   String doorctlPath = doorctl.installIntoWorkspace(o.dockerDoorctlVersion)
-  String loadedCacheDockerTag = new Docker().findAvailableCacheFrom(gitUrl, sha, o.dockerImageUrl)
+  String loadedCacheDockerTag = docker.findAvailableCacheFrom(gitUrl, sha, o.dockerImageUrl)
   if (loadedCacheDockerTag == null) {
     loadedCacheDockerTag = "noCacheFoundxxxxxxx"
   }
