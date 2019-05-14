@@ -56,7 +56,7 @@ pipeline {
     }
     stage('Continue to prod?') {
       when {
-        branch 'carlos-service-template-updates'
+        branch 'master'
       }
       steps {
         timeout(time: 10, unit: 'MINUTES') {
@@ -79,26 +79,26 @@ pipeline {
     stage('Deploy to prod') {
       when {
         allOf {
-          branch 'carlos-service-template-updates'
+          branch 'master'
           expression { return deployToProd }
         }
       }
       steps {
         script {
-          common.deployHelm(gitUrl, sha, branch, serviceName, 'staging')
+          common.deployHelm(gitUrl, sha, branch, serviceName, 'prod')
         }
       }
     }
     stage('Deploy Pulse to prod') {
       when {
         allOf {
-          branch 'carlos-service-template-updates'
+          branch 'master'
           expression { return deployToProd }
         }
       }
       steps {
         script {
-          common.deployPulse(gitUrl, sha, branch, serviceName, 'staging')
+          common.deployPulse(gitUrl, sha, branch, serviceName, 'prod')
         }
       }
     }
