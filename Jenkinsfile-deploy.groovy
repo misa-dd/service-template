@@ -29,7 +29,6 @@ pipeline {
           sha = params['SHA']
           branch = params['BRANCH_NAME']
           serviceName = common.getServiceName()
-          deployToProd = false
         }
       }
     }
@@ -72,11 +71,13 @@ pipeline {
                   description: ''
                 ]]
               )
+              println "Deploy to production? '${userInput}'"
               deployToProd = ('Yes' == userInput)
             }
           }
           catch (err) {
             println "Timed out or Aborted! Will not deploy to prod."
+            deployToProd = false
           }
         }
       }
