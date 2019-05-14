@@ -35,7 +35,7 @@ def dockerBuild(Map optArgs = [:], String gitUrl, String sha, String branch, Str
 
 def deployHelm(Map optArgs = [:], String gitUrl, String sha, String branch, String serviceName, String env) {
   Map o = [
-    helmCommand: 'upgrade'
+    helmCommand: 'upgrade',
     helmFlags: '--install',
     helmChartPath: "_infra/charts/${serviceName}",
     helmValuesFile: "values-${env}.yaml",
@@ -65,9 +65,9 @@ def deployHelm(Map optArgs = [:], String gitUrl, String sha, String branch, Stri
 
 def deployPulse(Map optArgs = [:], String gitUrl, String sha, String branch, String serviceName, String env) {
   Map o = [
-    kubernetesNamespace: ${env}
-    pulseVersion: '2.1'
-    pulseDoorctlVersion: 'v0.0.113'
+    kubernetesNamespace: ${env},
+    pulseVersion: '2.1',
+    pulseDoorctlVersion: 'v0.0.113',
     pulseRootDir: 'pulse'
   ] << serviceNameEnvToOptArgs(serviceName, env) << optArgs
 
