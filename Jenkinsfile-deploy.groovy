@@ -54,13 +54,32 @@ pipeline {
       }
     }
     stage('Continue to prod?') {
+      when {
+        branch 'master'
+      }
       steps {
         timeout(time: 10, unit: 'MINUTES') {
-          input 'Deploy to production?'
+          script {
+          def userInput = input(
+            id: 'userInput',
+            message: 'Deploy to production?',
+            parameters: [[
+              $class: 'ChoiceParameterDefinition',
+              defaultValue: 'No',
+              name: 'deployToProd',
+              choices: 'Yes?No'
+            ]]
+          )
         }
       }
     }
     stage('Deploy to prod') {
+      when {
+        allOf {
+          branch 'master'
+          equals expected: 'Yes', actual: userInput.deployToProd
+        }
+      }
       steps {
         script {
           common.deployHelm(gitUrl, sha, branch, serviceName, 'prod')
@@ -68,6 +87,12 @@ pipeline {
       }
     }
     stage('Deploy Pulse to prod') {
+      when {
+        allOf {
+          branch 'master'
+          equals expected: 'Yes', actual: userInput.deployToProd
+        }
+      }
       steps {
         script {
           common.deployPulse(gitUrl, sha, branch, serviceName, 'prod')
