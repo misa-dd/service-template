@@ -22,7 +22,6 @@ pipeline {
   stages {
     stage('Startup') {
       steps {
-        setGitHubStatus('Start Jenkinsfile-deploy Pipeline', 'Started')
         artifactoryLogin()
         script {
           common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
@@ -35,56 +34,44 @@ pipeline {
     }
     stage('Docker Build') {
       steps {
-        reportClosureAsGitHubStatus({
-          script {
-            common.dockerBuild(gitUrl, sha, branch, serviceName)
-          }
-        })
+        script {
+          common.dockerBuild(gitUrl, sha, branch, serviceName)
+        }
       }
     }
     stage('Deploy to staging') {
       steps {
-        reportClosureAsGitHubStatus({
-          script {
-            common.deployHelm(gitUrl, sha, branch, serviceName, 'staging')
-          }
-        })
+        script {
+          common.deployHelm(gitUrl, sha, branch, serviceName, 'staging')
+        }
       }
     }
     stage('Deploy Pulse to staging') {
       steps {
-        reportClosureAsGitHubStatus({
-          script {
-            common.deployPulse(gitUrl, sha, branch, serviceName, 'staging')
-          }
-        })
+        script {
+          common.deployPulse(gitUrl, sha, branch, serviceName, 'staging')
+        }
+      }
+    }
+    stage('Continue to prod?') {
+      steps {
+        timeout(time: 10, unit: 'MINUTES') {
+          input 'Deploy to production?'
+        }
       }
     }
     stage('Deploy to prod') {
       steps {
         script {
-          try {
-            timeout(time: 10, unit: 'MINUTES') {
-              input 'Deploy to production?'
-            }
-          } catch(err) {
-            error('Aborted due to timeout!')
-          }
+          common.deployHelm(gitUrl, sha, branch, serviceName, 'prod')
         }
-        reportClosureAsGitHubStatus({
-          script {
-            common.deployHelm(gitUrl, sha, branch, serviceName, 'prod')
-          }
-        })
       }
     }
     stage('Deploy Pulse to prod') {
       steps {
-        reportClosureAsGitHubStatus({
-          script {
-            common.deployPulse(gitUrl, sha, branch, serviceName, 'prod')
-          }
-        })
+        script {
+          common.deployPulse(gitUrl, sha, branch, serviceName, 'prod')
+        }
       }
     }
   }
