@@ -14,6 +14,7 @@
 
 pipeline {
   options {
+    timestamps()
     skipStagesAfterUnstable()
   }
   agent {
@@ -77,6 +78,7 @@ pipeline {
           }
           catch (err) {
             println "Timed out or Aborted! Will not deploy to prod."
+            println err
             deployToProd = false
           }
         }
