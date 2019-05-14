@@ -29,7 +29,7 @@ pipeline {
           sha = params['SHA']
           branch = params['BRANCH_NAME']
           serviceName = common.getServiceName()
-          deployToProd = 'No'
+          deployToProd = false
         }
       }
     }
@@ -66,12 +66,12 @@ pipeline {
               message: 'Deploy to production?',
               parameters: [[
                 $class: 'ChoiceParameterDefinition',
-                defaultValue: 'No',
+                description: ''
                 name: 'deployToProd',
-                choices: 'Yes\nNo'
+                choices: 'No\nYes'
               ]]
             )
-            deployToProd = userInput?.deployToProd
+            deployToProd = (userInput?.deployToProd == 'Yes')
           }
         }
       }
@@ -80,7 +80,7 @@ pipeline {
       when {
         allOf {
           branch 'carlos-service-template-updates'
-          equals expected: 'Yes', actual: deployToProd
+          expression { return deployToProd }
         }
       }
       steps {
@@ -93,7 +93,7 @@ pipeline {
       when {
         allOf {
           branch 'carlos-service-template-updates'
-          equals expected: 'Yes', actual: deployToProd
+          expression { return deployToProd }
         }
       }
       steps {
