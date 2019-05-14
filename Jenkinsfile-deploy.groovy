@@ -27,10 +27,10 @@ pipeline {
         artifactoryLogin()
         script {
           common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
-          String gitUrl = params['GITHUB_REPOSITORY']
-          String sha = params['SHA']
-          String branch = params['BRANCH_NAME']
-          String serviceName = common.getServiceName()
+          gitUrl = params['GITHUB_REPOSITORY']
+          sha = params['SHA']
+          branch = params['BRANCH_NAME']
+          serviceName = common.getServiceName()
         }
       }
     }
