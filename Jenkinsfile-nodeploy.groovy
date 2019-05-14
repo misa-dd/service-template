@@ -30,7 +30,7 @@ pipeline {
           String gitUrl = params['GITHUB_REPOSITORY']
           String sha = params['SHA']
           String branch = params['BRANCH_NAME']
-          String serviceName = common.SERVICE_NAME
+          String serviceName = common.getServiceName()
         }
       }
     }
