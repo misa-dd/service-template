@@ -27,7 +27,7 @@ def dockerBuild(Map optArgs = [:], String gitUrl, String sha, String branch, Str
       sh """|#!/bin/bash
             |set -ex
             |make docker-build tag push \\
-            | branch=${branch}
+            | branch=${branch} \\
             | doorctl=${doorctlPath} \\
             | SHA=${sha} \\
             | CACHE_FROM=${cacheFromValue} \\
