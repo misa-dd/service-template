@@ -5,10 +5,8 @@ doorctl = new org.doordash.Doorctl()
 github = new org.doordash.Github()
 pulse = new org.doordash.Pulse()
 
-static String SERVICE_NAME = 'service-template'
-
 def getServiceName() {
-  return SERVICE_NAME
+  return 'service-template'
 }
 
 def dockerBuild(Map optArgs = [:], String gitUrl, String sha, String branch, String serviceName) {
