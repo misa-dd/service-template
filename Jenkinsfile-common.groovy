@@ -14,7 +14,10 @@ def dockerBuild(Map optArgs = [:], String gitUrl, String sha, String branch, Str
     dockerDoorctlVersion: 'v0.0.104',
     dockerImageUrl: "ddartifacts-docker.jfrog.io/doordash/${serviceName}"
   ] << optArgs
-  String doorctlPath = doorctl.installIntoWorkspace(o.dockerDoorctlVersion)
+  String doorctlPath
+  sshagent (credentials: ['DDGHMACHINEUSER_PRIVATE_KEY']) {
+    doorctlPath = doorctl.installIntoWorkspace(o.dockerDoorctlVersion)
+  }
   String loadedCacheDockerTag = docker.findAvailableCacheFrom(gitUrl, sha, o.dockerImageUrl)
   if (loadedCacheDockerTag == null) {
     loadedCacheDockerTag = "noCacheFoundxxxxxxx"
@@ -42,19 +45,19 @@ def deployHelm(Map optArgs = [:], String gitUrl, String sha, String branch, Stri
     helmChartPath: "_infra/charts/${serviceName}",
     helmValuesFile: "values-${env}.yaml",
     helmRelease: ${serviceName},
-    k8CredFileCredentialId: 'K8S_CONFIG_${env.toUpperCase()}_NEW',
-    kubernetesNamespace: ${env},
+    k8sCredFileCredentialId: 'K8S_CONFIG_${env.toUpperCase()}_NEW',
+    k8sNamespace: ${env},
     tillerNamespace: ${env},
     timeoutSeconds: 600
   ] << serviceNameEnvToOptArgs(serviceName, env) << optArgs
-  withCredentials([file(credentialsId: ${o.k8CredFileCredentialId}, variable: 'k8sCredsFile')]) {
+  withCredentials([file(credentialsId: ${o.k8sCredFileCredentialId}, variable: 'k8sCredsFile')]) {
     sh """|#!/bin/bash
           |set -ex
           |
           |alias helm="docker run --rm -v ${k8sCredsFile}:/root/.kube/config -v ${WORKSPACE}:/apps alpine/helm:2.10.0"
           |HELM_OPTIONS="${o.helmCommand} ${o.helmRelease} ${o.helmChartPath} \\
           | --values ${o.helmChartPath}/${o.helmValuesFile} --set image.tag=${sha} ${o.helmFlags} \\
-          | --tiller-namespace ${o.tillerNamespace} --namespace ${o.kubernetesNamespace} \\
+          | --tiller-namespace ${o.tillerNamespace} --namespace ${o.k8sNamespace} \\
           | --wait --timeout ${o.timeoutSeconds}"
           |
           |# log manifest to CI/CD
@@ -67,7 +70,7 @@ def deployHelm(Map optArgs = [:], String gitUrl, String sha, String branch, Stri
 
 def deployPulse(Map optArgs = [:], String gitUrl, String sha, String branch, String serviceName, String env) {
   Map o = [
-    kubernetesNamespace: ${env},
+    k8sNamespace: ${env},
     pulseVersion: '2.1',
     pulseDoorctlVersion: 'v0.0.113',
     pulseRootDir: 'pulse'
@@ -75,7 +78,7 @@ def deployPulse(Map optArgs = [:], String gitUrl, String sha, String branch, Str
 
   String PULSE_VERSION = o.pulseVersion
   String SERVICE_NAME = serviceName
-  String KUBERNETES_CLUSTER = o.kubernetesNamespace
+  String KUBERNETES_CLUSTER = o.k8sNamespace
   String DOORCTL_VERSION = o.pulseDoorctlVersion
   String PULSE_ROOT_DIR = o.pulseRootDir
   String PULSE_DIR = SERVICE_NAME+"/"+PULSE_ROOT_DIR
@@ -100,8 +103,8 @@ def serviceNameEnvToOptArgs(String serviceName, String env) {
       helmFlags: '--install --force',
       helmValuesFile: "values-${env}.yaml",
       helmRelease: "${serviceName}-${env}",
-      k8CredFileCredentialId: 'K8S_CONFIG_STAGING_NEW',
-      kubernetesNamespace: 'staging',
+      k8sCredFileCredentialId: 'K8S_CONFIG_STAGING_NEW',
+      k8sNamespace: 'staging',
       tillerNamespace: 'staging'
     ]
   } else if (env == 'staging') {
@@ -109,8 +112,8 @@ def serviceNameEnvToOptArgs(String serviceName, String env) {
       helmFlags: '--install --force',
       helmValuesFile: 'values-staging.yaml',
       helmRelease: ${serviceName},
-      k8CredFileCredentialId: 'K8S_CONFIG_STAGING_NEW',
-      kubernetesNamespace: 'staging',
+      k8sCredFileCredentialId: 'K8S_CONFIG_STAGING_NEW',
+      k8sNamespace: 'staging',
       tillerNamespace: 'staging'
     ]
   } else if (env == 'prod' || env == 'production') {
@@ -118,8 +121,8 @@ def serviceNameEnvToOptArgs(String serviceName, String env) {
       helmFlags: '--install',
       helmValuesFile: 'values-prod.yaml',
       helmRelease: ${serviceName},
-      k8CredFileCredentialId: 'K8S_CONFIG_PROD_NEW',
-      kubernetesNamespace: 'prod',
+      k8sCredFileCredentialId: 'K8S_CONFIG_PROD_NEW',
+      k8sNamespace: 'prod',
       tillerNamespace: 'prod'
     ]
   } else {
