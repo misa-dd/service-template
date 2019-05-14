@@ -68,7 +68,7 @@ pipeline {
                 $class: 'ChoiceParameterDefinition',
                 defaultValue: 'No',
                 name: 'deployToProd',
-                choices: 'Yes?No'
+                choices: 'Yes\nNo'
               ]]
             )
             deployToProd = userInput?.deployToProd
