@@ -66,9 +66,9 @@ pipeline {
               message: 'Deploy to production?',
               parameters: [[
                 $class: 'ChoiceParameterDefinition',
-                description: ''
                 name: 'deployToProd',
-                choices: 'No\nYes'
+                choices: 'No\nYes',
+                description: ''
               ]]
             )
             deployToProd = (userInput?.deployToProd == 'Yes')
