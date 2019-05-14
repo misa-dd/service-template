@@ -14,6 +14,7 @@
 
 pipeline {
   options {
+    timestamps()
     skipStagesAfterUnstable()
   }
   agent {
