@@ -60,16 +60,17 @@ pipeline {
       steps {
         timeout(time: 10, unit: 'MINUTES') {
           script {
-          def userInput = input(
-            id: 'userInput',
-            message: 'Deploy to production?',
-            parameters: [[
-              $class: 'ChoiceParameterDefinition',
-              defaultValue: 'No',
-              name: 'deployToProd',
-              choices: 'Yes?No'
-            ]]
-          )
+            def userInput = input(
+              id: 'userInput',
+              message: 'Deploy to production?',
+              parameters: [[
+                $class: 'ChoiceParameterDefinition',
+                defaultValue: 'No',
+                name: 'deployToProd',
+                choices: 'Yes?No'
+              ]]
+            )
+          }
         }
       }
     }
