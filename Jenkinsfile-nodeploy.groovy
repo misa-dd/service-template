@@ -1,7 +1,5 @@
 @Library('common-pipelines@v10.0.90') _
 
-import groovy.transform.Field
-
 // -----------------------------------------------------------------------------------
 // The following params are automatically provided by the callback gateway as inputs
 // to the Jenkins pipeline that starts this job.
@@ -13,11 +11,6 @@ import groovy.transform.Field
 // params["JSON"]                   - Extensible json doc with extra information
 // params["GITHUB_REPOSITORY"]      - GitHub ssh url of repository (git://....)
 // -----------------------------------------------------------------------------------
-
-@Field
-def common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
-
-artifactoryLogin()
 
 pipeline {
   options {
@@ -32,6 +25,10 @@ pipeline {
     stage('Startup') {
       steps {
         setGitHubStatus 'Start Jenkinsfile-nodeploy Pipeline', 'Started'
+        artifactoryLogin()
+        script {
+          common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
+        }
       }
     }
     stage('Docker Build') {

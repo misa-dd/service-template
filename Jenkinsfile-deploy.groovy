@@ -17,11 +17,6 @@ import groovy.transform.Field
 @Field
 def canDeployToProd = false
 
-@Field
-def common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
-
-artifactoryLogin()
-
 pipeline {
   options {
     timestamps()
@@ -32,6 +27,14 @@ pipeline {
     label 'universal'
   }
   stages {
+    stage('Startup') {
+      steps {
+        artifactoryLogin()
+        script {
+          common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
+        }
+      }
+    }
     stage('Docker Build') {
       steps {
         script {
