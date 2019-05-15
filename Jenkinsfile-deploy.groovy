@@ -1,5 +1,7 @@
 @Library('common-pipelines@v10.0.90') _
 
+import groovy.transform.Field
+
 // -----------------------------------------------------------------------------------
 // The following params are automatically provided by the callback gateway as inputs
 // to the Jenkins pipeline that starts this job.
