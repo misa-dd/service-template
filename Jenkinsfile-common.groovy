@@ -25,7 +25,7 @@ def getServiceName() {
  * <li>branch = GitHub branch name
  * <li>doorctl = Path in order to execute doorctl from within the Makefile
  * <li>SHA = GitHub SHA
- * <li>CACHE_FROM = Docker image URL and tag to use as the Docker image cache to speed up subsequent builds
+ * <li>CACHE_FROM = url:tag of recent Docker image to speed up subsequent builds that use the --cache-from option
  * <li>PIP_EXTRA_INDEX_URL = pip extra index URL for installing Python packages
  * </ul>
  */
