@@ -12,6 +12,14 @@
 // params["GITHUB_REPOSITORY"]      - GitHub ssh url of repository (git://....)
 // -----------------------------------------------------------------------------------
 
+@Field
+def canDeployToProd = false
+
+@Field
+def common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
+
+artifactoryLogin()
+
 pipeline {
   options {
     timestamps()
@@ -22,14 +30,6 @@ pipeline {
     label 'universal'
   }
   stages {
-    stage('Startup') {
-      steps {
-        artifactoryLogin()
-        script {
-          common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
-        }
-      }
-    }
     stage('Docker Build') {
       steps {
         script {
@@ -57,36 +57,14 @@ pipeline {
       }
       steps {
         script {
-          try {
-            timeout(time: 10, unit: 'MINUTES') {
-              def userInput = input(
-                id: 'userInput',
-                message: 'Deploy to production?',
-                parameters: [[
-                  $class: 'ChoiceParameterDefinition',
-                  name: 'deployToProd',
-                  choices: 'No\nYes',
-                  description: ''
-                ]]
-              )
-              println "Deploy to production? '${userInput}'"
-              deployToProd = ('Yes' == userInput)
-            }
-          }
-          catch (err) {
-            println "Timed out or Aborted! Will not deploy to prod."
-            println err
-            deployToProd = false
-          }
+          canDeployToProd = common.inputCanDeployToProd()
         }
       }
     }
     stage('Deploy to prod') {
       when {
-        allOf {
-          branch 'master'
-          expression { return deployToProd }
-        }
+        branch 'master'
+        equals expected: true, actual: canDeployToProd
       }
       steps {
         script {
@@ -96,10 +74,8 @@ pipeline {
     }
     stage('Deploy Pulse to prod') {
       when {
-        allOf {
-          branch 'master'
-          expression { return deployToProd }
-        }
+        branch 'master'
+        equals expected: true, actual: canDeployToProd
       }
       steps {
         script {
