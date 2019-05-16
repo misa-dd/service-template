@@ -17,9 +17,6 @@ import groovy.transform.Field
 @Field
 def canDeployToProd = false
 
-def common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
-artifactoryLogin()
-
 pipeline {
   options {
     timestamps()
@@ -32,54 +29,65 @@ pipeline {
   stages {
     stage('Docker Build') {
       steps {
+        artifactoryLogin()
         script {
+          common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
           common.dockerBuild(params['GITHUB_REPOSITORY'], params['SHA'], params['BRANCH_NAME'], common.getServiceName())
         }
       }
     }
     stage('Deploy to staging') {
       steps {
+        artifactoryLogin()
         script {
+          common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
           common.deployHelm(params['GITHUB_REPOSITORY'], params['SHA'], params['BRANCH_NAME'], common.getServiceName(), 'staging')
         }
       }
     }
     stage('Deploy Pulse to staging') {
       steps {
+        artifactoryLogin()
         script {
+          common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
           common.deployPulse(params['GITHUB_REPOSITORY'], params['SHA'], params['BRANCH_NAME'], common.getServiceName(), 'staging')
         }
       }
     }
     stage('Continue to prod?') {
       when {
-        branch 'carlos-update-common'
+        branch 'master'
       }
       steps {
         script {
+          common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
           canDeployToProd = common.inputCanDeployToProd()
         }
       }
     }
     stage('Deploy to prod') {
       when {
-        branch 'carlos-update-common'
+        branch 'master'
         equals expected: true, actual: canDeployToProd
       }
       steps {
+        artifactoryLogin()
         script {
-          common.deployHelm(params['GITHUB_REPOSITORY'], params['SHA'], params['BRANCH_NAME'], common.getServiceName(), 'staging')
+          common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
+          common.deployHelm(params['GITHUB_REPOSITORY'], params['SHA'], params['BRANCH_NAME'], common.getServiceName(), 'prod')
         }
       }
     }
     stage('Deploy Pulse to prod') {
       when {
-        branch 'carlos-update-common'
+        branch 'master'
         equals expected: true, actual: canDeployToProd
       }
       steps {
+        artifactoryLogin()
         script {
-          common.deployPulse(params['GITHUB_REPOSITORY'], params['SHA'], params['BRANCH_NAME'], common.getServiceName(), 'staging')
+          common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
+          common.deployPulse(params['GITHUB_REPOSITORY'], params['SHA'], params['BRANCH_NAME'], common.getServiceName(), 'prod')
         }
       }
     }
