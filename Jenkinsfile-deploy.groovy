@@ -56,7 +56,7 @@ pipeline {
     }
     stage('Continue to prod?') {
       when {
-        branch 'master'
+        branch 'carlos-update-common'
       }
       steps {
         script {
@@ -67,27 +67,27 @@ pipeline {
     }
     stage('Deploy to prod') {
       when {
-        branch 'master'
+        branch 'carlos-update-common'
         equals expected: true, actual: canDeployToProd
       }
       steps {
         artifactoryLogin()
         script {
           common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
-          common.deployHelm(params['GITHUB_REPOSITORY'], params['SHA'], params['BRANCH_NAME'], common.getServiceName(), 'prod')
+          common.deployHelm(params['GITHUB_REPOSITORY'], params['SHA'], params['BRANCH_NAME'], common.getServiceName(), 'staging')
         }
       }
     }
     stage('Deploy Pulse to prod') {
       when {
-        branch 'master'
+        branch 'carlos-update-common'
         equals expected: true, actual: canDeployToProd
       }
       steps {
         artifactoryLogin()
         script {
           common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
-          common.deployPulse(params['GITHUB_REPOSITORY'], params['SHA'], params['BRANCH_NAME'], common.getServiceName(), 'prod')
+          common.deployPulse(params['GITHUB_REPOSITORY'], params['SHA'], params['BRANCH_NAME'], common.getServiceName(), 'staging')
         }
       }
     }
