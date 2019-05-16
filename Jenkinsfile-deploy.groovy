@@ -27,31 +27,29 @@ pipeline {
     label 'universal'
   }
   stages {
-    stage('Startup') {
+    stage('Docker Build') {
       steps {
         artifactoryLogin()
         script {
           common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
-        }
-      }
-    }
-    stage('Docker Build') {
-      steps {
-        script {
           common.dockerBuild(params['GITHUB_REPOSITORY'], params['SHA'], params['BRANCH_NAME'], common.getServiceName())
         }
       }
     }
     stage('Deploy to staging') {
       steps {
+        artifactoryLogin()
         script {
+          common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
           common.deployHelm(params['GITHUB_REPOSITORY'], params['SHA'], params['BRANCH_NAME'], common.getServiceName(), 'staging')
         }
       }
     }
     stage('Deploy Pulse to staging') {
       steps {
+        artifactoryLogin()
         script {
+          common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
           common.deployPulse(params['GITHUB_REPOSITORY'], params['SHA'], params['BRANCH_NAME'], common.getServiceName(), 'staging')
         }
       }
@@ -62,6 +60,7 @@ pipeline {
       }
       steps {
         script {
+          common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
           canDeployToProd = common.inputCanDeployToProd()
         }
       }
@@ -72,7 +71,9 @@ pipeline {
         equals expected: true, actual: canDeployToProd
       }
       steps {
+        artifactoryLogin()
         script {
+          common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
           common.deployHelm(params['GITHUB_REPOSITORY'], params['SHA'], params['BRANCH_NAME'], common.getServiceName(), 'prod')
         }
       }
@@ -83,7 +84,9 @@ pipeline {
         equals expected: true, actual: canDeployToProd
       }
       steps {
+        artifactoryLogin()
         script {
+          common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
           common.deployPulse(params['GITHUB_REPOSITORY'], params['SHA'], params['BRANCH_NAME'], common.getServiceName(), 'prod')
         }
       }

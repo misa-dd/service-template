@@ -14,6 +14,7 @@ def getServiceName() {
 
 /**
  * Build, Tag, and Push a Docker image for a Microservice.
+ * If there already exists a docker image for the sha, then it will skip 'make docker-build tag push'.
  * <br>
  * <br>
  * Requires:
@@ -34,41 +35,41 @@ def dockerBuild(Map optArgs = [:], String gitUrl, String sha, String branch, Str
     dockerDoorctlVersion: 'v0.0.118',
     dockerImageUrl: "ddartifacts-docker.jfrog.io/doordash/${serviceName}"
   ] << optArgs
-  String doorctlPath
-  sshagent (credentials: ['DDGHMACHINEUSER_PRIVATE_KEY']) {
-    doorctlPath = new Doorctl().installIntoWorkspace(o.dockerDoorctlVersion)
-  }
   String loadedCacheDockerTag
   try {
     sh """|#!/bin/bash
           |set -ex
           |docker pull ${o.dockerImageUrl}:${sha}
           |""".stripMargin()
-    println "${sha} has been loaded into docker engine for --from-cache purposes in ${o.dockerImageUrl}"
+    println "Docker image was found for ${o.dockerImageUrl}:${sha} - Skipping 'make docker-build tag push'"
     loadedCacheDockerTag = sha
   } catch (oops) {
-    println "No pullable docker image was found for ${o.dockerImageUrl}:${sha}"
+    println "No docker image was found for ${o.dockerImageUrl}:${sha} - Running 'make docker-build tag push'"
   }
   if (loadedCacheDockerTag == null) {
     loadedCacheDockerTag = new Docker().findAvailableCacheFrom(gitUrl, sha, o.dockerImageUrl)
+    if (loadedCacheDockerTag == null) {
+      loadedCacheDockerTag = "noCacheFoundxxxxxxx"
+    }
+    String doorctlPath
+    sshagent (credentials: ['DDGHMACHINEUSER_PRIVATE_KEY']) {
+      doorctlPath = new Doorctl().installIntoWorkspace(o.dockerDoorctlVersion)
+    }
+    String cacheFromValue = "${o.dockerImageUrl}:${loadedCacheDockerTag}"
+    shWithCredentials({
+        sh """|#!/bin/bash
+              |set -ex
+              |make docker-build tag push \\
+              | branch=${branch} \\
+              | doorctl=${doorctlPath} \\
+              | SHA=${sha} \\
+              | CACHE_FROM=${cacheFromValue} \\
+              | PIP_EXTRA_INDEX_URL=${PIP_EXTRA_INDEX_URL}
+              |""".stripMargin()
+      },
+      ['PIP_EXTRA_INDEX_URL']
+    )
   }
-  if (loadedCacheDockerTag == null) {
-    loadedCacheDockerTag = "noCacheFoundxxxxxxx"
-  }
-  String cacheFromValue = "${o.dockerImageUrl}:${loadedCacheDockerTag}"
-  shWithCredentials({
-      sh """|#!/bin/bash
-            |set -ex
-            |make docker-build tag push \\
-            | branch=${branch} \\
-            | doorctl=${doorctlPath} \\
-            | SHA=${sha} \\
-            | CACHE_FROM=${cacheFromValue} \\
-            | PIP_EXTRA_INDEX_URL=${PIP_EXTRA_INDEX_URL}
-            |""".stripMargin()
-    },
-    ['PIP_EXTRA_INDEX_URL']
-  )
 }
 
 /**
