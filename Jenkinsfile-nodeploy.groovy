@@ -25,16 +25,14 @@ pipeline {
     stage('Startup') {
       steps {
         setGitHubStatus 'Start Jenkinsfile-nodeploy Pipeline', 'Started'
-        artifactoryLogin()
-        script {
-          common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
-        }
       }
     }
     stage('Docker Build') {
       steps {
+        artifactoryLogin()
         script {
           reportClosureAsGitHubStatus {
+            common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
             common.dockerBuild(params['GITHUB_REPOSITORY'], params['SHA'], params['BRANCH_NAME'], common.getServiceName())
           }
         }

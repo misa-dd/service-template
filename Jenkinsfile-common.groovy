@@ -2,7 +2,6 @@
 
 import org.doordash.Docker
 import org.doordash.Doorctl
-import org.doordash.Github
 import org.doordash.Pulse
 
 /**
@@ -12,48 +11,69 @@ def getServiceName() {
   return 'service-template'
 }
 
+/**
+ * Build, Tag, and Push a Docker image for a Microservice.
+ * If there already exists a docker image for the sha, then it will skip 'make docker-build tag push'.
+ * <br>
+ * <br>
+ * Requires:
+ * <ul>
+ * <li>Makefile with docker-build, tag, and push targets
+ * </ul>
+ * Provides:
+ * <ul>
+ * <li>branch = GitHub branch name
+ * <li>doorctl = Path in order to execute doorctl from within the Makefile
+ * <li>SHA = GitHub SHA
+ * <li>CACHE_FROM = url:tag of recent Docker image to speed up subsequent builds that use the --cache-from option
+ * <li>PIP_EXTRA_INDEX_URL = pip extra index URL for installing Python packages
+ * </ul>
+ */
 def dockerBuild(Map optArgs = [:], String gitUrl, String sha, String branch, String serviceName) {
   Map o = [
-    dockerDoorctlVersion: 'v0.0.104',
+    dockerDoorctlVersion: 'v0.0.118',
     dockerImageUrl: "ddartifacts-docker.jfrog.io/doordash/${serviceName}"
   ] << optArgs
-  String doorctlPath
-  sshagent (credentials: ['DDGHMACHINEUSER_PRIVATE_KEY']) {
-    doorctlPath = new Doorctl().installIntoWorkspace(o.dockerDoorctlVersion)
-  }
   String loadedCacheDockerTag
   try {
     sh """|#!/bin/bash
           |set -ex
           |docker pull ${o.dockerImageUrl}:${sha}
           |""".stripMargin()
-    println "${sha} has been loaded into docker engine for --from-cache purposes in ${o.dockerImageUrl}"
+    println "Docker image was found for ${o.dockerImageUrl}:${sha} - Skipping 'make docker-build tag push'"
     loadedCacheDockerTag = sha
   } catch (oops) {
-    println "No pullable docker image was found for ${o.dockerImageUrl}:${sha}"
+    println "No docker image was found for ${o.dockerImageUrl}:${sha} - Running 'make docker-build tag push'"
   }
   if (loadedCacheDockerTag == null) {
     loadedCacheDockerTag = new Docker().findAvailableCacheFrom(gitUrl, sha, o.dockerImageUrl)
+    if (loadedCacheDockerTag == null) {
+      loadedCacheDockerTag = "noCacheFoundxxxxxxx"
+    }
+    String doorctlPath
+    sshagent (credentials: ['DDGHMACHINEUSER_PRIVATE_KEY']) {
+      doorctlPath = new Doorctl().installIntoWorkspace(o.dockerDoorctlVersion)
+    }
+    String cacheFromValue = "${o.dockerImageUrl}:${loadedCacheDockerTag}"
+    shWithCredentials({
+        sh """|#!/bin/bash
+              |set -ex
+              |make docker-build tag push \\
+              | branch=${branch} \\
+              | doorctl=${doorctlPath} \\
+              | SHA=${sha} \\
+              | CACHE_FROM=${cacheFromValue} \\
+              | PIP_EXTRA_INDEX_URL=${PIP_EXTRA_INDEX_URL}
+              |""".stripMargin()
+      },
+      ['PIP_EXTRA_INDEX_URL']
+    )
   }
-  if (loadedCacheDockerTag == null) {
-    loadedCacheDockerTag = "noCacheFoundxxxxxxx"
-  }
-  String cacheFromValue = "${o.dockerImageUrl}:${loadedCacheDockerTag}"
-  shWithCredentials({
-      sh """|#!/bin/bash
-            |set -ex
-            |make docker-build tag push \\
-            | branch=${branch} \\
-            | doorctl=${doorctlPath} \\
-            | SHA=${sha} \\
-            | CACHE_FROM=${cacheFromValue} \\
-            | PIP_EXTRA_INDEX_URL=${PIP_EXTRA_INDEX_URL}
-            |""".stripMargin()
-    },
-    ['PIP_EXTRA_INDEX_URL']
-  )
 }
 
+/**
+ * Deploy a Microservice using Helm.
+ */
 def deployHelm(Map optArgs = [:], String gitUrl, String sha, String branch, String serviceName, String env) {
   Map o = [
     helmCommand: 'upgrade',
@@ -84,11 +104,14 @@ def deployHelm(Map optArgs = [:], String gitUrl, String sha, String branch, Stri
   }
 }
 
+/**
+ * Deploy Pulse for a Microservice.
+ */
 def deployPulse(Map optArgs = [:], String gitUrl, String sha, String branch, String serviceName, String env) {
   Map o = [
     k8sNamespace: env,
     pulseVersion: '2.1',
-    pulseDoorctlVersion: 'v0.0.113',
+    pulseDoorctlVersion: 'v0.0.118',
     pulseRootDir: 'pulse'
   ] << serviceNameEnvToOptArgs(serviceName, env) << optArgs
 
@@ -96,12 +119,9 @@ def deployPulse(Map optArgs = [:], String gitUrl, String sha, String branch, Str
   String SERVICE_NAME = serviceName
   String KUBERNETES_CLUSTER = o.k8sNamespace
   String DOORCTL_VERSION = o.pulseDoorctlVersion
-  String PULSE_ROOT_DIR = o.pulseRootDir
-  String PULSE_DIR = SERVICE_NAME+"/"+PULSE_ROOT_DIR
+  String PULSE_DIR = o.pulseRootDir
 
   sshagent(credentials: ['DDGHMACHINEUSER_PRIVATE_KEY']) {
-    // checkout the repo
-    new Github().fastCheckoutScm(gitUrl, sha, serviceName)
     // install doorctl and grab its executable path
     String doorctlPath = new Doorctl().installIntoWorkspace(DOORCTL_VERSION)
     // deploy Pulse
@@ -144,6 +164,29 @@ def serviceNameEnvToOptArgs(String serviceName, String env) {
   } else {
     error("Unknown env value of '${env}' passed.")
   }
+}
+
+/**
+ * Prompt the user to decide if we can deploy to production.
+ * The user has 10 minutes to choose between Proceed or Abort.
+ * If Proceed, then we should proceed. If Abort or Timed-out,
+ * then we should cleanly skip the rest of the steps in the
+ * pipeline without failing the pipeline.
+ *
+ * @return True if we can deploy to prod. False, otherwise.
+ */
+def inputCanDeployToProd() {
+  boolean canDeployToProd = false
+  try {
+    timeout(time: 10, unit: 'MINUTES') {
+      input(id: 'userInput', message: 'Deploy to production?')
+      canDeployToProd = true
+    }
+  } catch (err) {
+    println "Timed out or Aborted! Will not deploy to production."
+    println err
+  }
+  return canDeployToProd
 }
 
 return this

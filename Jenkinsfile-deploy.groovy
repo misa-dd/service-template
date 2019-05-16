@@ -1,5 +1,7 @@
 @Library('common-pipelines@v10.0.90') _
 
+import groovy.transform.Field
+
 // -----------------------------------------------------------------------------------
 // The following params are automatically provided by the callback gateway as inputs
 // to the Jenkins pipeline that starts this job.
@@ -12,6 +14,9 @@
 // params["GITHUB_REPOSITORY"]      - GitHub ssh url of repository (git://....)
 // -----------------------------------------------------------------------------------
 
+@Field
+def canDeployToProd = false
+
 pipeline {
   options {
     timestamps()
@@ -22,31 +27,29 @@ pipeline {
     label 'universal'
   }
   stages {
-    stage('Startup') {
+    stage('Docker Build') {
       steps {
         artifactoryLogin()
         script {
           common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
-        }
-      }
-    }
-    stage('Docker Build') {
-      steps {
-        script {
           common.dockerBuild(params['GITHUB_REPOSITORY'], params['SHA'], params['BRANCH_NAME'], common.getServiceName())
         }
       }
     }
     stage('Deploy to staging') {
       steps {
+        artifactoryLogin()
         script {
+          common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
           common.deployHelm(params['GITHUB_REPOSITORY'], params['SHA'], params['BRANCH_NAME'], common.getServiceName(), 'staging')
         }
       }
     }
     stage('Deploy Pulse to staging') {
       steps {
+        artifactoryLogin()
         script {
+          common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
           common.deployPulse(params['GITHUB_REPOSITORY'], params['SHA'], params['BRANCH_NAME'], common.getServiceName(), 'staging')
         }
       }
@@ -57,52 +60,33 @@ pipeline {
       }
       steps {
         script {
-          try {
-            timeout(time: 10, unit: 'MINUTES') {
-              def userInput = input(
-                id: 'userInput',
-                message: 'Deploy to production?',
-                parameters: [[
-                  $class: 'ChoiceParameterDefinition',
-                  name: 'deployToProd',
-                  choices: 'No\nYes',
-                  description: ''
-                ]]
-              )
-              println "Deploy to production? '${userInput}'"
-              deployToProd = ('Yes' == userInput)
-            }
-          }
-          catch (err) {
-            println "Timed out or Aborted! Will not deploy to prod."
-            println err
-            deployToProd = false
-          }
+          common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
+          canDeployToProd = common.inputCanDeployToProd()
         }
       }
     }
     stage('Deploy to prod') {
       when {
-        allOf {
-          branch 'master'
-          expression { return deployToProd }
-        }
+        branch 'master'
+        equals expected: true, actual: canDeployToProd
       }
       steps {
+        artifactoryLogin()
         script {
+          common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
           common.deployHelm(params['GITHUB_REPOSITORY'], params['SHA'], params['BRANCH_NAME'], common.getServiceName(), 'prod')
         }
       }
     }
     stage('Deploy Pulse to prod') {
       when {
-        allOf {
-          branch 'master'
-          expression { return deployToProd }
-        }
+        branch 'master'
+        equals expected: true, actual: canDeployToProd
       }
       steps {
+        artifactoryLogin()
         script {
+          common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
           common.deployPulse(params['GITHUB_REPOSITORY'], params['SHA'], params['BRANCH_NAME'], common.getServiceName(), 'prod')
         }
       }
