@@ -2,7 +2,6 @@
 
 import org.doordash.Docker
 import org.doordash.Doorctl
-import org.doordash.Github
 import org.doordash.Pulse
 
 /**

@@ -12,6 +12,9 @@
 // params["GITHUB_REPOSITORY"]      - GitHub ssh url of repository (git://....)
 // -----------------------------------------------------------------------------------
 
+def common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
+artifactoryLogin()
+
 pipeline {
   options {
     timestamps()
@@ -29,10 +32,8 @@ pipeline {
     }
     stage('Docker Build') {
       steps {
-        artifactoryLogin()
         script {
           reportClosureAsGitHubStatus {
-            common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
             common.dockerBuild(params['GITHUB_REPOSITORY'], params['SHA'], params['BRANCH_NAME'], common.getServiceName())
           }
         }
