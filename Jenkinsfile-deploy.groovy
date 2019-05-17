@@ -57,7 +57,7 @@ pipeline {
     }
     stage('Continue to prod?') {
       when {
-        branch 'default-slack-update'
+        branch 'master'
       }
       steps {
         script {
@@ -68,28 +68,28 @@ pipeline {
     }
     stage('Deploy to prod') {
       when {
-        branch 'default-slack-update'
+        branch 'master'
         equals expected: true, actual: canDeployToProd
       }
       steps {
         artifactoryLogin()
         script {
           common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
-          common.deployHelm(params['GITHUB_REPOSITORY'], params['SHA'], params['BRANCH_NAME'], common.getServiceName(), 'staging')
+          common.deployHelm(params['GITHUB_REPOSITORY'], params['SHA'], params['BRANCH_NAME'], common.getServiceName(), 'prod')
         }
         sendSlackMessage 'eng-deploy-manifest', "Successfully deployed ${common.getServiceName()}: <${jenkins_dd.getBlueOceanJobUrl()}|${env.JOB_NAME} [${env.BUILD_NUMBER}]>"
       }
     }
     stage('Deploy Pulse to prod') {
       when {
-        branch 'default-slack-update'
+        branch 'master'
         equals expected: true, actual: canDeployToProd
       }
       steps {
         artifactoryLogin()
         script {
           common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
-          common.deployPulse(params['GITHUB_REPOSITORY'], params['SHA'], params['BRANCH_NAME'], common.getServiceName(), 'staging')
+          common.deployPulse(params['GITHUB_REPOSITORY'], params['SHA'], params['BRANCH_NAME'], common.getServiceName(), 'prod')
         }
       }
     }
