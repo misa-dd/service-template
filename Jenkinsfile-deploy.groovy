@@ -1,6 +1,7 @@
 @Library('common-pipelines@v10.0.90') _
 
 import groovy.transform.Field
+import org.doordash.JenkinsDd
 
 // -----------------------------------------------------------------------------------
 // The following params are automatically provided by the callback gateway as inputs
@@ -76,6 +77,7 @@ pipeline {
           common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
           common.deployHelm(params['GITHUB_REPOSITORY'], params['SHA'], params['BRANCH_NAME'], common.getServiceName(), 'prod')
         }
+        sendSlackMessage 'eng-deploy-manifest', "Successfully deployed ${common.getServiceName()}: <${JenkinsDd.instance.getBlueOceanJobUrl()}|${env.JOB_NAME} [${env.BUILD_NUMBER}]>"
       }
     }
     stage('Deploy Pulse to prod') {
