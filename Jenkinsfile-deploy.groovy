@@ -1,4 +1,5 @@
 @Library('common-pipelines@v10.0.90') _
+import org.doordash.Slack
 
 import groovy.transform.Field
 
@@ -71,10 +72,17 @@ pipeline {
         equals expected: true, actual: canDeployToProd
       }
       steps {
-        artifactoryLogin()
         script {
-          common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
-          common.deployHelm(params['GITHUB_REPOSITORY'], params['SHA'], params['BRANCH_NAME'], common.getServiceName(), 'prod')
+          try {
+            genericSlave {
+              artifactoryLogin()
+              common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
+              common.deployHelm(params['GITHUB_REPOSITORY'], params['SHA'], params['BRANCH_NAME'], common.getServiceName(), 'prod')
+              sendSlackMessage 'eng-deploy-manifest', "Successfully deployed ${common.getServiceName()}"
+            }
+          } catch (err) {
+            throw err
+          }
         }
       }
     }
