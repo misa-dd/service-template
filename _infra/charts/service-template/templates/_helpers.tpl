@@ -36,8 +36,8 @@ For non-local web-deployment, include a runtime container to refresh runtime var
         imagePullPolicy: Always
         resources:
           requests:
-            cpu: 10m
-            memory: 64Mi
+            cpu: 25m
+            memory: 128Mi
           limits:
             cpu: 25m
             memory: 128Mi
