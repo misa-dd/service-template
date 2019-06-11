@@ -1,6 +1,9 @@
 # service-template
 
-As of 2019/01, this service-template has been un-deprecated. [doorctl](https://github.com/doordash/doorctl) is a scaffolding + injector generator that may be useful to be continued on if deemed sufficiently useful and worthwhile to maintain.
+Reference project for setting up a Python/Flask service to run in a DoorDash kubernetes cluster.
+
+* [Design and API Reference](DESIGN.md "Title")
+* [Operating Guide](OPERATING.md "Title")
 
 Tech stack:
  * [Python 3](https://docs.python.org/3/)
@@ -8,6 +11,15 @@ Tech stack:
  * [Docker](https://docs.docker.com/)
  * [Kubernetes](https://kubernetes.io/docs/home/)
  * [Helm](https://docs.helm.sh/)
+ * [Alpine Linux](https://alpinelinux.org/) to minimize the size of the container
+
+
+## Prerequisites
+
+The following steps assume that you have completed the steps in the 
+[New-Engineer-Setup-Guide](https://github.com/doordash/doordash-eng-wiki/blob/master/docs/New-Engineer-Setup-Guide.md).
+ 
+### 1. Setup Docker
     
 Setup Docker to use Helm to deploy local builds into a local Kubernetes cluster: 
   1. Enable Kubernetes: Click on Docker whale icon > `Preferences...` > `Kubernetes` > `Enable Kubernetes`
@@ -17,7 +29,10 @@ Setup Docker to use Helm to deploy local builds into a local Kubernetes cluster:
   3. Install Helm: `brew install kubernetes-helm`
   4. Init Helm: `helm init`
 
-All of the following should be executed within the service-template directory...
+
+## Build and Deploy
+
+All of the following should be executed within the `service-template` directory...
 
 To build a local Docker image: `make docker-build`
 
@@ -37,7 +52,8 @@ To tail logs *using* Kubernetes: `make local-tail`
 
 To stop and clean up *using* Helm: `make local-clean`
 
-# Without Docker
+
+## Running Locally without Docker
 
 Install requirements using pip3: `pip3 install -r requirements.txt`
 
@@ -45,14 +61,28 @@ To run using python3: `bash runlocal.sh`
 
 To run using uWSGI: `bash runuwsgi.sh`
 
-# Running locally
+
+## Verify
 
 Run a server locally with Docker (use port 80) or without Docker (use port 5000) (you can also do it from PyCharm)
 
-Sample request:
+### Health Check
 
-`GET` [http://localhost/](http://localhost/)
+`curl -v ` [http://localhost/health](http://localhost/health)
 
-Sample response:
+### Sample Request
 
-`Hello, World!`
+`curl -v ` [http://localhost/](http://localhost/)
+
+### Sample Response
+
+```
+< HTTP/1.1 200 OK
+< Server: nginx/1.14.2
+< Date: Tue, 11 Jun 2019 23:23:01 GMT
+< Content-Type: text/html; charset=utf-8
+< Content-Length: 13
+< Connection: keep-alive
+<
+Hello, World!
+```
