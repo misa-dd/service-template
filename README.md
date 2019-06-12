@@ -93,14 +93,15 @@ Hello, World!
 # Remove the remote pointing to service-template
 git remote remove origin
 
-# Create a new repo using [Octopus](https://octopus.doordash.red/gh/)
+# Create a new empty repo using https://github.com/organizations/doordash/repositories/new
 # add remote pointing to your new empty repo
 git remote add origin <your-new-empty-repo-url>
 
 # Verify that the remote is correct
 git remote -v
 
-# You may need to use the -f flag if you used [Octopus](https://octopus.doordash.red/gh/) to create a repo (and it came with a .gitignore)
+# Push to master
+# Note: you may need to use the -f flag if you created the repo with any default files.
 git push -u origin master
 
 
