@@ -1,19 +1,14 @@
 version: '3'
 services:
-  web:
+  service-template.web:
+    container_name: service-template.web
     build:
       context: .
       args:
         - PIP_EXTRA_INDEX_URL
+    image: service-template:localbuild
     ports:
-      - 5000:80
-    env_file:
-      - .local.env
-      - .local_secret.env
+      - 80:80
     volumes:
       - $PWD/application:/home/app/application
       - ${RUNTIME_PATH:-./empty_runtime}/data:/srv/runtime/current/data
-networks:
-  default:
-    external:
-      name: doordash_development

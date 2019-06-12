@@ -1,5 +1,21 @@
 # service-template
 
+* [Introduction](README.md#introduction)
+* [Prerequisites](README.md#prerequisites)
+  * [1. Install Maven](README.md#1-install-maven)
+  * [2. Artifactory](README.md#2-artifactory)
+  * [3. Maven Settings](README.md#3-maven-settings)
+  * [4. Setup Docker](README.md#4-setup-docker)
+* [Build and Deploy](README.md#build-and-deploy)
+* [Running Locally without Docker or using docker-compose](README.md#running-locally-without-docker-or-using-docker-compose)
+* [Verify](README.md#verify)
+  * [Health Check](README.md#health-check)
+  * [Sample Request](README.md#sample-request)
+  * [Sample Response](README.md#sample-response)
+* [Using this project for your new microservice](README.md#using-this-project-for-your-new-microservice)
+
+## Introduction
+
 Reference project for setting up a Python/Flask service to run in a DoorDash kubernetes cluster.
 
 * [Design and API Reference](DESIGN.md "Title")
@@ -53,13 +69,19 @@ To tail logs *using* Kubernetes: `make local-tail`
 To stop and clean up *using* Helm: `make local-clean`
 
 
-## Running Locally without Docker
+## Running Locally without Docker or using docker-compose
 
 Install requirements using pip3: `pip3 install -r requirements.txt`
 
 To run using python3: `bash runlocal.sh`
 
 To run using uWSGI: `bash runuwsgi.sh`
+
+To run using docker-compose: `docker-compose up -d`
+
+To stop using docker-compose: `docker-compose down`
+
+To rebuild using docker-compose: `docker-compose up -d --build`
 
 
 ## Verify
