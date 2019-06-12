@@ -86,3 +86,30 @@ Run a server locally with Docker (use port 80) or without Docker (use port 5000)
 <
 Hello, World!
 ```
+
+
+## Using this project for your new microservice
+```
+# Remove the remote pointing to service-template
+git remote remove origin
+
+# Create a new repo using [Octopus](https://octopus.doordash.red/gh/)
+# add remote pointing to your new empty repo
+git remote add origin <your-new-empty-repo-url>
+
+# Verify that the remote is correct
+git remote -v
+
+# You may need to use the -f flag if you used [Octopus](https://octopus.doordash.red/gh/) to create a repo (and it came with a .gitignore)
+git push -u origin master
+
+
+```
+
+To coerce Jenkins to create your service directory and jobs in
+[https://generaljenkins.doordash.com/](https://generaljenkins.doordash.com/)
+and [https://deployjenkins.doordash.com/](https://deployjenkins.doordash.com/),
+make a minor modification to the 3 Jenkins groovy files, create a PR, and merge it.
+
+If that doesn't work, you may also need to add `engineering` and `infrastructure` as collaborators with write access to
+your GitHub repository.
