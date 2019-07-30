@@ -42,7 +42,7 @@ tag:
 push:
 	$(doorctl) push --repourl $(DOCKER_IMAGE_URL) --localimage $(LOCAL_TAG) --sha $(SHA) --branch $(branch)
 
-.PHONY: clear
-clear:
+.PHONY: remove
+remove:
 	docker images -a --filter=reference="$(DOCKER_IMAGE_URL):$(SHA)" --format "{{.ID}}" | sort | uniq | xargs docker rmi -f
 
