@@ -114,17 +114,17 @@ def deployService(Map optArgs = [:], String gitUrl, String sha, String branch, S
             |set -ex
             |
             |# Use Terraform to Create Namespace when it doesn't exist
-            |pushd _infra/namespace/${k8sCluster}
+            |pushd _infra/namespace/${o.k8sCluster}
             |rm -rf .terraform terraform.* terraform
             |wget -q -nc https://releases.hashicorp.com/terraform/0.12.3/terraform_0.12.3_linux_amd64.zip
             |unzip terraform_0.12.3_linux_amd64.zip
             |chmod +x ./terraform
-            |sed 's/_GITREPO_/${gitRepo}/g' namespace.tf.template > namespace.tf
+            |sed 's/_GITREPO_/${o.k8sNamespace}/g' namespace.tf.template > namespace.tf
             |./terraform init
             |./terraform plan -out terraform.tfplan \\
             | -var="k8s_config_path=${k8sCredsFile}" \\
-            | -var="namespace=${gitRepo}" \\
-            | -var="service_account_namespace=${k8sCluster}"
+            | -var="namespace=${o.k8sNamespace}" \\
+            | -var="service_account_namespace=${o.k8sCluster}"
             |./terraform apply terraform.tfplan
             |rm -f common.tf
             |popd
@@ -136,12 +136,12 @@ def deployService(Map optArgs = [:], String gitUrl, String sha, String branch, S
             |wget -q -nc https://releases.hashicorp.com/terraform/0.12.3/terraform_0.12.3_linux_amd64.zip
             |unzip terraform_0.12.3_linux_amd64.zip
             |chmod +x ./terraform
-            |sed 's/_GITREPO_/${gitRepo}/g' service.tf.template > service.tf
+            |sed 's/_GITREPO_/${o.k8sNamespace}/g' service.tf.template > service.tf
             |./terraform init
             |./terraform plan -out terraform.tfplan \\
             | -var="k8s_config_path=${k8sCredsFile}" \\
             | -var="image_tag=${sha}" \\
-            | -var="namespace=${gitRepo}" \\
+            | -var="namespace=${o.k8sNamespace}" \\
             | -var="service_name=${serviceName}"
             |./terraform apply terraform.tfplan
             |rm -f common.tf
