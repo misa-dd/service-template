@@ -14,6 +14,23 @@ def getServiceName() {
 }
 
 /**
+ * Installs terraform into the _infra directory when it doesn't exist.
+ */
+def installTerraform() {
+  sh """|#!/bin/bash
+        |set -ex
+        |
+        |# Install Terraform
+        |pushd _infra
+        |rm -rf terraform
+        |wget -q -nc https://releases.hashicorp.com/terraform/0.12.3/terraform_0.12.3_linux_amd64.zip
+        |unzip terraform_0.12.3_linux_amd64.zip
+        |chmod +x terraform
+        |popd
+        |""".stripMargin()
+}
+
+/**
  * Build, Tag, and Push a Docker image for a Microservice.
  * If there already exists a docker image for the sha, then it will skip 'make docker-build tag push'.
  * <br>
@@ -58,28 +75,26 @@ def dockerBuild(Map optArgs = [:], String gitUrl, String sha, String branch, Str
     }
     String cacheFromValue = "${o.dockerImageUrl}:${loadedCacheDockerTag}"
 
+    // Use Terraform to create the ECR Repo when it doesn't exist
+    installTerraform()
     String gitRepo = getGitRepoName(gitUrl)
-
-    // Terraform the ECR Repo
     sshagent (credentials: ['DDGHMACHINEUSER_PRIVATE_KEY']) { // Required for terraform to git clone
       sh """|#!/bin/bash
             |set -ex
             |pushd _infra/build
-            |rm -rf .terraform terraform.* terraform
-            |wget -q -nc https://releases.hashicorp.com/terraform/0.12.3/terraform_0.12.3_linux_amd64.zip
-            |unzip terraform_0.12.3_linux_amd64.zip
-            |chmod +x ./terraform
+            |rm -rf .terraform terraform.*
             |sed 's/_GITREPO_/${gitRepo}/g' ecr.tf.template > ecr.tf
-            |./terraform init
-            |./terraform plan -out terraform.tfplan -var="service_name=${serviceName}"
-            |./terraform apply terraform.tfplan
+            |terraform="${WORKSPACE}/_infra/terraform"
+            |\${terraform} init
+            |\${terraform} plan -out terraform.tfplan -var="service_name=${serviceName}"
+            |\${terraform} apply terraform.tfplan
             |popd
             |""".stripMargin()
     }
 
     // Load doorctl for docker tag and push
     String doorctlPath
-    sshagent (credentials: ['DDGHMACHINEUSER_PRIVATE_KEY']) { // Required for git clone doorctl
+    sshagent (credentials: ['DDGHMACHINEUSER_PRIVATE_KEY']) { // Required to git clone doorctl
       doorctlPath = new Doorctl().installIntoWorkspace(o.dockerDoorctlVersion)
     }
 
@@ -105,46 +120,40 @@ def deployService(Map optArgs = [:], String gitUrl, String sha, String branch, S
   Map o = [
     k8sCredFileCredentialId: "K8S_CONFIG_${env.toUpperCase()}_NEW",
     k8sCluster: env,
-    k8sNamespace: env,
-    tfModulePath: "_infra/${env}",
+    k8sNamespace: gitUrl,
   ] << serviceNameEnvToOptArgs(serviceName, gitUrl, env) << optArgs
+  installTerraform()
   sshagent (credentials: ['DDGHMACHINEUSER_PRIVATE_KEY']) { // Required for terraform to git clone
     withCredentials([file(credentialsId: o.k8sCredFileCredentialId, variable: 'k8sCredsFile')]) { // Required for k8s config
       sh """|#!/bin/bash
             |set -ex
             |
-            |# Use Terraform to Create Namespace when it doesn't exist
+            |# Use Terraform to create the namespace when it doesn't exist
             |pushd _infra/namespace/${o.k8sCluster}
-            |rm -rf .terraform terraform.* terraform
-            |wget -q -nc https://releases.hashicorp.com/terraform/0.12.3/terraform_0.12.3_linux_amd64.zip
-            |unzip terraform_0.12.3_linux_amd64.zip
-            |chmod +x ./terraform
+            |rm -rf .terraform terraform.*
             |sed 's/_GITREPO_/${o.k8sNamespace}/g' namespace.tf.template > namespace.tf
-            |./terraform init
-            |./terraform plan -out terraform.tfplan \\
+            |terraform="${WORKSPACE}/_infra/terraform"
+            |\${terraform} init
+            |\${terraform} plan -out terraform.tfplan \\
             | -var="k8s_config_path=${k8sCredsFile}" \\
             | -var="namespace=${o.k8sNamespace}" \\
             | -var="service_account_namespace=${o.k8sCluster}"
-            |./terraform apply terraform.tfplan
-            |rm -f common.tf
+            |\${terraform} apply terraform.tfplan
             |popd
             |
-            |# Use Terraform to Deploy the Service
-            |pushd ${o.tfModulePath}
-            |cp ../templates/common.tf .
-            |rm -rf .terraform terraform.* terraform
-            |wget -q -nc https://releases.hashicorp.com/terraform/0.12.3/terraform_0.12.3_linux_amd64.zip
-            |unzip terraform_0.12.3_linux_amd64.zip
-            |chmod +x ./terraform
+            |# Use Terraform to deploy the service
+            |pushd _infra/${o.k8sCluster}
+            |rm -rf .terraform terraform.*
             |sed 's/_GITREPO_/${o.k8sNamespace}/g' service.tf.template > service.tf
-            |./terraform init
-            |./terraform plan -out terraform.tfplan \\
+            |cp -f ${WORKSPACE}/_infra/templates/common.tf common.tf
+            |terraform="${WORKSPACE}/_infra/terraform"
+            |\${terraform} init
+            |\${terraform} plan -out terraform.tfplan \\
             | -var="k8s_config_path=${k8sCredsFile}" \\
             | -var="image_tag=${sha}" \\
             | -var="namespace=${o.k8sNamespace}" \\
             | -var="service_name=${serviceName}"
-            |./terraform apply terraform.tfplan
-            |rm -f common.tf
+            |\${terraform} apply terraform.tfplan
             |popd
             |""".stripMargin()
     }
@@ -157,7 +166,7 @@ def deployService(Map optArgs = [:], String gitUrl, String sha, String branch, S
 def deployPulse(Map optArgs = [:], String gitUrl, String sha, String branch, String serviceName, String env) {
   Map o = [
     k8sCluster: env,
-    k8sNamespace: env,
+    k8sNamespace: gitUrl,
     pulseVersion: '2.0',
     pulseDoorctlVersion: 'v0.0.119',
     pulseRootDir: 'pulse'
@@ -166,7 +175,7 @@ def deployPulse(Map optArgs = [:], String gitUrl, String sha, String branch, Str
   String PULSE_VERSION = o.pulseVersion
   String SERVICE_NAME = serviceName
   String KUBERNETES_CLUSTER = o.k8sCluster
-  String KUBERNETES_NAMESPACE = o.k8sCluster
+  String KUBERNETES_NAMESPACE = o.k8sCluster # Use o.k8sNamespace once Pulse can be deployed to the service namespace
   String DOORCTL_VERSION = o.pulseDoorctlVersion
   String PULSE_DIR = o.pulseRootDir
 
@@ -178,12 +187,18 @@ def deployPulse(Map optArgs = [:], String gitUrl, String sha, String branch, Str
   }
 }
 
+/**
+ * Return the name of the repo taken from the end of the Git URL.
+ * Throw an assertion error if the Git Repo name is not valid for use as a kubernetes namespace.
+ * It must be less than 64 alphanumeric characters and may contain dashes.
+ */
 @NonCPS
 def getGitRepoName(String gitUrl) {
   String gitRepo = gitUrl.tokenize('/').last().split("\\.git")[0]
   assert gitRepo.length() < 64
-  def matcher = gitRepo =~ /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/
-  assert matcher.matches()
+  assert gitRepo ==~ /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/ :
+      "The Git Repo name is not valid for use as a kubernetes namespace. " +
+      "It must be less than 64 alphanumeric characters and may contain dashes"
   return gitRepo
 }
 
@@ -198,21 +213,18 @@ def serviceNameEnvToOptArgs(String serviceName, String gitUrl, String env) {
       k8sCredFileCredentialId: 'K8S_CONFIG_STAGING_NEW',
       k8sCluster: 'staging',
       k8sNamespace: gitRepo,
-      tillerNamespace: 'staging'
     ]
   } else if (env == 'staging') {
     return [
       k8sCredFileCredentialId: 'K8S_CONFIG_STAGING_NEW',
       k8sCluster: 'staging',
       k8sNamespace: gitRepo,
-      tillerNamespace: 'staging'
     ]
   } else if (env == 'prod' || env == 'production') {
     return [
       k8sCredFileCredentialId: 'K8S_CONFIG_PROD_NEW',
       k8sCluster: 'prod',
       k8sNamespace: gitRepo,
-      tillerNamespace: 'prod'
     ]
   } else {
     error("Unknown env value of '${env}' passed.")
