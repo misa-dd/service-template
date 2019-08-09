@@ -25,7 +25,6 @@ module "service-template" {
   service_resource_limits_memory = "128Mi"
 
   service_readiness_probe_path = "/health"
-  service_liveness_probe_path = "/health"
 
   service_environments_variables = <<EOF
     ENVIRONMENT=local
