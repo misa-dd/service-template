@@ -175,7 +175,7 @@ def deployPulse(Map optArgs = [:], String gitUrl, String sha, String branch, Str
   String PULSE_VERSION = o.pulseVersion
   String SERVICE_NAME = serviceName
   String KUBERNETES_CLUSTER = o.k8sCluster
-  String KUBERNETES_NAMESPACE = o.k8sCluster # Use o.k8sNamespace once Pulse can be deployed to the service namespace
+  String KUBERNETES_NAMESPACE = o.k8sCluster // Use o.k8sNamespace once Pulse can be deployed to the service namespace
   String DOORCTL_VERSION = o.pulseDoorctlVersion
   String PULSE_DIR = o.pulseRootDir
 
