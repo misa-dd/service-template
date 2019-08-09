@@ -47,7 +47,10 @@ tag:
 push:
 	$(doorctl) push --repourl $(DOCKER_IMAGE_URL) --localimage $(LOCAL_TAG) --sha $(SHA) --branch $(branch)
 
-.PHONY: remove
-remove:
+.PHONY: remove-docker-images
+remove-docker-images:
 	docker images -a --filter=reference="$(DOCKER_IMAGE_URL):$(SHA)" --format "{{.ID}}" | sort | uniq | xargs docker rmi -f
 
+.PHONY: migrate
+migrate:
+	@echo "Migrated $(SERVICE_NAME) to $(tag) for $(env) within $(k8sNamespace) on $(k8sCluster)"
