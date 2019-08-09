@@ -7,4 +7,4 @@ service_env:
   SERVICE_TEAM_EMAIL: "eng-devprod@doordash.com"
   SERVICE_TEAM_SLACK_CHANNEL: "#pulse-svc-template"
   SERVICE_GIT_URL: "https://github.com/doordash/service-template/"
-  SERVICE_URI: "http://service-template-web.prod.svc.cluster.local"
+  SERVICE_URI: "http://service-template-web.service-template.svc.cluster.local"

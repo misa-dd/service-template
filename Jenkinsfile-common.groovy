@@ -166,7 +166,7 @@ def deployPulse(Map optArgs = [:], String gitUrl, String sha, String branch, Str
   String PULSE_VERSION = o.pulseVersion
   String SERVICE_NAME = serviceName
   String KUBERNETES_CLUSTER = o.k8sCluster
-  String KUBERNETES_NAMESPACE = o.k8sNamespace
+  String KUBERNETES_NAMESPACE = o.k8sCluster
   String DOORCTL_VERSION = o.pulseDoorctlVersion
   String PULSE_DIR = o.pulseRootDir
 
