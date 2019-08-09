@@ -1,4 +1,4 @@
-@Library('common-pipelines@v10.0.90') _
+@Library('common-pipelines@v10.0.127') _
 
 import groovy.transform.Field
 import org.doordash.JenkinsDd
@@ -42,7 +42,7 @@ pipeline {
         artifactoryLogin()
         script {
           common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
-          common.deployHelm(params['GITHUB_REPOSITORY'], params['SHA'], params['BRANCH_NAME'], common.getServiceName(), 'staging')
+          common.deployService(params['GITHUB_REPOSITORY'], params['SHA'], params['BRANCH_NAME'], common.getServiceName(), 'staging')
         }
       }
     }

@@ -1,4 +1,6 @@
-@Library('common-pipelines@v10.0.90') _
+@Library('common-pipelines@v10.0.127') _
+
+import java.util.regex.Pattern
 
 import org.doordash.Docker
 import org.doordash.Doorctl
@@ -32,8 +34,10 @@ def getServiceName() {
 def dockerBuild(Map optArgs = [:], String gitUrl, String sha, String branch, String serviceName) {
   Map o = [
     dockerDoorctlVersion: 'v0.0.118',
-    dockerImageUrl: "ddartifacts-docker.jfrog.io/doordash/${serviceName}"
+    dockerImageUrl: "611706558220.dkr.ecr.us-west-2.amazonaws.com/${serviceName}",
   ] << optArgs
+
+  // Try to pull an already pushed docker image from ECR
   String loadedCacheDockerTag
   try {
     sh """|#!/bin/bash
@@ -45,62 +49,105 @@ def dockerBuild(Map optArgs = [:], String gitUrl, String sha, String branch, Str
   } catch (oops) {
     println "No docker image was found for ${o.dockerImageUrl}:${sha} - Running 'make docker-build tag push'"
   }
+
+  // Build docker image when it isn't in ECR
   if (loadedCacheDockerTag == null) {
     loadedCacheDockerTag = new Docker().findAvailableCacheFrom(gitUrl, sha, o.dockerImageUrl)
     if (loadedCacheDockerTag == null) {
       loadedCacheDockerTag = "noCacheFoundxxxxxxx"
     }
+    String cacheFromValue = "${o.dockerImageUrl}:${loadedCacheDockerTag}"
+
+    String gitRepo = getGitRepoName(gitUrl)
+
+    // Terraform the ECR Repo
+    sshagent (credentials: ['DDGHMACHINEUSER_PRIVATE_KEY']) { // Required for terraform to git clone
+      sh """|#!/bin/bash
+            |set -ex
+            |pushd _infra/build
+            |rm -rf .terraform terraform.* terraform
+            |wget -q -nc https://releases.hashicorp.com/terraform/0.12.3/terraform_0.12.3_linux_amd64.zip
+            |unzip terraform_0.12.3_linux_amd64.zip
+            |chmod +x ./terraform
+            |sed 's/_GITREPO_/${gitRepo}/g' ecr.tf.template > ecr.tf
+            |./terraform init
+            |./terraform plan -out terraform.tfplan -var="service_name=${serviceName}"
+            |./terraform apply terraform.tfplan
+            |popd
+            |""".stripMargin()
+    }
+
+    // Load doorctl for docker tag and push
     String doorctlPath
-    sshagent (credentials: ['DDGHMACHINEUSER_PRIVATE_KEY']) {
+    sshagent (credentials: ['DDGHMACHINEUSER_PRIVATE_KEY']) { // Required for git clone doorctl
       doorctlPath = new Doorctl().installIntoWorkspace(o.dockerDoorctlVersion)
     }
-    String cacheFromValue = "${o.dockerImageUrl}:${loadedCacheDockerTag}"
-    shWithCredentials({
-        sh """|#!/bin/bash
-              |set -ex
-              |make docker-build tag push remove \\
-              | branch=${branch} \\
-              | doorctl=${doorctlPath} \\
-              | SHA=${sha} \\
-              | CACHE_FROM=${cacheFromValue} \\
-              | PIP_EXTRA_INDEX_URL=${PIP_EXTRA_INDEX_URL}
-              |""".stripMargin()
-      },
-      ['PIP_EXTRA_INDEX_URL']
-    )
+
+    // Build, tag and push docker image to ECR
+    withCredentials([string(credentialsId: 'PIP_EXTRA_INDEX_URL', variable: 'PIP_EXTRA_INDEX_URL')]) {
+      sh """|#!/bin/bash
+            |set -ex
+            |make docker-build tag push remove \\
+            | branch=${branch} \\
+            | doorctl=${doorctlPath} \\
+            | SHA=${sha} \\
+            | CACHE_FROM=${cacheFromValue} \\
+            | PIP_EXTRA_INDEX_URL=${PIP_EXTRA_INDEX_URL}
+            |""".stripMargin()
+    }
   }
 }
 
 /**
- * Deploy a Microservice using Helm.
+ * Deploy a Microservice.
  */
-def deployHelm(Map optArgs = [:], String gitUrl, String sha, String branch, String serviceName, String env) {
+def deployService(Map optArgs = [:], String gitUrl, String sha, String branch, String serviceName, String env) {
   Map o = [
-    helmCommand: 'upgrade',
-    helmFlags: '--install',
-    helmChartPath: "_infra/charts/${serviceName}",
-    helmValuesFile: "values-${env}.yaml",
-    helmRelease: serviceName,
     k8sCredFileCredentialId: "K8S_CONFIG_${env.toUpperCase()}_NEW",
+    k8sCluster: env,
     k8sNamespace: env,
-    tillerNamespace: env,
-    timeoutSeconds: 600
-  ] << serviceNameEnvToOptArgs(serviceName, env) << optArgs
-  withCredentials([file(credentialsId: o.k8sCredFileCredentialId, variable: 'k8sCredsFile')]) {
-    sh """|#!/bin/bash
-          |set -ex
-          |
-          |helm="docker run --rm -v ${k8sCredsFile}:/root/.kube/config -v ${WORKSPACE}:/apps alpine/helm:2.10.0"
-          |HELM_OPTIONS="${o.helmCommand} ${o.helmRelease} ${o.helmChartPath} \\
-          | --values ${o.helmChartPath}/${o.helmValuesFile} --set image.tag=${sha} ${o.helmFlags} \\
-          | --tiller-namespace ${o.tillerNamespace} --namespace ${o.k8sNamespace} \\
-          | --wait --timeout ${o.timeoutSeconds}"
-          |
-          |# log manifest to CI/CD
-          |\${helm} \${HELM_OPTIONS} --debug --dry-run
-          |
-          |\${helm} \${HELM_OPTIONS}
-          |""".stripMargin()
+    tfModulePath: "_infra/${env}",
+  ] << serviceNameEnvToOptArgs(serviceName, gitUrl, env) << optArgs
+  sshagent (credentials: ['DDGHMACHINEUSER_PRIVATE_KEY']) { // Required for terraform to git clone
+    withCredentials([file(credentialsId: o.k8sCredFileCredentialId, variable: 'k8sCredsFile')]) { // Required for k8s config
+      sh """|#!/bin/bash
+            |set -ex
+            |
+            |# Use Terraform to Create Namespace when it doesn't exist
+            |pushd _infra/namespace/${k8sCluster}
+            |rm -rf .terraform terraform.* terraform
+            |wget -q -nc https://releases.hashicorp.com/terraform/0.12.3/terraform_0.12.3_linux_amd64.zip
+            |unzip terraform_0.12.3_linux_amd64.zip
+            |chmod +x ./terraform
+            |sed 's/_GITREPO_/${gitRepo}/g' namespace.tf.template > namespace.tf
+            |./terraform init
+            |./terraform plan -out terraform.tfplan \\
+            | -var="k8s_config_path=${k8sCredsFile}" \\
+            | -var="namespace=${gitRepo}" \\
+            | -var="service_account_namespace=${k8sCluster}"
+            |./terraform apply terraform.tfplan
+            |rm -f common.tf
+            |popd
+            |
+            |# Use Terraform to Deploy the Service
+            |pushd ${o.tfModulePath}
+            |cp ../templates/common.tf .
+            |rm -rf .terraform terraform.* terraform
+            |wget -q -nc https://releases.hashicorp.com/terraform/0.12.3/terraform_0.12.3_linux_amd64.zip
+            |unzip terraform_0.12.3_linux_amd64.zip
+            |chmod +x ./terraform
+            |sed 's/_GITREPO_/${gitRepo}/g' service.tf.template > service.tf
+            |./terraform init
+            |./terraform plan -out terraform.tfplan \\
+            | -var="k8s_config_path=${k8sCredsFile}" \\
+            | -var="image_tag=${sha}" \\
+            | -var="namespace=${gitRepo}" \\
+            | -var="service_name=${serviceName}"
+            |./terraform apply terraform.tfplan
+            |rm -f common.tf
+            |popd
+            |""".stripMargin()
+    }
   }
 }
 
@@ -109,15 +156,17 @@ def deployHelm(Map optArgs = [:], String gitUrl, String sha, String branch, Stri
  */
 def deployPulse(Map optArgs = [:], String gitUrl, String sha, String branch, String serviceName, String env) {
   Map o = [
+    k8sCluster: env,
     k8sNamespace: env,
-    pulseVersion: '2.1',
-    pulseDoorctlVersion: 'v0.0.118',
+    pulseVersion: '2.0',
+    pulseDoorctlVersion: 'v0.0.119',
     pulseRootDir: 'pulse'
-  ] << serviceNameEnvToOptArgs(serviceName, env) << optArgs
+  ] << serviceNameEnvToOptArgs(serviceName, gitUrl, env) << optArgs
 
   String PULSE_VERSION = o.pulseVersion
   String SERVICE_NAME = serviceName
-  String KUBERNETES_CLUSTER = o.k8sNamespace
+  String KUBERNETES_CLUSTER = o.k8sCluster
+  String KUBERNETES_NAMESPACE = o.k8sNamespace
   String DOORCTL_VERSION = o.pulseDoorctlVersion
   String PULSE_DIR = o.pulseRootDir
 
@@ -125,40 +174,44 @@ def deployPulse(Map optArgs = [:], String gitUrl, String sha, String branch, Str
     // install doorctl and grab its executable path
     String doorctlPath = new Doorctl().installIntoWorkspace(DOORCTL_VERSION)
     // deploy Pulse
-    new Pulse().deploy(PULSE_VERSION, SERVICE_NAME, KUBERNETES_CLUSTER, doorctlPath, PULSE_DIR)
+    new Pulse().deploy(PULSE_VERSION, SERVICE_NAME, KUBERNETES_CLUSTER, doorctlPath, PULSE_DIR, KUBERNETES_NAMESPACE)
   }
+}
+
+@NonCPS
+def getGitRepoName(String gitUrl) {
+  String gitRepo = gitUrl.tokenize('/').last().split("\\.git")[0]
+  assert gitRepo.length() < 64
+  def matcher = gitRepo =~ /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/
+  assert matcher.matches()
+  return gitRepo
 }
 
 /**
  * Given a service name and environment name like 'sandbox1', 'staging', and 'production',
  * resolve the optional arguments that vary per environment.
  */
-def serviceNameEnvToOptArgs(String serviceName, String env) {
+def serviceNameEnvToOptArgs(String serviceName, String gitUrl, String env) {
+  String gitRepo = getGitRepoName(gitUrl)
   if (env ==~ /^sandbox([0-9]|1[0-5])/) { // sandbox0 - sandbox15
     return [
-      helmFlags: '--install --force',
-      helmValuesFile: "values-${env}.yaml",
-      helmRelease: "${serviceName}-${env}",
       k8sCredFileCredentialId: 'K8S_CONFIG_STAGING_NEW',
-      k8sNamespace: 'staging',
+      k8sCluster: 'staging',
+      k8sNamespace: gitRepo,
       tillerNamespace: 'staging'
     ]
   } else if (env == 'staging') {
     return [
-      helmFlags: '--install --force',
-      helmValuesFile: 'values-staging.yaml',
-      helmRelease: serviceName,
       k8sCredFileCredentialId: 'K8S_CONFIG_STAGING_NEW',
-      k8sNamespace: 'staging',
+      k8sCluster: 'staging',
+      k8sNamespace: gitRepo,
       tillerNamespace: 'staging'
     ]
   } else if (env == 'prod' || env == 'production') {
     return [
-      helmFlags: '--install',
-      helmValuesFile: 'values-prod.yaml',
-      helmRelease: serviceName,
       k8sCredFileCredentialId: 'K8S_CONFIG_PROD_NEW',
-      k8sNamespace: 'prod',
+      k8sCluster: 'prod',
+      k8sNamespace: gitRepo,
       tillerNamespace: 'prod'
     ]
   } else {

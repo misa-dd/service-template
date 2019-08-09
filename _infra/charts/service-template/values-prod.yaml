@@ -1,4 +1,0 @@
-env:
-  ENVIRONMENT: prod
-web:
-  replicaCount: 3

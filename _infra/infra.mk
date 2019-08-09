@@ -2,7 +2,7 @@
 # Instead, place your tasks in the root Makefile
 SHA = $(shell git rev-parse HEAD)
 SERVICE_NAME=service-template
-DOCKER_IMAGE_URL=ddartifacts-docker.jfrog.io/doordash/$(SERVICE_NAME)
+DOCKER_IMAGE_URL=611706558220.dkr.ecr.us-west-2.amazonaws.com/$(SERVICE_NAME)
 LOCAL_TAG=$(SERVICE_NAME):localbuild
 LOCAL_CHART=_infra/charts/$(SERVICE_NAME)
 

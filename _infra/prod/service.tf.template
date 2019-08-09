@@ -1,0 +1,41 @@
+terraform {
+  backend "s3" {
+    bucket = "doordash-cluster-state"
+    dynamodb_table = "doordash-cluster-state"
+    key    = "resources/services/prod/_GITREPO_/service.tfstate"
+    region = "us-west-2"
+  }
+}
+
+module "service" {
+  # TODO: Update all sources to remove ?ref= once this branch has been merged into master.
+  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=master"
+
+  namespace                 = var.namespace
+  service_name              = var.service_name
+  service_app               = "web"
+  service_contact_info      = "pe@doordash.com"
+  service_docker_image      = "611706558220.dkr.ecr.us-west-2.amazonaws.com/${var.service_name}"
+  service_docker_image_tag  = var.image_tag
+  runtime_enable            = "true"
+  service_cmd               = "/home/app/entrypoint.sh"
+  service_cmd_args          = "/home/app/run.sh"
+  service_replica_count     = "3"
+
+  service_container_port = "80"
+
+  service_resource_requests_memory = "128Mi"
+  service_resource_limits_memory = "128Mi"
+
+  service_readiness_probe_path = "/health"
+  service_liveness_probe_path = "/health"
+
+
+  # TODO:
+  #   secretRef:
+  #     awsCredentialsEnabled: true
+
+  service_environments_variables = <<EOF
+    ENVIRONMENT=prod
+   EOF
+}
