@@ -2,6 +2,7 @@
 # Instead, place your tasks in the root Makefile
 SHA = $(shell git rev-parse HEAD)
 SERVICE_NAME=service-template
+APP=web
 DOCKER_IMAGE_URL=611706558220.dkr.ecr.us-west-2.amazonaws.com/$(SERVICE_NAME)
 LOCAL_TAG=$(SERVICE_NAME):localbuild
 LOCAL_CHART=_infra/charts/$(SERVICE_NAME)
@@ -20,19 +21,23 @@ docker-build:
 
 .PHONY: local-deploy
 local-deploy:
-	helm upgrade $(SERVICE_NAME) $(LOCAL_CHART) -i -f $(LOCAL_CHART)/values-local.yaml --set web.runtime.hostPath=$(RUNTIME_PATH) --set $(SECRETS)
+	cd _infra/local && \
+	rm -rf .terraform apply.tfplan && \
+	terraform init && \
+	terraform plan -out apply.tfplan && \
+	terraform apply apply.tfplan
 
 .PHONY: local-status
 local-status:
-	helm status $(SERVICE_NAME)
+	helm status $(SERVICE_NAME)-$(APP)
 
 .PHONY: local-clean
 local-clean:
-	helm delete --purge $(SERVICE_NAME)
+	helm delete --purge $(SERVICE_NAME)-$(APP)
 
 .PHONY: local-tail
 local-tail:
-	kubectl get pods -l service=$(SERVICE_NAME) -o jsonpath="{.items[0].metadata.name}" | xargs kubectl logs -f --tail=10
+	kubectl get pods -n $(SERVICE_NAME) -l service=$(SERVICE_NAME) -l app=$(APP) -o jsonpath="{.items[0].metadata.name}" | xargs kubectl logs -n $(SERVICE_NAME) -f --tail=10
 
 .PHONY: tag
 tag:

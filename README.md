@@ -27,6 +27,7 @@ Tech stack:
  * [Docker](https://docs.docker.com/)
  * [Kubernetes](https://kubernetes.io/docs/home/)
  * [Helm](https://docs.helm.sh/)
+ * [Terraform](https://www.terraform.io/docs/)
  * [Alpine Linux](https://alpinelinux.org/) to minimize the size of the container
 
 
@@ -44,6 +45,7 @@ Setup Docker to use Helm to deploy local builds into a local Kubernetes cluster:
      Docker whale icon > `Kubernetes` > `Disable local cluster` and then `Enable local cluster`.
   3. Install Helm: `brew install kubernetes-helm`
   4. Init Helm: `helm init`
+  5. Install Terraform: `brew install terraform`
 
 
 ## Build and Deploy
@@ -58,8 +60,8 @@ To check status *using* Helm: `make local-status`
 
  * Note: you are looking for the following
  ```bash
-NAME                  READY  UP-TO-DATE  AVAILABLE  AGE
-service-template-web  1/1    1           1          24s
+NAME                                   READY  STATUS   RESTARTS  AGE
+service-template-web-84754b8564-wjqfd  1/1    Running  0         1m
  ```
 
 To tail logs *using* Kubernetes: `make local-tail`
