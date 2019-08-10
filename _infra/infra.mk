@@ -22,7 +22,7 @@ docker-build:
 .PHONY: local-deploy
 local-deploy:
 	cd _infra/local && \
-	rm -rf .terraform apply.tfplan && \
+	rm -rf .terraform terraform.tfstate apply.tfplan && \
 	terraform init && \
 	terraform plan -out apply.tfplan && \
 	terraform apply apply.tfplan
@@ -33,7 +33,8 @@ local-status:
 
 .PHONY: local-clean
 local-clean:
-	helm delete --purge $(SERVICE_NAME)-$(APP)
+	cd _infra/local && \
+	terraform destroy
 
 .PHONY: local-tail
 local-tail:
