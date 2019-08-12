@@ -4,7 +4,7 @@ variable "service_name" {
 
 provider "aws" {
   region  = "us-west-2"
-  version = "~> 2.19"
+  version = "2.23.0"
 }
 
 terraform {

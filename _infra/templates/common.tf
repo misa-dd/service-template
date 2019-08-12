@@ -16,11 +16,12 @@ variable "service_name" {
 
 provider "aws" {
   region  = "us-west-2"
-  version = "~> 2.19"
+  version = "2.23.0"
 }
 
 provider "kubernetes" {
   config_path = var.k8s_config_path
+  version = "1.8.1"
 }
 
 provider "helm" {
@@ -28,5 +29,5 @@ provider "helm" {
     config_path = var.k8s_config_path
   }
   install_tiller = false
-  version = "~> 0.10"
+  version = "0.10.1"
 }

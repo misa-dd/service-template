@@ -5,7 +5,7 @@ provider "helm" {
   install_tiller = false
 }
 
-module "service-template" {
+module "service" {
   source = "git::https://github.com/doordash/terraform-kubernetes-microservice.git?ref=master"
 
   namespace                 = "service-template"
