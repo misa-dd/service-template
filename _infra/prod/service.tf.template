@@ -8,7 +8,6 @@ terraform {
 }
 
 module "service" {
-  # TODO: Update all sources to remove ?ref= once this branch has been merged into master.
   source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=master"
 
   namespace                 = var.namespace
@@ -28,11 +27,6 @@ module "service" {
   service_resource_limits_memory = "128Mi"
 
   service_readiness_probe_path = "/health"
-
-
-  # TODO:
-  #   secretRef:
-  #     awsCredentialsEnabled: true
 
   service_environments_variables = <<EOF
     ENVIRONMENT=prod

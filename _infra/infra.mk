@@ -5,7 +5,6 @@ SERVICE_NAME=service-template
 APP=web
 DOCKER_IMAGE_URL=611706558220.dkr.ecr.us-west-2.amazonaws.com/$(SERVICE_NAME)
 LOCAL_TAG=$(SERVICE_NAME):localbuild
-LOCAL_CHART=_infra/charts/$(SERVICE_NAME)
 
 ifeq ($(SECRETS),)
   SECRETS=env.SECRETS=none
@@ -34,7 +33,7 @@ local-status:
 .PHONY: local-clean
 local-clean:
 	cd _infra/local && \
-	terraform destroy
+	terraform destroy -auto-approve
 
 .PHONY: local-tail
 local-tail:
