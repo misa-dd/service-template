@@ -1,4 +1,0 @@
-#! /bin/bash
-# INFRA HEADER -- DO NOT EDIT. metadata: {"checksum": "13857cba92955da681d86735f36ee26d"}
-
->&2 echo "[.s6-svscan/finish] [hostname:$(hostname)] Finished."

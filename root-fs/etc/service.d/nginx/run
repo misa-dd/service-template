@@ -1,5 +1,0 @@
-#! /bin/bash
-# INFRA HEADER -- DO NOT EDIT. metadata: {"checksum": "8aa30cabd406680bafbe65e74f95b9ca"}
-
-exec 2>&1
-exec nginx -c /etc/nginx/nginx.conf

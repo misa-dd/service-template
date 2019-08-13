@@ -73,11 +73,11 @@ To stop and clean up *using* Helm: `make local-clean`
 
 ## Running Locally without Docker or using docker-compose
 
-Install requirements using pip3: `pip3 install -r requirements.txt`
+Install requirements using pip3: `sudo pip3 install -r requirements.txt`
 
 To run using python3: `bash runlocal.sh`
 
-To run using uWSGI: `bash runuwsgi.sh`
+To run using gunicorn: `bash rungunicorn.sh`
 
 To run using docker-compose: `docker-compose up -d`
 
