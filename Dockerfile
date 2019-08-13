@@ -24,7 +24,6 @@ RUN \
     /etc/nginx/conf.d/default.conf \
   && apk del --quiet Flask-deps uWSGI-deps
 
-COPY root-fs/ /
 COPY application /home/app/application
 COPY \
   Dockerfile \

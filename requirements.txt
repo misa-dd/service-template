@@ -1,6 +1,7 @@
 doordash-secret==0.0.29
 doordash-python-lib==0.8.2
 Flask==1.0.2
-uWSGI==2.0.17.1
+gunicorn==19.9.0
+gevent==1.4.0
 pydevd==1.0.0 # See main.py for steps to enable remote debugging
 ndg-httpsclient==0.5.1 # Avoid SSL handshake errors for some domains. Requires py-openssl for alpine. See https://stackoverflow.com/a/45671400
