@@ -4,19 +4,20 @@ import java.util.regex.Pattern
 
 import org.doordash.Docker
 import org.doordash.Doorctl
+import org.doordash.Github
 import org.doordash.Pulse
 
 /**
  * Returns the service name which is useful for builds and deployments.
  */
-def getServiceName() {
+def _getServiceName() {
   return 'service-template'
 }
 
 /**
  * Installs terraform into the _infra directory when it doesn't exist.
  */
-def installTerraform() {
+def _installTerraform() {
   sh """|#!/bin/bash
         |set -ex
         |
@@ -48,11 +49,24 @@ def installTerraform() {
  * <li>PIP_EXTRA_INDEX_URL = pip extra index URL for installing Python packages
  * </ul>
  */
-def dockerBuild(Map optArgs = [:], String gitUrl, String sha, String branch, String serviceName) {
+def dockerBuild(Map optArgs = [:], String gitUrl) {
+  String gitRepo = _getGitRepoName(gitUrl)
   Map o = [
-    dockerDoorctlVersion: 'v0.0.118',
-    dockerImageUrl: "611706558220.dkr.ecr.us-west-2.amazonaws.com/${serviceName}",
+    dockerDoorctlVersion: 'v0.0.119',
+    dockerImageUrl: "611706558220.dkr.ecr.us-west-2.amazonaws.com/${gitRepo}",
+    sha: null,
+    branch: null,
+    tag: null,
   ] << optArgs
+
+  // Ensure we have a SHA
+  String sha = o.sha
+  if (sha == null && o.tag != null) {
+    sha = new Github().getReleaseInfoByTag(gitUrl, o.tag)['sha']
+  }
+  if (sha == null) {
+    error("Git SHA is required.")
+  }
 
   // Try to pull an already pushed docker image from ECR
   String loadedCacheDockerTag
@@ -76,8 +90,7 @@ def dockerBuild(Map optArgs = [:], String gitUrl, String sha, String branch, Str
     String cacheFromValue = "${o.dockerImageUrl}:${loadedCacheDockerTag}"
 
     // Use Terraform to create the ECR Repo when it doesn't exist
-    installTerraform()
-    String gitRepo = getGitRepoName(gitUrl)
+    _installTerraform()
     sshagent (credentials: ['DDGHMACHINEUSER_PRIVATE_KEY']) { // Required for terraform to git clone
       sh """|#!/bin/bash
             |set -ex
@@ -86,43 +99,90 @@ def dockerBuild(Map optArgs = [:], String gitUrl, String sha, String branch, Str
             |sed 's/_GITREPO_/${gitRepo}/g' ecr.tf.template > ecr.tf
             |terraform="${WORKSPACE}/_infra/terraform"
             |\${terraform} init
-            |\${terraform} plan -out terraform.tfplan -var="service_name=${serviceName}"
+            |\${terraform} plan -out terraform.tfplan -var="service_name=${_getServiceName()}"
             |\${terraform} apply terraform.tfplan
             |popd
             |""".stripMargin()
     }
 
-    // Load doorctl for docker tag and push
-    String doorctlPath
-    sshagent (credentials: ['DDGHMACHINEUSER_PRIVATE_KEY']) { // Required to git clone doorctl
-      doorctlPath = new Doorctl().installIntoWorkspace(o.dockerDoorctlVersion)
-    }
+    if (o.tag != null) {
 
-    // Build, tag and push docker image to ECR
-    withCredentials([string(credentialsId: 'PIP_EXTRA_INDEX_URL', variable: 'PIP_EXTRA_INDEX_URL')]) {
-      sh """|#!/bin/bash
-            |set -ex
-            |make docker-build tag push remove \\
-            | branch=${branch} \\
-            | doorctl=${doorctlPath} \\
-            | SHA=${sha} \\
-            | CACHE_FROM=${cacheFromValue} \\
-            | PIP_EXTRA_INDEX_URL=${PIP_EXTRA_INDEX_URL}
-            |""".stripMargin()
+      // Build, tag, and push the tagged docker image to ECR
+      localBuildReference = "${_getServiceName()}:localbuild"
+      withCredentials([string(credentialsId: 'PIP_EXTRA_INDEX_URL', variable: 'PIP_EXTRA_INDEX_URL')]) {
+        sh """|#!/bin/bash
+              |set -ex
+              |make docker-build \\
+              | SHA=${sha} \\
+              | CACHE_FROM=${cacheFromValue} \\
+              | PIP_EXTRA_INDEX_URL=${PIP_EXTRA_INDEX_URL}
+              |docker tag ${localBuildReference} ${o.dockerImageUrl}:${o.tag}
+              |docker push ${o.dockerImageUrl}:${o.tag}
+              |docker tag ${localBuildReference} ${o.dockerImageUrl}:${sha}
+              |docker push ${o.dockerImageUrl}:${sha}
+              |make remove-docker-images \\
+              | SHA=${sha}
+              |""".stripMargin()
+      }
+
+    } else {
+
+      // Load doorctl for docker tag and push
+      String doorctlPath
+      sshagent (credentials: ['DDGHMACHINEUSER_PRIVATE_KEY']) { // Required to git clone doorctl
+        doorctlPath = new Doorctl().installIntoWorkspace(o.dockerDoorctlVersion)
+      }
+
+      // Build, tag, and push docker image to ECR
+      withCredentials([string(credentialsId: 'PIP_EXTRA_INDEX_URL', variable: 'PIP_EXTRA_INDEX_URL')]) {
+        sh """|#!/bin/bash
+              |set -ex
+              |make docker-build tag push remove-docker-images \\
+              | branch=${o.branch} \\
+              | doorctl=${doorctlPath} \\
+              | SHA=${sha} \\
+              | CACHE_FROM=${cacheFromValue} \\
+              | PIP_EXTRA_INDEX_URL=${PIP_EXTRA_INDEX_URL}
+              |""".stripMargin()
+      }
+
     }
+  }
+}
+
+/**
+ * Migrate a Microservice.
+ */
+def migrateService(Map optArgs = [:], String gitUrl, String tag, String env) {
+  Map o = [
+    k8sCredFileCredentialId: "K8S_CONFIG_${env.toUpperCase()}_NEW",
+    k8sCluster: env,
+    k8sNamespace: gitUrl,
+  ] << _envToOptArgs(gitUrl, env) << optArgs
+
+  // For example, use a Makefile target to migrate
+  withCredentials([file(credentialsId: o.k8sCredFileCredentialId, variable: 'k8sCredsFile')]) { // Required for k8s config
+    sh """|#!/bin/bash
+          |set -ex
+          |make migrate \\
+          | tag=${tag} \\
+          | env=${env} \\
+          | k8sNamespace=${o.k8sNamespace} \\
+          | k8sCluster=${o.k8sCluster}
+          |""".stripMargin()
   }
 }
 
 /**
  * Deploy a Microservice.
  */
-def deployService(Map optArgs = [:], String gitUrl, String sha, String branch, String serviceName, String env) {
+def deployService(Map optArgs = [:], String gitUrl, String tag, String env) {
   Map o = [
     k8sCredFileCredentialId: "K8S_CONFIG_${env.toUpperCase()}_NEW",
     k8sCluster: env,
     k8sNamespace: gitUrl,
-  ] << serviceNameEnvToOptArgs(serviceName, gitUrl, env) << optArgs
-  installTerraform()
+  ] << _envToOptArgs(gitUrl, env) << optArgs
+  _installTerraform()
   sshagent (credentials: ['DDGHMACHINEUSER_PRIVATE_KEY']) { // Required for terraform to git clone
     withCredentials([file(credentialsId: o.k8sCredFileCredentialId, variable: 'k8sCredsFile')]) { // Required for k8s config
       sh """|#!/bin/bash
@@ -150,9 +210,9 @@ def deployService(Map optArgs = [:], String gitUrl, String sha, String branch, S
             |\${terraform} init
             |\${terraform} plan -out terraform.tfplan \\
             | -var="k8s_config_path=${k8sCredsFile}" \\
-            | -var="image_tag=${sha}" \\
+            | -var="image_tag=${tag}" \\
             | -var="namespace=${o.k8sNamespace}" \\
-            | -var="service_name=${serviceName}"
+            | -var="service_name=${_getServiceName()}"
             |\${terraform} apply terraform.tfplan
             |popd
             |""".stripMargin()
@@ -163,17 +223,17 @@ def deployService(Map optArgs = [:], String gitUrl, String sha, String branch, S
 /**
  * Deploy Pulse for a Microservice.
  */
-def deployPulse(Map optArgs = [:], String gitUrl, String sha, String branch, String serviceName, String env) {
+def deployPulse(Map optArgs = [:], String gitUrl, String tag, String env) {
   Map o = [
     k8sCluster: env,
     k8sNamespace: gitUrl,
     pulseVersion: '2.0',
     pulseDoorctlVersion: 'v0.0.119',
     pulseRootDir: 'pulse'
-  ] << serviceNameEnvToOptArgs(serviceName, gitUrl, env) << optArgs
+  ] << _envToOptArgs(gitUrl, env) << optArgs
 
   String PULSE_VERSION = o.pulseVersion
-  String SERVICE_NAME = serviceName
+  String SERVICE_NAME = _getServiceName()
   String KUBERNETES_CLUSTER = o.k8sCluster
   String KUBERNETES_NAMESPACE = o.k8sCluster // Use o.k8sNamespace once Pulse can be deployed to the service namespace
   String DOORCTL_VERSION = o.pulseDoorctlVersion
@@ -183,7 +243,7 @@ def deployPulse(Map optArgs = [:], String gitUrl, String sha, String branch, Str
     // install doorctl and grab its executable path
     String doorctlPath = new Doorctl().installIntoWorkspace(DOORCTL_VERSION)
     // deploy Pulse
-    new Pulse().deploy(PULSE_VERSION, SERVICE_NAME, KUBERNETES_CLUSTER, doorctlPath, PULSE_DIR, KUBERNETES_NAMESPACE)
+    new Pulse().deploy(PULSE_VERSION, SERVICE_NAME, KUBERNETES_CLUSTER, doorctlPath, PULSE_DIR, KUBERNETES_NAMESPACE, null, tag)
   }
 }
 
@@ -192,8 +252,7 @@ def deployPulse(Map optArgs = [:], String gitUrl, String sha, String branch, Str
  * Throw an assertion error if the Git Repo name is not valid for use as a kubernetes namespace.
  * It must be less than 64 alphanumeric characters and may contain dashes.
  */
-@NonCPS
-def getGitRepoName(String gitUrl) {
+def _getGitRepoName(String gitUrl) {
   String gitRepo = gitUrl.tokenize('/').last().split("\\.git")[0]
   assert gitRepo.length() < 64
   assert gitRepo ==~ /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/ :
@@ -203,11 +262,11 @@ def getGitRepoName(String gitUrl) {
 }
 
 /**
- * Given a service name and environment name like 'sandbox1', 'staging', and 'production',
+ * Given an environment name like 'sandbox1', 'staging', and 'production',
  * resolve the optional arguments that vary per environment.
  */
-def serviceNameEnvToOptArgs(String serviceName, String gitUrl, String env) {
-  String gitRepo = getGitRepoName(gitUrl)
+def _envToOptArgs(String gitUrl, String env) {
+  String gitRepo = _getGitRepoName(gitUrl)
   if (env ==~ /^sandbox([0-9]|1[0-5])/) { // sandbox0 - sandbox15
     return [
       k8sCredFileCredentialId: 'K8S_CONFIG_STAGING_NEW',
@@ -240,11 +299,11 @@ def serviceNameEnvToOptArgs(String serviceName, String gitUrl, String env) {
  *
  * @return True if we can deploy to prod. False, otherwise.
  */
-def inputCanDeployToProd() {
+def inputCanDeployToProd(String message = 'Deploy to production') {
   boolean canDeployToProd = false
   try {
     timeout(time: 10, unit: 'MINUTES') {
-      input(id: 'userInput', message: 'Deploy to production?')
+      input(id: 'userInput', message: message)
       canDeployToProd = true
     }
   } catch (err) {
