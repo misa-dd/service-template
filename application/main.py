@@ -41,9 +41,9 @@ setup.init()
 def hello_world():
     name = request.args.get('name')
     if name is None:
-        return 'Hello, World!'
+        return 'Salutation, World!'
     else:
-        return 'Hello, {0}'.format(name)
+        return 'Hi, {0}'.format(name)
 
 
 @app.route('/health')
