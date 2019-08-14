@@ -10,14 +10,14 @@ import org.doordash.Pulse
 /**
  * Returns the service name which is useful for builds and deployments.
  */
-def _getServiceName() {
+def getServiceName() {
   return 'service-template'
 }
 
 /**
  * Installs terraform into the _infra directory when it doesn't exist.
  */
-def _installTerraform() {
+def installTerraform() {
   sh """|#!/bin/bash
         |set -ex
         |
@@ -47,7 +47,7 @@ def _installTerraform() {
  * </ul>
  */
 def dockerBuild(Map optArgs = [:], String gitUrl) {
-  String gitRepo = _getGitRepoName(gitUrl)
+  String gitRepo = getGitRepoName(gitUrl)
   Map o = [
     dockerImageUrl: "611706558220.dkr.ecr.us-west-2.amazonaws.com/${gitRepo}",
     sha: null,
@@ -85,7 +85,7 @@ def dockerBuild(Map optArgs = [:], String gitUrl) {
     String cacheFromValue = "${o.dockerImageUrl}:${loadedCacheDockerTag}"
 
     // Use Terraform to create the ECR Repo when it doesn't exist
-    _installTerraform()
+    installTerraform()
     sshagent (credentials: ['DDGHMACHINEUSER_PRIVATE_KEY']) { // Required for terraform to git clone
       sh """|#!/bin/bash
             |set -ex
@@ -94,7 +94,7 @@ def dockerBuild(Map optArgs = [:], String gitUrl) {
             |sed 's/_GITREPO_/${gitRepo}/g' ecr.tf.template > ecr.tf
             |terraform="${WORKSPACE}/_infra/terraform"
             |\${terraform} init
-            |\${terraform} plan -out terraform.tfplan -var="service_name=${_getServiceName()}"
+            |\${terraform} plan -out terraform.tfplan -var="service_name=${getServiceName()}"
             |\${terraform} apply terraform.tfplan
             |popd
             |""".stripMargin()
@@ -137,7 +137,7 @@ def migrateService(Map optArgs = [:], String gitUrl, String tag, String env) {
     k8sCredFileCredentialId: "K8S_CONFIG_${env.toUpperCase()}_NEW",
     k8sCluster: env,
     k8sNamespace: gitUrl,
-  ] << _envToOptArgs(gitUrl, env) << optArgs
+  ] << envToOptArgs(gitUrl, env) << optArgs
 
   // For example, use a Makefile target to migrate
   withCredentials([file(credentialsId: o.k8sCredFileCredentialId, variable: 'k8sCredsFile')]) { // Required for k8s config
@@ -160,8 +160,8 @@ def deployService(Map optArgs = [:], String gitUrl, String tag, String env) {
     k8sCredFileCredentialId: "K8S_CONFIG_${env.toUpperCase()}_NEW",
     k8sCluster: env,
     k8sNamespace: gitUrl,
-  ] << _envToOptArgs(gitUrl, env) << optArgs
-  _installTerraform()
+  ] << envToOptArgs(gitUrl, env) << optArgs
+  installTerraform()
   sshagent (credentials: ['DDGHMACHINEUSER_PRIVATE_KEY']) { // Required for terraform to git clone
     withCredentials([file(credentialsId: o.k8sCredFileCredentialId, variable: 'k8sCredsFile')]) { // Required for k8s config
       sh """|#!/bin/bash
@@ -191,7 +191,7 @@ def deployService(Map optArgs = [:], String gitUrl, String tag, String env) {
             | -var="k8s_config_path=${k8sCredsFile}" \\
             | -var="image_tag=${tag}" \\
             | -var="namespace=${o.k8sNamespace}" \\
-            | -var="service_name=${_getServiceName()}"
+            | -var="service_name=${getServiceName()}"
             |\${terraform} apply terraform.tfplan
             |popd
             |""".stripMargin()
@@ -209,10 +209,10 @@ def deployPulse(Map optArgs = [:], String gitUrl, String tag, String env) {
     pulseVersion: '2.0',
     pulseDoorctlVersion: 'v0.0.119',
     pulseRootDir: 'pulse'
-  ] << _envToOptArgs(gitUrl, env) << optArgs
+  ] << envToOptArgs(gitUrl, env) << optArgs
 
   String PULSE_VERSION = o.pulseVersion
-  String SERVICE_NAME = _getServiceName()
+  String SERVICE_NAME = getServiceName()
   String KUBERNETES_CLUSTER = o.k8sCluster
   String KUBERNETES_NAMESPACE = o.k8sCluster // Use o.k8sNamespace once Pulse can be deployed to the service namespace
   String DOORCTL_VERSION = o.pulseDoorctlVersion
@@ -231,7 +231,7 @@ def deployPulse(Map optArgs = [:], String gitUrl, String tag, String env) {
  * Throw an assertion error if the Git Repo name is not valid for use as a kubernetes namespace.
  * It must be less than 64 alphanumeric characters and may contain dashes.
  */
-def _getGitRepoName(String gitUrl) {
+def getGitRepoName(String gitUrl) {
   String gitRepo = gitUrl.tokenize('/').last().split("\\.git")[0]
   assert gitRepo.length() < 64
   assert gitRepo ==~ /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/ :
@@ -244,8 +244,8 @@ def _getGitRepoName(String gitUrl) {
  * Given an environment name like 'sandbox1', 'staging', and 'production',
  * resolve the optional arguments that vary per environment.
  */
-def _envToOptArgs(String gitUrl, String env) {
-  String gitRepo = _getGitRepoName(gitUrl)
+def envToOptArgs(String gitUrl, String env) {
+  String gitRepo = getGitRepoName(gitUrl)
   if (env ==~ /^sandbox([0-9]|1[0-5])/) { // sandbox0 - sandbox15
     return [
       k8sCredFileCredentialId: 'K8S_CONFIG_STAGING_NEW',
