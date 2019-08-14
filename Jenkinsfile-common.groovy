@@ -62,10 +62,7 @@ def dockerBuild(Map optArgs = [:], String gitUrl) {
   // Ensure we have a SHA
   String sha = o.sha
   if (sha == null && o.tag != null) {
-    println "tag:|${o.tag}|"
-    infobytag = new Github().getReleaseInfoByTag(gitUrl, o.tag)
-    println "${infobytag}"
-    sha = new Github().getReleaseInfoByTag(gitUrl, o.tag)['sha']
+    sha = new Github().getCommit(gitUrl, o.tag)['content']['sha']
   }
   if (sha == null) {
     error("Git SHA is required.")
