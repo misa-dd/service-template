@@ -33,7 +33,7 @@ pipeline {
         script {
           reportClosureAsGitHubStatus {
             common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
-            common.dockerBuild(params['GITHUB_REPOSITORY'], sha: params['SHA'], branch: params['BRANCH_NAME'])
+            common.dockerBuild(params['GITHUB_REPOSITORY'], sha: params['SHA'])
           }
         }
       }

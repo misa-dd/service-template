@@ -38,13 +38,10 @@ def _installTerraform() {
  * <br>
  * Requires:
  * <ul>
- * <li>Makefile with docker-build, tag, and push targets
+ * <li>Makefile with docker-build, tag, push, and remove-docker-images targets
  * </ul>
- * Provides:
+ * Provides the docker-build target in Makefile with:
  * <ul>
- * <li>branch = GitHub branch name
- * <li>doorctl = Path in order to execute doorctl from within the Makefile
- * <li>SHA = GitHub SHA
  * <li>CACHE_FROM = url:tag of recent Docker image to speed up subsequent builds that use the --cache-from option
  * <li>PIP_EXTRA_INDEX_URL = pip extra index URL for installing Python packages
  * </ul>
@@ -52,10 +49,8 @@ def _installTerraform() {
 def dockerBuild(Map optArgs = [:], String gitUrl) {
   String gitRepo = _getGitRepoName(gitUrl)
   Map o = [
-    dockerDoorctlVersion: 'v0.0.119',
     dockerImageUrl: "611706558220.dkr.ecr.us-west-2.amazonaws.com/${gitRepo}",
     sha: null,
-    branch: null,
     tag: null,
   ] << optArgs
 
