@@ -13,7 +13,7 @@ module "service" {
   namespace                 = var.namespace
   service_name              = var.service_name
   service_app               = "web"
-  service_contact_info      = "pe@doordash.com"
+  service_contact_info      = "eng-devprod@doordash.com"
   service_docker_image      = "611706558220.dkr.ecr.us-west-2.amazonaws.com/${var.service_name}"
   service_docker_image_tag  = var.image_tag
   runtime_enable            = "true"

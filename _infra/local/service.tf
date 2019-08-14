@@ -1,8 +1,17 @@
+provider "archive" {
+  version = "1.2.2"
+}
+
+provider "kubernetes" {
+  version = "1.8.1"
+}
+
 provider "helm" {
   kubernetes {
     config_context = "docker-for-desktop"
   }
   install_tiller = false
+  version = "0.10.1" # Heredoc strings delimited by commas broken in 0.10.2
 }
 
 module "service" {
@@ -11,7 +20,7 @@ module "service" {
   namespace                 = "service-template"
   service_name              = "service-template"
   service_app               = "web"
-  service_contact_info      = "pe@doordash.com"
+  service_contact_info      = "eng-devprod@doordash.com"
   service_docker_image      = "service-template"
   service_docker_image_tag  = "localbuild"
   runtime_enable            = "false"
