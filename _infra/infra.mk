@@ -1,6 +1,6 @@
 # NOTE: SERVICE OWNERS SHOULD GENERALLY NOT NEED TO MODIFY THIS FILE.
 # Instead, place your tasks in the root Makefile
-SHA = $(shell git rev-parse HEAD)
+SHA=$(shell git rev-parse HEAD)
 SERVICE_NAME=service-template
 APP=web
 DOCKER_IMAGE_URL=611706558220.dkr.ecr.us-west-2.amazonaws.com/$(SERVICE_NAME)
@@ -41,11 +41,11 @@ local-tail:
 
 .PHONY: tag
 tag:
-	$(doorctl) tag --repourl $(DOCKER_IMAGE_URL) --localimage $(LOCAL_TAG) --sha $(SHA) --branch $(branch)
+	docker tag $(LOCAL_TAG) $(DOCKER_IMAGE_URL):$(SHA)
 
 .PHONY: push
 push:
-	$(doorctl) push --repourl $(DOCKER_IMAGE_URL) --localimage $(LOCAL_TAG) --sha $(SHA) --branch $(branch)
+	docker push $(DOCKER_IMAGE_URL):$(SHA)
 
 .PHONY: remove-docker-images
 remove-docker-images:

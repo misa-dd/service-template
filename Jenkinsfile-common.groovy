@@ -81,7 +81,7 @@ def dockerBuild(Map optArgs = [:], String gitUrl) {
     println "No docker image was found for ${o.dockerImageUrl}:${sha} - Running 'make docker-build tag push'"
   }
 
-  // Build docker image when it isn't in ECR
+  // Build, tag, and push docker image when it isn't in ECR
   if (loadedCacheDockerTag == null) {
     loadedCacheDockerTag = new Docker().findAvailableCacheFrom(gitUrl, sha, o.dockerImageUrl)
     if (loadedCacheDockerTag == null) {
@@ -105,49 +105,33 @@ def dockerBuild(Map optArgs = [:], String gitUrl) {
             |""".stripMargin()
     }
 
-    if (o.tag != null) {
-
-      // Build, tag, and push the tagged docker image to ECR
-      localBuildReference = "${_getServiceName()}:localbuild"
-      withCredentials([string(credentialsId: 'PIP_EXTRA_INDEX_URL', variable: 'PIP_EXTRA_INDEX_URL')]) {
-        sh """|#!/bin/bash
-              |set -ex
-              |make docker-build \\
-              | SHA=${sha} \\
-              | CACHE_FROM=${cacheFromValue} \\
-              | PIP_EXTRA_INDEX_URL=${PIP_EXTRA_INDEX_URL}
-              |docker tag ${localBuildReference} ${o.dockerImageUrl}:${o.tag}
-              |docker push ${o.dockerImageUrl}:${o.tag}
-              |docker tag ${localBuildReference} ${o.dockerImageUrl}:${sha}
-              |docker push ${o.dockerImageUrl}:${sha}
-              |make remove-docker-images \\
-              | SHA=${sha}
-              |""".stripMargin()
-      }
-
-    } else {
-
-      // Load doorctl for docker tag and push
-      String doorctlPath
-      sshagent (credentials: ['DDGHMACHINEUSER_PRIVATE_KEY']) { // Required to git clone doorctl
-        doorctlPath = new Doorctl().installIntoWorkspace(o.dockerDoorctlVersion)
-      }
-
-      // Build, tag, and push docker image to ECR
-      withCredentials([string(credentialsId: 'PIP_EXTRA_INDEX_URL', variable: 'PIP_EXTRA_INDEX_URL')]) {
-        sh """|#!/bin/bash
-              |set -ex
-              |make docker-build tag push remove-docker-images \\
-              | branch=${o.branch} \\
-              | doorctl=${doorctlPath} \\
-              | SHA=${sha} \\
-              | CACHE_FROM=${cacheFromValue} \\
-              | PIP_EXTRA_INDEX_URL=${PIP_EXTRA_INDEX_URL}
-              |""".stripMargin()
-      }
-
+    // Build, tag, and push the sha to ECR
+    withCredentials([string(credentialsId: 'PIP_EXTRA_INDEX_URL', variable: 'PIP_EXTRA_INDEX_URL')]) {
+      sh """|#!/bin/bash
+            |set -ex
+            |make docker-build tag push \\
+            | CACHE_FROM=${cacheFromValue} \\
+            | PIP_EXTRA_INDEX_URL=${PIP_EXTRA_INDEX_URL}
+            |""".stripMargin()
     }
   }
+
+  // When a semver tag is specified, tag and push the semver to ECR
+  if (o.tag != null) {
+    withCredentials([string(credentialsId: 'PIP_EXTRA_INDEX_URL', variable: 'PIP_EXTRA_INDEX_URL')]) {
+      sh """|#!/bin/bash
+            |set -ex
+            |docker tag ${o.dockerImageUrl}:${sha} ${o.dockerImageUrl}:${o.tag}
+            |docker push ${o.dockerImageUrl}:${o.tag}
+            |""".stripMargin()
+    }
+  }
+
+  // Cleanup
+  sh """|#!/bin/bash
+        |set -ex
+        |make remove-docker-images
+        |""".stripMargin()
 }
 
 /**
