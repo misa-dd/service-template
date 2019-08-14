@@ -21,7 +21,7 @@ import sys
 from doordash_lib.microservice import setup
 from doordash_lib.runtime import Runtime
 from doordash_lib.stats.ddstats import doorstats_global, doorstats_internal, doorstats
-from flask import Flask
+from flask import Flask, request
 
 from conf import config
 
@@ -39,7 +39,11 @@ setup.init()
 
 @app.route('/')
 def hello_world():
-    return 'Hello, World!'
+    name = request.args.get('name')
+    if name is None:
+        return 'Hello, World!'
+    else:
+        return 'Hello, {0}'.format(name)
 
 
 @app.route('/health')
