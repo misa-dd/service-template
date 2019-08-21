@@ -1,9 +1,9 @@
-@Library('common-pipelines@v10.0.127') _
+@Library('common-pipelines@10.15.0') _
 
 /**
  * Expected inputs:
  * ----------------
- * params['TAG']                - Tag used to start the pipeline
+ * params['SHA']                - Sha to build
  * params['GITHUB_REPOSITORY']  - GitHub ssh url of repository (git://....)
  * params['JSON']               - Extensible json doc with extra information
  */

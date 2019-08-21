@@ -1,4 +1,4 @@
-@Library('common-pipelines@v10.0.127') _
+@Library('common-pipelines@10.15.0') _
 
 import groovy.transform.Field
 import org.doordash.JenkinsDd
@@ -6,7 +6,7 @@ import org.doordash.JenkinsDd
 /**
  * Expected inputs:
  * ----------------
- * params['TAG']                - Tag used to start the pipeline
+ * params['SHA']                - SHA containing the migrations that should be run
  * params['GITHUB_REPOSITORY']  - GitHub ssh url of repository (git://....)
  * params['JSON']               - Extensible json doc with extra information
  */
