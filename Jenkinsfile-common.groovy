@@ -1,5 +1,3 @@
-@Library('common-pipelines@v10.0.127') _
-
 import java.util.regex.Pattern
 
 import org.doordash.Docker

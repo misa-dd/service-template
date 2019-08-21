@@ -1,4 +1,4 @@
-@Library('common-pipelines@v10.0.127') _
+@Library('common-pipelines@10.15.0') _
 
 import groovy.transform.Field
 import org.doordash.JenkinsDd
@@ -6,7 +6,7 @@ import org.doordash.JenkinsDd
 /**
  * Expected inputs:
  * ----------------
- * params['TAG']                - Tag used to start the pipeline
+ * params['SHA']                - SHA containing the migrations that should be run
  * params['GITHUB_REPOSITORY']  - GitHub ssh url of repository (git://....)
  * params['JSON']               - Extensible json doc with extra information
  */
@@ -28,6 +28,10 @@ pipeline {
       steps {
         artifactoryLogin()
         script {
+          // In the event you'd like the semver tag, here's how to retrieve it.
+          // Please don't use the tag value to pull code from github because
+          // github tags are mutable. Only use the SHA to deal with git.
+          env.tag = getImmutableReleaseSemverTag(params['SHA'])
           common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
           common.migrateService(params['GITHUB_REPOSITORY'], params['TAG'], 'staging')
         }
