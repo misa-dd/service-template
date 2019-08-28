@@ -25,14 +25,11 @@ pipeline {
       steps {
         artifactoryLogin()
         script {
-          // In the event you'd like the semver tag, here's how to retrieve it.
-          // Please don't use the tag value to pull code from github because
-          // github tags are mutable. Only use the SHA to deal with git.
-          env.tag = getImmutableReleaseSemverTag(params['SHA'])
           common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
-          common.deployService(params['GITHUB_REPOSITORY'], params['TAG'], 'prod')
+          common.deployService(params['GITHUB_REPOSITORY'], params['SHA'], 'prod')
+          tag = getImmutableReleaseSemverTag(params['SHA'])
         }
-        sendSlackMessage 'eng-deploy-manifest', "Successful rollback of ${common.getServiceName()} to ${params['TAG']}: <${JenkinsDd.instance.getBlueOceanJobUrl()}|${env.JOB_NAME} [${env.BUILD_NUMBER}]>"
+        sendSlackMessage 'eng-deploy-manifest', "Successful rollback of ${common.getServiceName()} to ${tag}: <${JenkinsDd.instance.getBlueOceanJobUrl()}|${env.JOB_NAME} [${env.BUILD_NUMBER}]>"
       }
     }
     stage('Deploy Pulse to prod') {
@@ -40,7 +37,7 @@ pipeline {
         artifactoryLogin()
         script {
           common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
-          common.deployPulse(params['GITHUB_REPOSITORY'], params['TAG'], 'prod')
+          common.deployPulse(params['GITHUB_REPOSITORY'], params['SHA'], 'prod')
         }
       }
     }

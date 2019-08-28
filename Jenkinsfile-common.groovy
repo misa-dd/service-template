@@ -44,19 +44,13 @@ def installTerraform() {
  * <li>PIP_EXTRA_INDEX_URL = pip extra index URL for installing Python packages
  * </ul>
  */
-def dockerBuild(Map optArgs = [:], String gitUrl) {
+def dockerBuild(Map optArgs = [:], String gitUrl, String sha) {
   String gitRepo = getGitRepoName(gitUrl)
   Map o = [
     dockerImageUrl: "611706558220.dkr.ecr.us-west-2.amazonaws.com/${gitRepo}",
-    sha: null,
-    tag: null,
   ] << optArgs
 
   // Ensure we have a SHA
-  String sha = o.sha
-  if (sha == null && o.tag != null) {
-    sha = new Github().getCommit(gitUrl, o.tag)['content']['sha']
-  }
   if (sha == null) {
     error("Git SHA is required.")
   }
@@ -109,13 +103,22 @@ def dockerBuild(Map optArgs = [:], String gitUrl) {
     }
   }
 
-  // When a semver tag is specified, tag and push the semver to ECR
-  if (o.tag != null) {
+  // If semver is associated with sha, tag and push the semver to ECR
+  String tag = null
+  try {
+    tag = getImmutableReleaseSemverTag(sha)
+  } catch (err) {
+    println "Sha does not have an associated semver tag. Skipping docker semver tag push."
+  }
+  if (tag != null) {
     withCredentials([string(credentialsId: 'PIP_EXTRA_INDEX_URL', variable: 'PIP_EXTRA_INDEX_URL')]) {
       sh """|#!/bin/bash
             |set -ex
-            |docker tag ${o.dockerImageUrl}:${sha} ${o.dockerImageUrl}:${o.tag}
-            |docker push ${o.dockerImageUrl}:${o.tag}
+            |docker tag ${o.dockerImageUrl}:${sha} ${o.dockerImageUrl}:${tag}
+            |docker push ${o.dockerImageUrl}:${tag}
+            |# Add latest tag for security scans of our latest docker images
+            |docker tag ${o.dockerImageUrl}:${sha} ${o.dockerImageUrl}:latest
+            |docker push ${o.dockerImageUrl}:latest
             |""".stripMargin()
     }
   }
@@ -130,12 +133,14 @@ def dockerBuild(Map optArgs = [:], String gitUrl) {
 /**
  * Migrate a Microservice.
  */
-def migrateService(Map optArgs = [:], String gitUrl, String tag, String env) {
+def migrateService(Map optArgs = [:], String gitUrl, String sha, String env) {
   Map o = [
     k8sCredFileCredentialId: "K8S_CONFIG_${env.toUpperCase()}_NEW",
     k8sCluster: env,
     k8sNamespace: gitUrl,
   ] << envToOptArgs(gitUrl, env) << optArgs
+
+  String tag = getImmutableReleaseSemverTag(sha)
 
   // For example, use a Makefile target to migrate
   withCredentials([file(credentialsId: o.k8sCredFileCredentialId, variable: 'k8sCredsFile')]) { // Required for k8s config
@@ -153,12 +158,13 @@ def migrateService(Map optArgs = [:], String gitUrl, String tag, String env) {
 /**
  * Deploy a Microservice.
  */
-def deployService(Map optArgs = [:], String gitUrl, String tag, String env) {
+def deployService(Map optArgs = [:], String gitUrl, String sha, String env) {
   Map o = [
     k8sCredFileCredentialId: "K8S_CONFIG_${env.toUpperCase()}_NEW",
     k8sCluster: env,
     k8sNamespace: gitUrl,
   ] << envToOptArgs(gitUrl, env) << optArgs
+  String tag = getImmutableReleaseSemverTag(sha)
   installTerraform()
   sshagent (credentials: ['DDGHMACHINEUSER_PRIVATE_KEY']) { // Required for terraform to git clone
     withCredentials([file(credentialsId: o.k8sCredFileCredentialId, variable: 'k8sCredsFile')]) { // Required for k8s config
@@ -200,7 +206,7 @@ def deployService(Map optArgs = [:], String gitUrl, String tag, String env) {
 /**
  * Deploy Pulse for a Microservice.
  */
-def deployPulse(Map optArgs = [:], String gitUrl, String tag, String env) {
+def deployPulse(Map optArgs = [:], String gitUrl, String sha, String env) {
   Map o = [
     k8sCluster: env,
     k8sNamespace: gitUrl,
@@ -220,7 +226,7 @@ def deployPulse(Map optArgs = [:], String gitUrl, String tag, String env) {
     // install doorctl and grab its executable path
     String doorctlPath = new Doorctl().installIntoWorkspace(DOORCTL_VERSION)
     // deploy Pulse
-    new Pulse().deploy(PULSE_VERSION, SERVICE_NAME, KUBERNETES_CLUSTER, doorctlPath, PULSE_DIR, KUBERNETES_NAMESPACE, null, tag)
+    new Pulse().deploy(PULSE_VERSION, SERVICE_NAME, KUBERNETES_CLUSTER, doorctlPath, PULSE_DIR, KUBERNETES_NAMESPACE, null, sha)
   }
 }
 

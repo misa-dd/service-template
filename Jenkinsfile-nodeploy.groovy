@@ -1,4 +1,4 @@
-@Library('common-pipelines@v10.0.127') _
+@Library('common-pipelines@10.15.0') _
 
 // -----------------------------------------------------------------------------------
 // The following params are automatically provided by the callback gateway as inputs
@@ -33,7 +33,7 @@ pipeline {
         script {
           reportClosureAsGitHubStatus {
             common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
-            common.dockerBuild(params['GITHUB_REPOSITORY'], sha: params['SHA'])
+            common.dockerBuild(params['GITHUB_REPOSITORY'], params['SHA'])
           }
         }
       }
