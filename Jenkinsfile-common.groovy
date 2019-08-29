@@ -111,16 +111,14 @@ def dockerBuild(Map optArgs = [:], String gitUrl, String sha) {
     println "Sha does not have an associated semver tag. Skipping docker semver tag push."
   }
   if (tag != null) {
-    withCredentials([string(credentialsId: 'PIP_EXTRA_INDEX_URL', variable: 'PIP_EXTRA_INDEX_URL')]) {
-      sh """|#!/bin/bash
-            |set -ex
-            |docker tag ${o.dockerImageUrl}:${sha} ${o.dockerImageUrl}:${tag}
-            |docker push ${o.dockerImageUrl}:${tag}
-            |# Add latest tag for security scans of our latest docker images
-            |docker tag ${o.dockerImageUrl}:${sha} ${o.dockerImageUrl}:latest
-            |docker push ${o.dockerImageUrl}:latest
-            |""".stripMargin()
-    }
+    sh """|#!/bin/bash
+          |set -ex
+          |docker tag ${o.dockerImageUrl}:${sha} ${o.dockerImageUrl}:${tag}
+          |docker push ${o.dockerImageUrl}:${tag}
+          |# Add latest tag for security scans of our latest docker images
+          |docker tag ${o.dockerImageUrl}:${sha} ${o.dockerImageUrl}:latest
+          |docker push ${o.dockerImageUrl}:latest
+          |""".stripMargin()
   }
 
   // Cleanup
