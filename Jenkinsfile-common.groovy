@@ -48,6 +48,7 @@ def dockerBuild(Map optArgs = [:], String gitUrl, String sha) {
   String gitRepo = getGitRepoName(gitUrl)
   Map o = [
     dockerImageUrl: "611706558220.dkr.ecr.us-west-2.amazonaws.com/${gitRepo}",
+    setArtifactoryEnvs: false
   ] << optArgs
 
   // Ensure we have a SHA
@@ -66,6 +67,15 @@ def dockerBuild(Map optArgs = [:], String gitUrl, String sha) {
     loadedCacheDockerTag = sha
   } catch (oops) {
     println "No docker image was found for ${o.dockerImageUrl}:${sha} - Running 'make docker-build tag push'"
+  }
+
+  def credentials = [string(credentialsId: 'PIP_EXTRA_INDEX_URL', variable: 'PIP_EXTRA_INDEX_URL')]
+
+  if (o.setArtifactoryEnvs) {
+    credentials += [
+      string(credentialsId: 'ARTIFACTORY_MACHINE_USER_NAME', variable: 'ARTIFACTORY_USERNAME'),
+      string(credentialsId: 'ARTIFACTORY_MACHINE_USER_PASS', variable: 'ARTIFACTORY_PASSWORD')
+    ]
   }
 
   // Build, tag, and push docker image when it isn't in ECR
@@ -93,7 +103,7 @@ def dockerBuild(Map optArgs = [:], String gitUrl, String sha) {
     }
 
     // Build, tag, and push the sha to ECR
-    withCredentials([string(credentialsId: 'PIP_EXTRA_INDEX_URL', variable: 'PIP_EXTRA_INDEX_URL')]) {
+    withCredentials(credentials) {
       sh """|#!/bin/bash
             |set -ex
             |make docker-build tag push \\
