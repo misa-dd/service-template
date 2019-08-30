@@ -20,7 +20,6 @@ pipeline {
   stages {
     stage('Docker Build') {
       steps {
-        artifactoryLogin()
         script {
           common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
           common.dockerBuild(params['GITHUB_REPOSITORY'], params['SHA'])

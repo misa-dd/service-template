@@ -29,7 +29,6 @@ pipeline {
     }
     stage('Docker Build') {
       steps {
-        artifactoryLogin()
         script {
           reportClosureAsGitHubStatus {
             common = load "${WORKSPACE}/Jenkinsfile-common.groovy"

@@ -1,7 +1,5 @@
 @Library('common-pipelines@10.15.0') _
 
-import org.doordash.JenkinsDd
-
 /**
  * Expected inputs:
  * ----------------
@@ -27,9 +25,21 @@ pipeline {
         script {
           common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
           common.deployService(params['GITHUB_REPOSITORY'], params['SHA'], 'prod')
-          tag = getImmutableReleaseSemverTag(params['SHA'])
         }
-        sendSlackMessage 'eng-deploy-manifest', "Successful hotfix of ${common.getServiceName()} to ${tag}: <${JenkinsDd.instance.getBlueOceanJobUrl()}|${env.JOB_NAME} [${env.BUILD_NUMBER}]>"
+      }
+      post {
+        success {
+          script {
+            tag = getImmutableReleaseSemverTag(params['SHA'])
+          }
+          sendSlackMessage 'eng-deploy-manifest', "Successful hotfix of ${common.getServiceName()} to ${tag}: <${BUILD_URL}|${env.JOB_NAME} [${env.BUILD_NUMBER}]>"
+        }
+        failure {
+          script {
+            tag = getImmutableReleaseSemverTag(params['SHA'])
+          }
+          sendSlackMessage 'eng-deploy-manifest', "Hotfix failed for ${common.getServiceName()} to ${tag}: <${BUILD_URL}|${env.JOB_NAME} [${env.BUILD_NUMBER}]>"
+        }
       }
     }
     stage('Deploy Pulse to prod') {
