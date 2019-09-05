@@ -148,7 +148,13 @@ def migrateService(Map optArgs = [:], String gitUrl, String sha, String env) {
     k8sNamespace: gitUrl,
   ] << envToOptArgs(gitUrl, env) << optArgs
 
-  String tag = getImmutableReleaseSemverTag(sha)
+  String tag = sha
+
+  try {
+    tag = getImmutableReleaseSemverTag(sha)
+  } catch (err) {
+    println "Sha does not have an associated semver tag. Using SHA as tag."
+  }
 
   // For example, use a Makefile target to migrate
   withCredentials([file(credentialsId: o.k8sCredFileCredentialId, variable: 'k8sCredsFile')]) { // Required for k8s config
@@ -172,7 +178,15 @@ def deployService(Map optArgs = [:], String gitUrl, String sha, String env) {
     k8sCluster: env,
     k8sNamespace: gitUrl,
   ] << envToOptArgs(gitUrl, env) << optArgs
-  String tag = getImmutableReleaseSemverTag(sha)
+
+  String tag = sha
+
+  try {
+    tag = getImmutableReleaseSemverTag(sha)
+  } catch (err) {
+    println "Sha does not have an associated semver tag. Using SHA as tag."
+  }
+
   installTerraform()
   sshagent (credentials: ['DDGHMACHINEUSER_PRIVATE_KEY']) { // Required for terraform to git clone
     withCredentials([file(credentialsId: o.k8sCredFileCredentialId, variable: 'k8sCredsFile')]) { // Required for k8s config
