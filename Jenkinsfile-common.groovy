@@ -1,5 +1,3 @@
-import java.util.regex.Pattern
-
 import org.doordash.Docker
 import org.doordash.Doorctl
 import org.doordash.Github
@@ -10,6 +8,13 @@ import org.doordash.Pulse
  */
 def getServiceName() {
   return 'service-template'
+}
+
+/**
+ * Returns the service slack channel which is useful for notifying of builds and deployments.
+ */
+def getSlackChannel() {
+  return 'pulse-svc-template'
 }
 
 /**
@@ -48,7 +53,6 @@ def dockerBuild(Map optArgs = [:], String gitUrl, String sha) {
   String gitRepo = getGitRepoName(gitUrl)
   Map o = [
     dockerImageUrl: "611706558220.dkr.ecr.us-west-2.amazonaws.com/${gitRepo}",
-    setArtifactoryEnvs: false
   ] << optArgs
 
   // Ensure we have a SHA
@@ -67,15 +71,6 @@ def dockerBuild(Map optArgs = [:], String gitUrl, String sha) {
     loadedCacheDockerTag = sha
   } catch (oops) {
     println "No docker image was found for ${o.dockerImageUrl}:${sha} - Running 'make docker-build tag push'"
-  }
-
-  def credentials = [string(credentialsId: 'PIP_EXTRA_INDEX_URL', variable: 'PIP_EXTRA_INDEX_URL')]
-
-  if (o.setArtifactoryEnvs) {
-    credentials += [
-      string(credentialsId: 'ARTIFACTORY_MACHINE_USER_NAME', variable: 'ARTIFACTORY_USERNAME'),
-      string(credentialsId: 'ARTIFACTORY_MACHINE_USER_PASS', variable: 'ARTIFACTORY_PASSWORD')
-    ]
   }
 
   // Build, tag, and push docker image when it isn't in ECR
@@ -103,7 +98,11 @@ def dockerBuild(Map optArgs = [:], String gitUrl, String sha) {
     }
 
     // Build, tag, and push the sha to ECR
-    withCredentials(credentials) {
+    withCredentials([
+      string(credentialsId: 'ARTIFACTORY_MACHINE_USER_NAME', variable: 'ARTIFACTORY_USERNAME'),
+      string(credentialsId: 'ARTIFACTORY_MACHINE_USER_PASS', variable: 'ARTIFACTORY_PASSWORD'),
+      string(credentialsId: 'PIP_EXTRA_INDEX_URL', variable: 'PIP_EXTRA_INDEX_URL')
+    ]) {
       sh """|#!/bin/bash
             |set -ex
             |make docker-build tag push \\
@@ -232,7 +231,7 @@ def deployPulse(Map optArgs = [:], String gitUrl, String sha, String env) {
   Map o = [
     k8sCluster: env,
     k8sNamespace: gitUrl,
-    pulseVersion: '2.0',
+    pulseVersion: '2.1',
     pulseDoorctlVersion: 'v0.0.119',
     pulseRootDir: 'pulse'
   ] << envToOptArgs(gitUrl, env) << optArgs
@@ -316,6 +315,47 @@ def inputCanDeployToProd(String message = 'Deploy to production') {
     println err
   }
   return canDeployToProd
+}
+
+/**
+ * Prompt the user to decide if we can deploy the pipeline.
+ * The user has 2 minutes to choose between Proceed or Abort.
+ * If Proceed, then we should proceed. If Abort or Timed-out,
+ * then we should cleanly skip the rest of the steps in the
+ * pipeline without failing the pipeline.
+ *
+ * @return True if we can deploy the pipeline. False, otherwise.
+ */
+def inputDeployPipeline(String message = 'Continue Deploying Pipeline') {
+  boolean canDeployPipeline = false
+  try {
+    timeout(time: 2, unit: 'MINUTES') {
+      input(id: 'userInput', message: message)
+      canDeployPipeline = true
+    }
+  } catch (err) {
+    println "Timed out or Aborted! Will not deploy the pipeline."
+    println err
+  }
+  return canDeployPipeline
+}
+
+/**
+ * Run unit tests within a docker-compose container.
+ */
+def runTests(String stageName, String gitUrl, String sha) {
+  new Github().doClosureWithStatus({
+    withCredentials([
+      string(credentialsId: 'ARTIFACTORY_MACHINE_USER_NAME', variable: 'ARTIFACTORY_USERNAME'),
+      string(credentialsId: 'ARTIFACTORY_MACHINE_USER_PASS', variable: 'ARTIFACTORY_PASSWORD'),
+      string(credentialsId: 'PIP_EXTRA_INDEX_URL', variable: 'PIP_EXTRA_INDEX_URL')
+    ]) {
+      sh """|#!/bin/bash
+            |set -x
+            |docker-compose run --rm web make test
+            |""".stripMargin()
+    }
+  }, gitUrl, sha, stageName, "${BUILD_URL}testReport")
 }
 
 return this

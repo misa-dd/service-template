@@ -6,17 +6,17 @@ APP=web
 DOCKER_IMAGE_URL=611706558220.dkr.ecr.us-west-2.amazonaws.com/$(SERVICE_NAME)
 LOCAL_TAG=$(SERVICE_NAME):localbuild
 
-ifeq ($(SECRETS),)
-  SECRETS=env.SECRETS=none
-endif
-
 ifeq ($(CACHE_FROM),)
   CACHE_FROM=$(LOCAL_TAG)
 endif
 
 .PHONY: docker-build
 docker-build:
-	docker build . -t $(LOCAL_TAG) --cache-from $(CACHE_FROM) --build-arg "PIP_EXTRA_INDEX_URL=$(PIP_EXTRA_INDEX_URL)"
+	docker build . -t $(LOCAL_TAG) \
+	--cache-from $(CACHE_FROM) \
+	--build-arg PIP_EXTRA_INDEX_URL="$(PIP_EXTRA_INDEX_URL)" \
+	--build-arg ARTIFACTORY_PASSWORD="$(ARTIFACTORY_PASSWORD)" \
+	--build-arg ARTIFACTORY_USERNAME="$(ARTIFACTORY_USERNAME)"
 
 .PHONY: local-deploy
 local-deploy:

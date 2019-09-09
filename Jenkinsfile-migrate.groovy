@@ -1,6 +1,4 @@
-@Library('common-pipelines@10.15.0') _
-
-import groovy.transform.Field
+@Library('common-pipelines@10.17.0') _
 
 /**
  * Expected inputs:
@@ -9,9 +7,6 @@ import groovy.transform.Field
  * params['GITHUB_REPOSITORY']  - GitHub ssh url of repository (git://....)
  * params['JSON']               - Extensible json doc with extra information
  */
-
-@Field
-def canDeployToProd = false
 
 pipeline {
   options {
@@ -65,6 +60,20 @@ pipeline {
           sendSlackMessage 'eng-deploy-manifest', "Migrate failed for ${common.getServiceName()} to ${tag}: <${BUILD_URL}|${env.JOB_NAME} [${env.BUILD_NUMBER}]>"
         }
       }
+    }
+  }
+  post {
+    success {
+      script {
+        tag = getImmutableReleaseSemverTag(params['SHA'])
+      }
+      sendSlackMessage common.getSlackChannel(), "Successful migrate of ${common.getServiceName()} to ${tag}: <${BUILD_URL}|${env.JOB_NAME} [${env.BUILD_NUMBER}]>"
+    }
+    failure {
+      script {
+        tag = getImmutableReleaseSemverTag(params['SHA'])
+      }
+      sendSlackMessage common.getSlackChannel(), "Migrate failed for ${common.getServiceName()} to ${tag}: <${BUILD_URL}|${env.JOB_NAME} [${env.BUILD_NUMBER}]>"
     }
   }
 }

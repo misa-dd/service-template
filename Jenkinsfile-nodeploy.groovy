@@ -1,5 +1,4 @@
-@Library('common-pipelines@10.15.0') _
-
+@Library('common-pipelines@10.17.0') _
 // -----------------------------------------------------------------------------------
 // The following params are automatically provided by the callback gateway as inputs
 // to the Jenkins pipeline that starts this job.
@@ -24,16 +23,22 @@ pipeline {
   stages {
     stage('Startup') {
       steps {
-        setGitHubStatus 'Start Jenkinsfile-nodeploy Pipeline', 'Started'
+        setGitHubStatus "Start Jenkinsfile-nodeploy Pipeline", "Started."
       }
     }
     stage('Docker Build') {
       steps {
         script {
-          reportClosureAsGitHubStatus {
-            common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
-            common.dockerBuild(params['GITHUB_REPOSITORY'], params['SHA'])
-          }
+          common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
+          common.dockerBuild(params['GITHUB_REPOSITORY'], params['SHA'])
+        }
+      }
+    }
+    stage('Unit Tests') {
+      steps {
+        script {
+          common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
+          common.runTests('Unit Tests', params['GITHUB_REPOSITORY'], params['SHA'])
         }
       }
     }
