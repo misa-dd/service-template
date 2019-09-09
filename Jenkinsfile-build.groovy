@@ -1,4 +1,4 @@
-@Library('common-pipelines@10.15.0') _
+@Library('common-pipelines@10.17.0') _
 
 /**
  * Expected inputs:
@@ -25,6 +25,28 @@ pipeline {
           common.dockerBuild(params['GITHUB_REPOSITORY'], params['SHA'])
         }
       }
+    }
+    stage('Unit Tests') {
+      steps {
+        script {
+          common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
+          common.runTests('Unit Tests', params['GITHUB_REPOSITORY'], params['SHA'])
+        }
+      }
+    }
+  }
+  post {
+    success {
+      script {
+        tag = getImmutableReleaseSemverTag(params['SHA'])
+      }
+      sendSlackMessage common.getSlackChannel(), "Successful build of ${common.getServiceName()} to ${tag}: <${BUILD_URL}|${env.JOB_NAME} [${env.BUILD_NUMBER}]>"
+    }
+    failure {
+      script {
+        tag = getImmutableReleaseSemverTag(params['SHA'])
+      }
+      sendSlackMessage common.getSlackChannel(), "Build failed for ${common.getServiceName()} to ${tag}: <${BUILD_URL}|${env.JOB_NAME} [${env.BUILD_NUMBER}]>"
     }
   }
 }

@@ -1,17 +1,12 @@
-@Library('common-pipelines@10.15.0') _
-
-import groovy.transform.Field
+@Library('common-pipelines@10.17.0') _
 
 /**
  * Expected inputs:
  * ----------------
- * params['SHA']                - Sha being requested for promotion
+ * params['SHA']                - Sha to promote
  * params['GITHUB_REPOSITORY']  - GitHub ssh url of repository (git://....)
  * params['JSON']               - Extensible json doc with extra information
  */
-
-@Field
-def canDeployToProd = false
 
 pipeline {
   options {
@@ -25,7 +20,6 @@ pipeline {
   stages {
     stage('Deploy to staging') {
       steps {
-        artifactoryLogin()
         script {
           common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
           common.deployService(params['GITHUB_REPOSITORY'], params['SHA'], 'staging')
@@ -34,7 +28,6 @@ pipeline {
     }
     stage('Deploy Pulse to staging') {
       steps {
-        artifactoryLogin()
         script {
           common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
           common.deployPulse(params['GITHUB_REPOSITORY'], params['SHA'], 'staging')
@@ -54,7 +47,6 @@ pipeline {
         equals expected: true, actual: canDeployToProd
       }
       steps {
-        artifactoryLogin()
         script {
           common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
           common.deployService(params['GITHUB_REPOSITORY'], params['SHA'], 'prod')
@@ -80,12 +72,25 @@ pipeline {
         equals expected: true, actual: canDeployToProd
       }
       steps {
-        artifactoryLogin()
         script {
           common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
           common.deployPulse(params['GITHUB_REPOSITORY'], params['SHA'], 'prod')
         }
       }
+    }
+  }
+  post {
+    success {
+      script {
+        tag = getImmutableReleaseSemverTag(params['SHA'])
+      }
+      sendSlackMessage common.getSlackChannel(), "Successful promote of ${common.getServiceName()} to ${tag}: <${BUILD_URL}|${env.JOB_NAME} [${env.BUILD_NUMBER}]>"
+    }
+    failure {
+      script {
+        tag = getImmutableReleaseSemverTag(params['SHA'])
+      }
+      sendSlackMessage common.getSlackChannel(), "Promote failed for ${common.getServiceName()} to ${tag}: <${BUILD_URL}|${env.JOB_NAME} [${env.BUILD_NUMBER}]>"
     }
   }
 }

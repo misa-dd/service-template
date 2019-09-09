@@ -22,11 +22,15 @@ module "service" {
   service_replica_count     = "3"
 
   service_container_port = "80"
+  net_service_port = "80"
 
   service_resource_requests_memory = "128Mi"
   service_resource_limits_memory = "128Mi"
-
+  service_resource_requests_cpu = "100m"
+  service_resource_limits_cpu = "100m"
   service_readiness_probe_path = "/health"
+
+  #service_iam_role = "arn:aws:iam::611706558220:role/web.service-template"
 
   service_environments_variables = <<EOF
     ENVIRONMENT=prod

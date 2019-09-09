@@ -1,4 +1,4 @@
-@Library('common-pipelines@10.15.0') _
+@Library('common-pipelines@10.17.0') _
 
 /**
  * Expected inputs:
@@ -21,7 +21,6 @@ pipeline {
   stages {
     stage('Deploy to prod') {
       steps {
-        artifactoryLogin()
         script {
           common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
           common.deployService(params['GITHUB_REPOSITORY'], params['SHA'], 'prod')
@@ -44,12 +43,25 @@ pipeline {
     }
     stage('Deploy Pulse to prod') {
       steps {
-        artifactoryLogin()
         script {
           common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
           common.deployPulse(params['GITHUB_REPOSITORY'], params['SHA'], 'prod')
         }
       }
+    }
+  }
+  post {
+    success {
+      script {
+        tag = getImmutableReleaseSemverTag(params['SHA'])
+      }
+      sendSlackMessage common.getSlackChannel(), "Successful rollback of ${common.getServiceName()} to ${tag}: <${BUILD_URL}|${env.JOB_NAME} [${env.BUILD_NUMBER}]>"
+    }
+    failure {
+      script {
+        tag = getImmutableReleaseSemverTag(params['SHA'])
+      }
+      sendSlackMessage common.getSlackChannel(), "Rollback failed for ${common.getServiceName()} to ${tag}: <${BUILD_URL}|${env.JOB_NAME} [${env.BUILD_NUMBER}]>"
     }
   }
 }

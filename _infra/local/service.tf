@@ -27,12 +27,15 @@ module "service" {
   net_service_type          = "LoadBalancer"
   service_image_pull_policy = "IfNotPresent"
   service_cmd               = "/home/app/run.sh"
+  service_cmd_args          = ""
 
   service_container_port = "80"
+  net_service_port = "80"
 
   service_resource_requests_memory = "128Mi"
   service_resource_limits_memory = "128Mi"
-
+  service_resource_requests_cpu = "100m"
+  service_resource_limits_cpu = "100m"
   service_readiness_probe_path = "/health"
 
   service_environments_variables = <<EOF
