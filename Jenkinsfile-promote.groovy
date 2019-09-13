@@ -26,6 +26,14 @@ pipeline {
         }
       }
     }
+    stage('Deploy Blocking Pulse to Staging') {
+      steps {
+        script {
+          common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
+          common.deployBlockingPulse(params['GITHUB_REPOSITORY'], params['SHA'], 'staging')
+        }
+      }
+    }
     stage('Deploy Pulse to staging') {
       steps {
         script {

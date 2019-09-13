@@ -106,8 +106,7 @@ def dockerBuild(Map optArgs = [:], String gitUrl, String sha) {
       sh """|#!/bin/bash
             |set -ex
             |make docker-build tag push \\
-            | CACHE_FROM=${cacheFromValue} \\
-            | PIP_EXTRA_INDEX_URL=${PIP_EXTRA_INDEX_URL}
+            | CACHE_FROM=${cacheFromValue}
             |""".stripMargin()
     }
   }
@@ -129,12 +128,6 @@ def dockerBuild(Map optArgs = [:], String gitUrl, String sha) {
           |docker push ${o.dockerImageUrl}:latest
           |""".stripMargin()
   }
-
-  // Cleanup
-  sh """|#!/bin/bash
-        |set -ex
-        |make remove-docker-images
-        |""".stripMargin()
 }
 
 /**
@@ -252,6 +245,36 @@ def deployPulse(Map optArgs = [:], String gitUrl, String sha, String env) {
 }
 
 /**
+ * Deploy Blocking Pulse for a Microservice.
+ */
+def deployBlockingPulse(Map optArgs = [:], String gitUrl, String sha, String env) {
+  Map o = [
+    k8sCluster: env,
+    k8sNamespace: gitUrl,
+    pulseVersion: '2.1',
+    pulseDoorctlVersion: 'v0.0.119',
+    pulseRootDir: 'pulse'
+  ] << envToOptArgs(gitUrl, env) << optArgs
+
+  String PULSE_VERSION = o.pulseVersion
+  String SERVICE_NAME = getServiceName()
+  String SERVICE_SHA = sha
+  String KUBERNETES_CLUSTER = o.k8sCluster
+  String KUBERNETES_NAMESPACE = o.k8sCluster // Use o.k8sNamespace once Pulse can be deployed to the service namespace
+  String DOORCTL_VERSION = o.pulseDoorctlVersion
+  String PULSE_DIR = o.pulseRootDir
+  Integer TIMEOUT_S = 360
+  Integer SLEEP_S = 5
+
+  sshagent(credentials: ['DDGHMACHINEUSER_PRIVATE_KEY']) {
+    // install doorctl and grab its executable path
+    String doorctlPath = new Doorctl().installIntoWorkspace(DOORCTL_VERSION)
+    // deploy Pulse
+    new Pulse().blockingDeploy(PULSE_VERSION, SERVICE_NAME, SERVICE_SHA, KUBERNETES_CLUSTER, doorctlPath, PULSE_DIR, TIMEOUT_S, SLEEP_S, KUBERNETES_NAMESPACE)
+  }
+}
+
+/**
  * Return the name of the repo taken from the end of the Git URL.
  * Throw an assertion error if the Git Repo name is not valid for use as a kubernetes namespace.
  * It must be less than 64 alphanumeric characters and may contain dashes.
@@ -292,6 +315,17 @@ def envToOptArgs(String gitUrl, String env) {
   } else {
     error("Unknown env value of '${env}' passed.")
   }
+}
+
+/**
+ * Remove the CI containers and images
+ */
+def dockerClean() {
+  sh """|#!/bin/bash
+        |set -x
+        |docker ps -a -q | xargs --no-run-if-empty docker rm -f || true
+        |make remove-docker-images
+        |""".stripMargin()
 }
 
 /**

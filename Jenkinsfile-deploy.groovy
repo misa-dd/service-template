@@ -35,27 +35,19 @@ pipeline {
       }
 
       stages {
-        stage('Docker Build') {
-          steps {
-            script {
-              common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
-              common.dockerBuild(params['GITHUB_REPOSITORY'], params['SHA'])
-            }
-          }
-        }
-        stage('Unit Tests') {
-          steps {
-            script {
-              common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
-              common.runTests('Unit Tests', params['GITHUB_REPOSITORY'], params['SHA'])
-            }
-          }
-        }
         stage('Deploy to Staging') {
           steps {
             script {
               common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
               common.deployService(params['GITHUB_REPOSITORY'], params['SHA'], 'staging')
+            }
+          }
+        }
+        stage('Deploy Blocking Pulse to Staging') {
+          steps {
+            script {
+              common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
+              common.deployBlockingPulse(params['GITHUB_REPOSITORY'], params['SHA'], 'staging')
             }
           }
         }
