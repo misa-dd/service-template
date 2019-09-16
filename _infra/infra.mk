@@ -3,6 +3,7 @@
 SHA=$(shell git rev-parse HEAD)
 SERVICE_NAME=service-template
 APP=web
+NAMESPACE=$(SERVICE_NAME)
 DOCKER_IMAGE_URL=611706558220.dkr.ecr.us-west-2.amazonaws.com/$(SERVICE_NAME)
 LOCAL_TAG=$(SERVICE_NAME):localbuild
 
@@ -21,7 +22,6 @@ docker-build:
 .PHONY: local-deploy
 local-deploy:
 	cd _infra/local && \
-	rm -rf .terraform terraform.tfstate apply.tfplan && \
 	terraform init && \
 	terraform plan -out apply.tfplan && \
 	terraform apply apply.tfplan
@@ -32,12 +32,21 @@ local-status:
 
 .PHONY: local-clean
 local-clean:
-	cd _infra/local && \
-	terraform destroy -auto-approve
+	cd _infra/local && terraform destroy -auto-approve || true
+	helm delete --purge $(SERVICE_NAME)-$(APP) || true
+	rm -rf _infra/local/.terraform _infra/local/terraform.tfstate* _infra/local/apply.tfplan
 
 .PHONY: local-tail
 local-tail:
-	kubectl get pods -n $(SERVICE_NAME) -l service=$(SERVICE_NAME) -l app=$(APP) -o jsonpath="{.items[0].metadata.name}" | xargs kubectl logs -n $(SERVICE_NAME) -f --tail=10
+	kubectl logs -n $(NAMESPACE) -f --tail=10 `kubectl get pods -n $(NAMESPACE) -l service=$(SERVICE_NAME) -l app=$(APP) -o jsonpath="{.items[0].metadata.name}"` web
+
+.PHONY: local-bash
+local-bash:
+	kubectl exec -n $(NAMESPACE) -it `kubectl get pods -n $(NAMESPACE) -l service=$(SERVICE_NAME) -l app=$(APP) -o jsonpath="{.items[0].metadata.name}"` --container=$(APP) bash
+
+.PHONY: local-port-forward
+local-port-forward:
+	kubectl -n $(NAMESPACE) port-forward svc/$(SERVICE_NAME)-$(APP) 7001:80
 
 .PHONY: tag
 tag:
