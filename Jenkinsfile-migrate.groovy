@@ -20,7 +20,6 @@ pipeline {
   stages {
     stage('Migrate staging') {
       steps {
-        artifactoryLogin()
         script {
           common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
           common.migrateService(params['GITHUB_REPOSITORY'], params['SHA'], 'staging')
@@ -40,7 +39,6 @@ pipeline {
         equals expected: true, actual: canDeployToProd
       }
       steps {
-        artifactoryLogin()
         script {
           common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
           common.migrateService(params['GITHUB_REPOSITORY'], params['SHA'], 'prod')

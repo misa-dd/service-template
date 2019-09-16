@@ -5,6 +5,8 @@
 __pycache__
 venv
 *.pyc
+build/
+!_infra/build/
 
 # Terraform
 .terraform/

@@ -36,6 +36,11 @@ pipeline {
     }
   }
   post {
+    always {
+      script {
+        common.dockerClean()
+      }
+    }
     success {
       script {
         tag = getImmutableReleaseSemverTag(params['SHA'])
