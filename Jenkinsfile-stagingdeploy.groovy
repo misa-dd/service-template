@@ -46,16 +46,10 @@ pipeline {
   }
   post {
     success {
-      script {
-        tag = getImmutableReleaseSemverTag(params['SHA'])
-      }
-      sendSlackMessage common.getSlackChannel(), "Successful stagingdeploy of ${common.getServiceName()} to ${tag}: <${BUILD_URL}|${env.JOB_NAME} [${env.BUILD_NUMBER}]>"
+      sendSlackMessage common.getSlackChannel(), "Successful stagingdeploy of ${common.getServiceName()} using sha ${params['SHA']} of branch ${params['BRANCH_NAME']}: <${BUILD_URL}|${env.JOB_NAME} [${env.BUILD_NUMBER}]>"
     }
     failure {
-      script {
-        tag = getImmutableReleaseSemverTag(params['SHA'])
-      }
-      sendSlackMessage common.getSlackChannel(), "Stagingdeploy failed for ${common.getServiceName()} to ${tag}: <${BUILD_URL}|${env.JOB_NAME} [${env.BUILD_NUMBER}]>"
+      sendSlackMessage common.getSlackChannel(), "Stagingdeploy failed for ${common.getServiceName()} using sha ${params['SHA']} of branch ${params['BRANCH_NAME']}: <${BUILD_URL}|${env.JOB_NAME} [${env.BUILD_NUMBER}]>"
     }
   }
 }
