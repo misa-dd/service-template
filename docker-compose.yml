@@ -1,6 +1,6 @@
 version: '3'
 services:
-  service-template.web:
+  web:
     container_name: service-template.web
     build:
       context: .

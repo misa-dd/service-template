@@ -29,8 +29,10 @@ pipeline {
     stage('Docker Build') {
       steps {
         script {
-          common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
-          common.dockerBuild(params['GITHUB_REPOSITORY'], params['SHA'])
+          reportClosureAsGitHubStatus {
+            common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
+            common.dockerBuild(params['GITHUB_REPOSITORY'], params['SHA'])
+          }
         }
       }
     }
