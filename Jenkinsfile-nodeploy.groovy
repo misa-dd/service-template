@@ -1,4 +1,7 @@
 @Library('common-pipelines@10.17.0') _
+
+import org.doordash.Github
+
 // -----------------------------------------------------------------------------------
 // The following params are automatically provided by the callback gateway as inputs
 // to the Jenkins pipeline that starts this job.
@@ -29,18 +32,20 @@ pipeline {
     stage('Docker Build') {
       steps {
         script {
-          reportClosureAsGitHubStatus {
+          new Github().doClosureWithStatus({
             common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
             common.dockerBuild(params['GITHUB_REPOSITORY'], params['SHA'])
-          }
+          }, params['GITHUB_REPOSITORY'], params['SHA'], 'Docker Build', "${BUILD_URL}console")
         }
       }
     }
     stage('Unit Tests') {
       steps {
         script {
-          common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
-          common.runTests('Unit Tests', params['GITHUB_REPOSITORY'], params['SHA'])
+          new Github().doClosureWithStatus({
+            common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
+            common.runTests('Unit Tests', params['GITHUB_REPOSITORY'], params['SHA'])
+          }, params['GITHUB_REPOSITORY'], params['SHA'], 'Unit Tests', "${BUILD_URL}console")
         }
       }
     }

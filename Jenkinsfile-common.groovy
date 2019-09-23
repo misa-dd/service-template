@@ -1,6 +1,5 @@
 import org.doordash.Docker
 import org.doordash.Doorctl
-import org.doordash.Github
 import org.doordash.Pulse
 
 /**
@@ -378,18 +377,16 @@ def inputDeployPipeline(String message = 'Continue Deploying Pipeline') {
  * Run unit tests within a docker-compose container.
  */
 def runTests(String stageName, String gitUrl, String sha) {
-  new Github().doClosureWithStatus({
-    withCredentials([
-      string(credentialsId: 'ARTIFACTORY_MACHINE_USER_NAME', variable: 'ARTIFACTORY_USERNAME'),
-      string(credentialsId: 'ARTIFACTORY_MACHINE_USER_PASS', variable: 'ARTIFACTORY_PASSWORD'),
-      string(credentialsId: 'PIP_EXTRA_INDEX_URL', variable: 'PIP_EXTRA_INDEX_URL')
-    ]) {
-      sh """|#!/bin/bash
-            |set -x
-            |docker-compose run --rm web make test
-            |""".stripMargin()
-    }
-  }, gitUrl, sha, stageName, "${BUILD_URL}testReport")
+  withCredentials([
+    string(credentialsId: 'ARTIFACTORY_MACHINE_USER_NAME', variable: 'ARTIFACTORY_USERNAME'),
+    string(credentialsId: 'ARTIFACTORY_MACHINE_USER_PASS', variable: 'ARTIFACTORY_PASSWORD'),
+    string(credentialsId: 'PIP_EXTRA_INDEX_URL', variable: 'PIP_EXTRA_INDEX_URL')
+  ]) {
+    sh """|#!/bin/bash
+          |set -x
+          |docker-compose run --rm web make test
+          |""".stripMargin()
+  }
 }
 
 return this
