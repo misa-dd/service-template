@@ -30,7 +30,7 @@ pipeline {
       steps {
         script {
           common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
-          common.runTests('Unit Tests', params['GITHUB_REPOSITORY'], params['SHA'])
+          common.runTests(params['GITHUB_REPOSITORY'], params['SHA'])
         }
       }
     }
