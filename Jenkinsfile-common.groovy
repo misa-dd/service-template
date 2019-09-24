@@ -376,7 +376,7 @@ def inputDeployPipeline(String message = 'Continue Deploying Pipeline') {
 /**
  * Run unit tests within a docker-compose container.
  */
-def runTests(String stageName, String gitUrl, String sha) {
+def runTests(String gitUrl, String sha) {
   withCredentials([
     string(credentialsId: 'ARTIFACTORY_MACHINE_USER_NAME', variable: 'ARTIFACTORY_USERNAME'),
     string(credentialsId: 'ARTIFACTORY_MACHINE_USER_PASS', variable: 'ARTIFACTORY_PASSWORD'),
