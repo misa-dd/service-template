@@ -89,9 +89,9 @@ def dockerBuild(Map optArgs = [:], String gitUrl, String sha) {
             |rm -rf .terraform terraform.*
             |sed 's/_GITREPO_/${gitRepo}/g' ecr.tf.template > ecr.tf
             |terraform="${WORKSPACE}/_infra/terraform"
-            |\${terraform} init
-            |\${terraform} plan -out terraform.tfplan -var="service_name=${getServiceName()}"
-            |\${terraform} apply terraform.tfplan
+            |\${terraform} init -no-color
+            |\${terraform} plan -no-color -out terraform.tfplan -var="service_name=${getServiceName()}"
+            |\${terraform} apply -no-color terraform.tfplan
             |popd
             |""".stripMargin()
     }
@@ -191,12 +191,12 @@ def deployService(Map optArgs = [:], String gitUrl, String sha, String env) {
             |rm -rf .terraform terraform.*
             |sed 's/_GITREPO_/${o.k8sNamespace}/g' namespace.tf.template > namespace.tf
             |terraform="${WORKSPACE}/_infra/terraform"
-            |\${terraform} init
-            |\${terraform} plan -out terraform.tfplan \\
+            |\${terraform} init -no-color
+            |\${terraform} plan -no-color -out terraform.tfplan \\
             | -var="k8s_config_path=${k8sCredsFile}" \\
             | -var="namespace=${o.k8sNamespace}" \\
             | -var="service_account_namespace=${o.k8sCluster}"
-            |\${terraform} apply terraform.tfplan
+            |\${terraform} apply -no-color terraform.tfplan
             |popd
             |
             |# Use Terraform to deploy the service
@@ -205,13 +205,13 @@ def deployService(Map optArgs = [:], String gitUrl, String sha, String env) {
             |sed 's/_GITREPO_/${o.k8sNamespace}/g' service.tf.template > service.tf
             |cp -f ${WORKSPACE}/_infra/templates/common.tf common.tf
             |terraform="${WORKSPACE}/_infra/terraform"
-            |\${terraform} init
-            |\${terraform} plan -out terraform.tfplan \\
+            |\${terraform} init -no-color
+            |\${terraform} plan -no-color -out terraform.tfplan \\
             | -var="k8s_config_path=${k8sCredsFile}" \\
             | -var="image_tag=${tag}" \\
             | -var="namespace=${o.k8sNamespace}" \\
             | -var="service_name=${getServiceName()}"
-            |\${terraform} apply terraform.tfplan
+            |\${terraform} apply -no-color terraform.tfplan
             |popd
             |""".stripMargin()
     }
