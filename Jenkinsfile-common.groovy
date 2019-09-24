@@ -88,7 +88,7 @@ def dockerBuild(Map optArgs = [:], String gitUrl, String sha) {
             |pushd _infra/build
             |rm -rf .terraform terraform.*
             |sed 's/_GITREPO_/${gitRepo}/g' ecr.tf.template > ecr.tf
-            |terraform="${WORKSPACE}/_infra/terraform"
+            |TF_LOG=TRACE terraform="${WORKSPACE}/_infra/terraform"
             |\${terraform} init
             |\${terraform} plan -out terraform.tfplan -var="service_name=${getServiceName()}"
             |\${terraform} apply terraform.tfplan
@@ -188,7 +188,7 @@ def deployService(Map optArgs = [:], String gitUrl, String sha, String env) {
             |pushd _infra/namespace/${o.k8sCluster}
             |rm -rf .terraform terraform.*
             |sed 's/_GITREPO_/${o.k8sNamespace}/g' namespace.tf.template > namespace.tf
-            |terraform="${WORKSPACE}/_infra/terraform"
+            |TF_LOG=TRACE terraform="${WORKSPACE}/_infra/terraform"
             |\${terraform} init
             |\${terraform} plan -out terraform.tfplan \\
             | -var="k8s_config_path=${k8sCredsFile}" \\
@@ -202,7 +202,7 @@ def deployService(Map optArgs = [:], String gitUrl, String sha, String env) {
             |rm -rf .terraform terraform.*
             |sed 's/_GITREPO_/${o.k8sNamespace}/g' service.tf.template > service.tf
             |cp -f ${WORKSPACE}/_infra/templates/common.tf common.tf
-            |terraform="${WORKSPACE}/_infra/terraform"
+            |TF_LOG=TRACE terraform="${WORKSPACE}/_infra/terraform"
             |\${terraform} init
             |\${terraform} plan -out terraform.tfplan \\
             | -var="k8s_config_path=${k8sCredsFile}" \\
