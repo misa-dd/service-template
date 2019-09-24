@@ -88,7 +88,7 @@ def dockerBuild(Map optArgs = [:], String gitUrl, String sha) {
             |pushd _infra/build
             |rm -rf .terraform terraform.*
             |sed 's/_GITREPO_/${gitRepo}/g' ecr.tf.template > ecr.tf
-            |TF_LOG=TRACE terraform="${WORKSPACE}/_infra/terraform"
+            |terraform="${WORKSPACE}/_infra/terraform"
             |\${terraform} init
             |\${terraform} plan -out terraform.tfplan -var="service_name=${getServiceName()}"
             |\${terraform} apply terraform.tfplan
@@ -125,6 +125,8 @@ def dockerBuild(Map optArgs = [:], String gitUrl, String sha) {
           |# Add latest tag for security scans of our latest docker images
           |docker tag ${o.dockerImageUrl}:${sha} ${o.dockerImageUrl}:latest
           |docker push ${o.dockerImageUrl}:latest
+          |# Tag localbuild for runTests
+          |docker tag ${o.dockerImageUrl}:${sha} ${getServiceName()}:localbuild
           |""".stripMargin()
   }
 }
@@ -188,7 +190,7 @@ def deployService(Map optArgs = [:], String gitUrl, String sha, String env) {
             |pushd _infra/namespace/${o.k8sCluster}
             |rm -rf .terraform terraform.*
             |sed 's/_GITREPO_/${o.k8sNamespace}/g' namespace.tf.template > namespace.tf
-            |TF_LOG=TRACE terraform="${WORKSPACE}/_infra/terraform"
+            |terraform="${WORKSPACE}/_infra/terraform"
             |\${terraform} init
             |\${terraform} plan -out terraform.tfplan \\
             | -var="k8s_config_path=${k8sCredsFile}" \\
@@ -202,7 +204,7 @@ def deployService(Map optArgs = [:], String gitUrl, String sha, String env) {
             |rm -rf .terraform terraform.*
             |sed 's/_GITREPO_/${o.k8sNamespace}/g' service.tf.template > service.tf
             |cp -f ${WORKSPACE}/_infra/templates/common.tf common.tf
-            |TF_LOG=TRACE terraform="${WORKSPACE}/_infra/terraform"
+            |terraform="${WORKSPACE}/_infra/terraform"
             |\${terraform} init
             |\${terraform} plan -out terraform.tfplan \\
             | -var="k8s_config_path=${k8sCredsFile}" \\
