@@ -51,7 +51,7 @@ def installTerraform() {
 def dockerBuild(Map optArgs = [:], String gitUrl, String sha) {
   String gitRepo = getGitRepoName(gitUrl)
   Map o = [
-    dockerImageUrl: "611706558220.dkr.ecr.us-west-2.amazonaws.com/${gitRepo}",
+    dockerImageUrl: "611706558220.dkr.ecr.us-west-2.amazonaws.com/${getServiceName()}",
   ] << optArgs
 
   // Ensure we have a SHA
