@@ -34,14 +34,6 @@ pipeline {
         }
       }
     }
-    stage('Deploy Pulse to staging') {
-      steps {
-        script {
-          common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
-          common.deployPulse(params['GITHUB_REPOSITORY'], params['SHA'], 'staging')
-        }
-      }
-    }
     stage('Continue to prod?') {
       steps {
         script {

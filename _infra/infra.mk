@@ -33,8 +33,12 @@ local-status:
 .PHONY: local-clean
 local-clean:
 	cd _infra/local && terraform destroy -auto-approve || true
-	helm delete --purge $(SERVICE_NAME)-$(APP) || true
+	helm --kube-context docker-for-desktop delete --purge $(SERVICE_NAME)-$(APP) || true
 	rm -rf _infra/local/.terraform _infra/local/terraform.tfstate* _infra/local/apply.tfplan
+
+.PHONY: local-describe
+local-describe:
+	kubectl describe -n $(NAMESPACE) pod `kubectl get pods -n $(NAMESPACE) -l service=$(SERVICE_NAME) -l app=$(APP) -o jsonpath="{.items[0].metadata.name}"`
 
 .PHONY: local-tail
 local-tail:
@@ -58,7 +62,7 @@ push:
 
 .PHONY: remove-docker-images
 remove-docker-images:
-	docker images -a --filter=reference="$(DOCKER_IMAGE_URL):$(SHA)" --format "{{.ID}}" | sort | uniq | xargs docker rmi -f
+	docker images -a --filter=reference="$(DOCKER_IMAGE_URL):$(SHA)" --format "{{.ID}}" | sort | uniq | xargs -r docker rmi -f
 
 .PHONY: migrate
 migrate:
