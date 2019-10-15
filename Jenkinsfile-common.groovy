@@ -386,7 +386,7 @@ def runTests(String gitUrl, String sha) {
   ]) {
     sh """|#!/bin/bash
           |set -x
-          |docker-compose run --rm web make test
+          |docker-compose -f docker-compose-ci.yml run --rm web make test
           |""".stripMargin()
   }
 }

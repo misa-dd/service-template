@@ -36,9 +36,21 @@ local-clean:
 	helm --kube-context docker-for-desktop delete --purge $(SERVICE_NAME)-$(APP) || true
 	rm -rf _infra/local/.terraform _infra/local/terraform.tfstate* _infra/local/apply.tfplan
 
+.PHONY: local-get-all
+local-get-all:
+	kubectl -n $(NAMESPACE) get ingress,service,deployment,configmap,secret,horizontalpodautoscaler,replicaset,pod
+
+.PHONY: local-get-events
+local-get-events:
+	kubectl -n $(NAMESPACE) get events --sort-by='.metadata.creationTimestamp'
+
 .PHONY: local-describe
 local-describe:
 	kubectl describe -n $(NAMESPACE) pod `kubectl get pods -n $(NAMESPACE) -l service=$(SERVICE_NAME) -l app=$(APP) -o jsonpath="{.items[0].metadata.name}"`
+
+.PHONY: local-config
+local-config:
+	kubectl get configmaps --namespace kube-system $(SERVICE_NAME)-$(APP).v`kubectl get configmaps --namespace kube-system | grep $(SERVICE_NAME)-$(APP) | cut -d" " -f1 | cut -d"." -f2 | cut -d"v" -f2 | sort -n | tail -1` -o jsonpath='{.data.release}' | base64 -D | gunzip
 
 .PHONY: local-tail
 local-tail:

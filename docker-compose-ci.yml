@@ -1,0 +1,11 @@
+version: '3'
+services:
+  web:
+    container_name: service-template.web
+    build:
+      context: .
+      args:
+        - PIP_EXTRA_INDEX_URL
+    image: service-template:localbuild
+    ports:
+      - 80:80
