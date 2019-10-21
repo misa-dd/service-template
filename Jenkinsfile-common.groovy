@@ -338,7 +338,7 @@ def dockerClean() {
  *
  * @return True if we can deploy to prod. False, otherwise.
  */
-def inputCanDeployToProd(String message = 'Deploy to production') {
+def inputCanDeployToProd(String message = 'Deploy to Production?') {
   boolean canDeployToProd = false
   try {
     timeout(time: 10, unit: 'MINUTES') {
@@ -361,7 +361,7 @@ def inputCanDeployToProd(String message = 'Deploy to production') {
  *
  * @return True if we can deploy the pipeline. False, otherwise.
  */
-def inputDeployPipeline(String message = 'Continue Deploying Pipeline') {
+def inputDeployPipeline(String message = 'Continue Deploying Pipeline?') {
   boolean canDeployPipeline = false
   try {
     timeout(time: 2, unit: 'MINUTES') {

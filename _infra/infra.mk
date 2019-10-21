@@ -40,6 +40,10 @@ local-clean:
 local-get-all:
 	kubectl -n $(NAMESPACE) get ingress,service,deployment,configmap,secret,horizontalpodautoscaler,replicaset,pod
 
+.PHONY: local-describe-all
+local-describe-all:
+	kubectl -n $(NAMESPACE) describe ingress,service,deployment,configmap,secret,horizontalpodautoscaler,pod
+
 .PHONY: local-get-events
 local-get-events:
 	kubectl -n $(NAMESPACE) get events --sort-by='.metadata.creationTimestamp'
