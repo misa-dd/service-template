@@ -68,6 +68,10 @@ local-bash:
 local-port-forward:
 	kubectl -n $(NAMESPACE) port-forward svc/$(SERVICE_NAME)-$(APP) 7001:80
 
+.PHONY: local-times
+local-times:
+	kubectl -n $(NAMESPACE) describe pods | egrep "Start Time|Started|Finished" | egrep -v "Started container$(NOT)" | sed -e 's/  */ /g' -e 's/^ *//g' | cut -d"," -f2 | sort | awk 'NR==1; END{print}'
+
 .PHONY: tag
 tag:
 	docker tag $(LOCAL_TAG) $(DOCKER_IMAGE_URL):$(SHA)
