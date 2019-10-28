@@ -18,34 +18,7 @@ pipeline {
     label 'universal'
   }
   stages {
-    stage('Deploy to staging') {
-      steps {
-        script {
-          common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
-          common.deployService(params['GITHUB_REPOSITORY'], params['SHA'], 'staging')
-        }
-      }
-    }
-    stage('Deploy Blocking Pulse to Staging') {
-      steps {
-        script {
-          common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
-          common.deployBlockingPulse(params['GITHUB_REPOSITORY'], params['SHA'], 'staging')
-        }
-      }
-    }
-    stage('Continue to prod?') {
-      steps {
-        script {
-          common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
-          canDeployToProd = common.inputCanDeployToProd()
-        }
-      }
-    }
     stage('Deploy to prod') {
-      when {
-        equals expected: true, actual: canDeployToProd
-      }
       steps {
         script {
           common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
@@ -68,9 +41,6 @@ pipeline {
       }
     }
     stage('Deploy Pulse to prod') {
-      when {
-        equals expected: true, actual: canDeployToProd
-      }
       steps {
         script {
           common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
