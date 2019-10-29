@@ -30,6 +30,14 @@ local-deploy:
 local-status:
 	helm status $(SERVICE_NAME)-$(APP)
 
+.PHONY: local-rollout-status
+local-rollout-status:
+	kubectl -n $(NAMESPACE) rollout status deployment $(SERVICE_NAME)-$(APP)
+
+.PHONY: local-rollout-undo
+local-rollout-undo:
+	kubectl -n $(NAMESPACE) rollout undo deployment $(SERVICE_NAME)-$(APP)
+
 .PHONY: local-clean
 local-clean:
 	cd _infra/local && terraform destroy -auto-approve || true
@@ -71,6 +79,10 @@ local-port-forward:
 .PHONY: local-times
 local-times:
 	kubectl -n $(NAMESPACE) describe pods | egrep "Start Time|Started|Finished" | egrep -v "Started container$(NOT)" | sed -e 's/  */ /g' -e 's/^ *//g' | cut -d"," -f2 | sort | awk 'NR==1; END{print}'
+
+.PHONY: local-running-count
+local-running-count:
+	while true ; do echo "---" ; date ; kubectl -n $(NAMESPACE) get pods -o json | jq -c '.items[] | (if .metadata.deletionTimestamp == null then (.status.phase + " " + ([select(.status.containerStatuses[].ready == true)] | length | tostring) + "/" + (.status.containerStatuses | length | tostring)) else "Terminating" end) + " " + .spec.containers[].image' | grep $(DOCKER_IMAGE_URL) | sort | uniq -c ; sleep 2 ; done
 
 .PHONY: tag
 tag:
