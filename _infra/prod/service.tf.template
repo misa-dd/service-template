@@ -37,6 +37,7 @@ module "service" {
     STATSD_HOST=prod-statsd-proxy.doordash.com,
     STATSD_SERVICE_NAME=service-template,
     STATSD_ENV_NAME=PROD,
-    NEW_RELIC_ENV=production
+    NEW_RELIC_ENV=production,
+    NINOX_ENV=prod
    EOF
 }
