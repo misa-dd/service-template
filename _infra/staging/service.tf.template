@@ -37,6 +37,7 @@ module "service" {
     STATSD_HOST=staging-statsd-proxy.doorcrawl-int.com,
     STATSD_SERVICE_NAME=service-template,
     STATSD_ENV_NAME=STAGE,
-    NEW_RELIC_ENV=staging
+    NEW_RELIC_ENV=staging,
+    NINOX_ENV=staging
    EOF
 }
