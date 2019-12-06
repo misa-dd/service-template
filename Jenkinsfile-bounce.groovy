@@ -9,7 +9,6 @@
 
 pipeline {
   options {
-    skipDefaultCheckout()
     timestamps()
     skipStagesAfterUnstable()
     timeout(time: 30, unit: 'MINUTES')

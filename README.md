@@ -1,11 +1,8 @@
 # service-template
 
 * [Introduction](README.md#introduction)
-* [Prerequisites](README.md#prerequisites)
-  * [1. Install Maven](README.md#1-install-maven)
-  * [2. Artifactory](README.md#2-artifactory)
-  * [3. Maven Settings](README.md#3-maven-settings)
-  * [4. Setup Docker](README.md#4-setup-docker)
+* [Prerequisites for Local Development](README.md#prerequisites-for-local-development)
+  * [1. Setup Docker](README.md#1-setup-docker)
 * [Build and Deploy](README.md#build-and-deploy)
 * [Running Locally without Docker or using docker-compose](README.md#running-locally-without-docker-or-using-docker-compose)
 * [Verify](README.md#verify)
@@ -31,19 +28,19 @@ Tech stack:
  * [Alpine Linux](https://alpinelinux.org/) to minimize the size of the container
 
 
-## Prerequisites
+## Prerequisites for Local Development
 
-The following steps assume that you have completed the steps in the 
+The following steps assume that you have completed the steps in the
 [New-Engineer-Setup-Guide](https://github.com/doordash/doordash-eng-wiki/blob/master/docs/New-Engineer-Setup-Guide.md).
- 
+
 ### 1. Setup Docker
-    
-Setup Docker to use Helm to deploy local builds into a local Kubernetes cluster: 
+
+Setup Docker to use Helm to deploy local builds into a local Kubernetes cluster:
   1. Enable Kubernetes: Click on Docker whale icon > `Preferences...` > `Kubernetes` > `Enable Kubernetes`
   2. Select Context: `kubectl config use-context docker-for-desktop`<br>
      Note: If no context exists with the name `docker-for-desktop context`, then restart the cluster...<br>
      Docker whale icon > `Kubernetes` > `Disable local cluster` and then `Enable local cluster`.
-  3. Install Helm: `brew install kubernetes-helm`
+  3. Install Helm: `brew install kubernetes-helm && brew unlink kubernetes-helm && brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/ee94af74778e48ae103a9fb080e26a6a2f62d32c/Formula/kubernetes-helm.rb`
   4. Init Helm: `helm init`
   5. Install Terraform: `brew install terraform`
 
@@ -54,11 +51,11 @@ All of the following should be executed within the `service-template` directory.
 
 To build a local Docker image: `make docker-build`
 
-To deploy the Docker image *using* Helm to Kubernetes: `make local-deploy`
+To deploy the Docker image *using* Terraform to Kubernetes: `make local-deploy`
 
 To check status *using* Helm: `make local-status`
 
- * Note: you are looking for the following
+ * Note: you are looking for the following:
  ```bash
 NAME                                   READY  STATUS   RESTARTS  AGE
 service-template-web-84754b8564-wjqfd  1/1    Running  0         1m

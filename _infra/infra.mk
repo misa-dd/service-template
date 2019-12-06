@@ -82,7 +82,7 @@ local-times:
 
 .PHONY: local-running-count
 local-running-count:
-	while true ; do echo "---" ; date ; kubectl -n $(NAMESPACE) get pods -o json | jq -c '.items[] | (if .metadata.deletionTimestamp == null then (.status.phase + " " + ([select(.status.containerStatuses[].ready == true)] | length | tostring) + "/" + (.status.containerStatuses | length | tostring)) else "Terminating" end) + " " + .spec.containers[].image' | grep $(DOCKER_IMAGE_URL) | sort | uniq -c ; sleep 2 ; done
+	while true ; do echo "---" ; date ; kubectl -n $(NAMESPACE) get pods -o json | jq -c '.items[] | (if .metadata.deletionTimestamp == null then (.status.phase + " " + ([select(.status.containerStatuses[].ready == true)] | length | tostring) + "/" + (.status.containerStatuses | length | tostring)) else "Terminating" end) + " " + .spec.containers[].image' | grep $(SERVICE_NAME) | sort | uniq -c ; sleep 2 ; done
 
 .PHONY: tag
 tag:
