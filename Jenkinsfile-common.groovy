@@ -1,3 +1,4 @@
+import org.doordash.DateTime
 import org.doordash.Docker
 import org.doordash.Doorctl
 import org.doordash.Pulse
@@ -387,6 +388,48 @@ def runTests(String gitUrl, String sha) {
     sh """|#!/bin/bash
           |set -x
           |docker-compose -f docker-compose-ci.yml run --rm web make test
+          |""".stripMargin()
+  }
+}
+
+/**
+ * Bounce a Microservice.
+ */
+def bounceService(Map optArgs = [:], String gitUrl, String sha, String env, String app) {
+  Map o = [
+    k8sCredFileCredentialId: "K8S_CONFIG_${env.toUpperCase()}_NEW",
+    k8sNamespace: gitUrl,
+    serviceApp: app,
+  ] << envToOptArgs(gitUrl, env) << optArgs
+
+  withCredentials([file(credentialsId: o.k8sCredFileCredentialId, variable: 'k8sCredsFile')]) { // Required for k8s config
+
+    // Load the deployment document into Groovy...
+    sh """|#!/bin/bash
+          |set -ex
+          |KUBECONFIG=${k8sCredsFile} kubectl \\
+          | -n ${o.k8sNamespace} \\
+          | get deployment ${getServiceName()}-${o.serviceApp} \\
+          | -o json > ${WORKSPACE}/deployment.json
+          |""".stripMargin()
+    def deploymentDoc = jsonLoads(readFile("${WORKSPACE}/deployment.json").trim())
+    sh "rm ${WORKSPACE}/deployment.json"
+
+    // Randomly Increment/Decrement terminationGracePeriodSeconds by 1 to trigger the rolling restart.
+    if (new DateTime().formatCurrentTime("ss").toInteger() % 2 == 0) {
+      deploymentDoc['spec']['template']['spec']['terminationGracePeriodSeconds'] = deploymentDoc['spec']['template']['spec']['terminationGracePeriodSeconds'] - 1
+    } else {
+      deploymentDoc['spec']['template']['spec']['terminationGracePeriodSeconds'] = deploymentDoc['spec']['template']['spec']['terminationGracePeriodSeconds'] + 1
+    }
+
+    // Write the json back to the WORKSPACE dir
+    writeFile file: "${WORKSPACE}/deployment.json", text: jsonDumps(deploymentDoc)
+
+    sh """|#!/bin/bash
+          |set -ex
+          |KUBECONFIG=${k8sCredsFile} kubectl \\
+          | -n ${o.k8sNamespace} \\
+          | apply -f ${WORKSPACE}/deployment.json
           |""".stripMargin()
   }
 }
