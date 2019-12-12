@@ -1,19 +1,38 @@
-FROM python:3.7-alpine3.9
+FROM ubuntu:bionic
+
+RUN apt-get update && \
+apt-get install -y --no-install-recommends gnupg2 software-properties-common && \
+apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0xB1998361219BD9C9 && \
+apt-add-repository 'deb http://repos.azulsystems.com/ubuntu stable main' && \
+apt-get install -y --no-install-recommends \
+    locales \
+    curl \
+    wget \
+    build-essential \
+    make \
+    htop \
+    runit \
+    postgresql-client \
+    python3 \
+    python3-dev \
+    python3-pip \
+    zulu-11 && \
+    pip3 install --upgrade pip setuptools botostubs && \
+    rm -rf /var/lib/apt/lists/* && \
+    localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
 
 ARG PIP_EXTRA_INDEX_URL
+ENV LANG en_US.utf8
 RUN : "${PIP_EXTRA_INDEX_URL?Requires PIP_EXTRA_INDEX_URL}"
+RUN pip install doordash-secret==0.0.30 && \
+    pip install ninox==v20190810 && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /home/app
 COPY requirements.txt .
-RUN \
-  apk add --no-cache --virtual basics \
-    bash curl py-openssl make \
-  && apk add --no-cache --virtual celery-deps libressl-dev libffi-dev \
-  && apk add --no-cache --virtual Flask-deps build-base \
-  && apk add --no-cache --virtual linux-headers pcre pcre-dev \
-  && pip install --extra-index-url "$PIP_EXTRA_INDEX_URL" \
-    -r requirements.txt \
-  && apk del --quiet Flask-deps
+RUN pip install -r requirements.txt
+# something requires lru-dict which requires x86_64-linux-gnu-gcc and Python.h
+# which are provided by apt-get install build-essential python3-dev
 
 COPY application /home/app/application
 COPY \
@@ -28,4 +47,4 @@ COPY _infra/infra.mk _infra/
 
 EXPOSE 80
 
-CMD ["./run.sh"]
+CMD ["/home/app/run.sh"]
