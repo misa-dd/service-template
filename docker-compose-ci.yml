@@ -1,11 +1,13 @@
 version: '3'
 services:
   web:
+    image: service-template:localbuild
     container_name: service-template.web
     build:
       context: .
       args:
         - PIP_EXTRA_INDEX_URL
-    image: service-template:localbuild
+    environment:
+      - ENVIRONMENT=local
     ports:
       - 80:80

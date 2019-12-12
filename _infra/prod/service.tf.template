@@ -33,11 +33,11 @@ module "service" {
   #service_iam_role = "arn:aws:iam::611706558220:role/web.service-template"
 
   service_environments_variables = <<EOF
-    ENVIRONMENT=prod,
-    STATSD_HOST=prod-statsd-proxy.doordash.com,
-    STATSD_SERVICE_NAME=service-template,
-    STATSD_ENV_NAME=PROD,
-    NEW_RELIC_ENV=production,
+    ENVIRONMENT=prod
+    STATSD_HOST=prod-statsd-proxy.doordash.com
+    STATSD_SERVICE_NAME=service-template
+    STATSD_ENV_NAME=PROD
+    NEW_RELIC_ENV=production
     NINOX_ENV=prod
    EOF
 }

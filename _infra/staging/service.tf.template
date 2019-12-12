@@ -33,11 +33,11 @@ module "service" {
   #service_iam_role = "arn:aws:iam::914801092467:role/web.service-template"
 
   service_environments_variables = <<EOF
-    ENVIRONMENT=staging,
-    STATSD_HOST=staging-statsd-proxy.doorcrawl-int.com,
-    STATSD_SERVICE_NAME=service-template,
-    STATSD_ENV_NAME=STAGE,
-    NEW_RELIC_ENV=staging,
+    ENVIRONMENT=staging
+    STATSD_HOST=staging-statsd-proxy.doorcrawl-int.com
+    STATSD_SERVICE_NAME=service-template
+    STATSD_ENV_NAME=STAGE
+    NEW_RELIC_ENV=staging
     NINOX_ENV=staging
    EOF
 }

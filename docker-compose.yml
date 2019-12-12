@@ -1,14 +1,21 @@
 version: '3'
 services:
   web:
+    image: service-template:localbuild
     container_name: service-template.web
     build:
       context: .
       args:
         - PIP_EXTRA_INDEX_URL
-    image: service-template:localbuild
+    environment:
+      - ENVIRONMENT=local
     ports:
       - 80:80
     volumes:
       - $PWD/application:/home/app/application
       - ${RUNTIME_PATH:-./empty_runtime}/data:/srv/runtime/current/data
+# connect to doordash_development network to connect to other running containers
+networks:
+  default:
+    external:
+      name: dr-who
