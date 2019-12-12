@@ -39,5 +39,6 @@ module "service" {
     STATSD_ENV_NAME=PROD
     NEW_RELIC_ENV=production
     NINOX_ENV=prod
+    DATABASE_PASSWORD=todo-add-to-secrets
    EOF
 }

@@ -19,5 +19,8 @@ pulse/report.html
 
 # python
 __pycache__/
-venv
+venv/
 *.pyc
+
+# mac
+.DS_Store

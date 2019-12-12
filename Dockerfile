@@ -21,14 +21,16 @@ apt-get install -y --no-install-recommends \
     rm -rf /var/lib/apt/lists/* && \
     localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
 
-ARG PIP_EXTRA_INDEX_URL
 ENV LANG en_US.utf8
+
+ARG PIP_EXTRA_INDEX_URL
 RUN : "${PIP_EXTRA_INDEX_URL?Requires PIP_EXTRA_INDEX_URL}"
 RUN pip install doordash-secret==0.0.30 && \
     pip install ninox==v20190810 && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /home/app
+
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 # something requires lru-dict which requires x86_64-linux-gnu-gcc and Python.h
