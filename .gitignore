@@ -1,26 +1,23 @@
-# envvars
-.local_secret.env
+# idea
+.idea/
+*.iml
+*.ipr
+*.iws
 
-# python
-__pycache__
-venv
-*.pyc
+# build
 build/
 !_infra/build/
 
-# Terraform
+# terraform
 .terraform/
 *.tfstate
 *.tfstate.backup
 *.tfplan
 
-# kubernetes
-_infra/*/packaged*
+# pulse
+pulse/report.html
 
-# misc
-.tmp
-build-infra2
-empty_runtime
-**/service.d/*/event
-**/service.d/*/supervise
-.idea
+# python
+__pycache__/
+venv
+*.pyc
