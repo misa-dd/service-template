@@ -48,6 +48,10 @@ local-clean:
 local-get-all:
 	kubectl -n $(NAMESPACE) get ingress,service,deployment,configmap,secret,horizontalpodautoscaler,replicaset,pod
 
+.PHONY: local-get-all-running
+local-get-all-running:
+	while true; do echo "" ; echo "----------------" ; date ; echo "----------------" ; echo "" ; kubectl -n $(NAMESPACE) get ingress,service,deployment,configmap,secret,horizontalpodautoscaler,replicaset,pod ; sleep 1 ; done
+
 .PHONY: local-describe-all
 local-describe-all:
 	kubectl -n $(NAMESPACE) describe ingress,service,deployment,configmap,secret,horizontalpodautoscaler,pod
@@ -78,7 +82,7 @@ local-port-forward:
 
 .PHONY: local-times
 local-times:
-	kubectl -n $(NAMESPACE) describe pods | egrep "Start Time|Started|Finished" | egrep -v "Started container$(NOT)" | sed -e 's/  */ /g' -e 's/^ *//g' | cut -d"," -f2 | sort | awk 'NR==1; END{print}'
+	kubectl -n $(NAMESPACE) get pods -o json | egrep '[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z' | cut -d'"' -f4 | sort | awk 'NR==1; END{print}'
 
 .PHONY: local-running-count
 local-running-count:
