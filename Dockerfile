@@ -10,6 +10,8 @@ apt-get install -y --no-install-recommends \
     wget \
     build-essential \
     make \
+    unzip \
+    vim \
     htop \
     runit \
     postgresql-client \

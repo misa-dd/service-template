@@ -1,9 +1,5 @@
 include _infra/infra*.mk
 
-.PHONY: build
-build:
-	docker-compose build --build-arg PIP_EXTRA_INDEX_URL="${PIP_EXTRA_INDEX_URL}"
-
 .PHONY: network
 network:
 	docker network create dr-who || true
