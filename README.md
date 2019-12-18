@@ -25,7 +25,7 @@ Tech stack:
  * [Kubernetes](https://kubernetes.io/docs/home/)
  * [Helm](https://docs.helm.sh/)
  * [Terraform](https://www.terraform.io/docs/)
- * [Alpine Linux](https://alpinelinux.org/) to minimize the size of the container
+ * [Ubuntu](http://releases.ubuntu.com/18.04/)
 
 
 ## Prerequisites for Local Development
@@ -51,7 +51,7 @@ All of the following should be executed within the `service-template` directory.
 
 To build a local Docker image: `make docker-build`
 
-To deploy the Docker image *using* Terraform to Kubernetes: `make local-deploy`
+To deploy the Docker image *using* Terraform with Helm to Kubernetes: `make local-deploy`
 
 To check status *using* Helm: `make local-status`
 
