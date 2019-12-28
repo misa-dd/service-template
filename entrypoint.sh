@@ -29,6 +29,7 @@ if [[ "${ENVIRONMENT}" == "local" ]] ; then
 fi
 
 eval `doordash-secret get --service service-template` || echo "doordash-secret failed, are we local?" 1>&2
+#eval `python3 -m ninox.interface.bond service-template` || echo "ninox failed, are we local?" 1>&2
 
 DATABASE_PASSWORD=${DATABASE_PASSWORD:-}
 
