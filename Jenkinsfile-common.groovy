@@ -68,6 +68,11 @@ def dockerBuild(Map optArgs = [:], String gitUrl, String sha) {
           |""".stripMargin()
     println "Docker image was found for ${o.dockerImageUrl}:${sha} - Skipping 'make docker-build tag push'"
     loadedCacheDockerTag = sha
+    sh """|#!/bin/bash
+          |set -ex
+          |# Tag localbuild for runTests
+          |docker tag ${o.dockerImageUrl}:${sha} ${getServiceName()}:localbuild
+          |""".stripMargin()
   } catch (oops) {
     println "No docker image was found for ${o.dockerImageUrl}:${sha} - Running 'make docker-build tag push'"
   }
@@ -125,8 +130,6 @@ def dockerBuild(Map optArgs = [:], String gitUrl, String sha) {
           |# Add latest tag for security scans of our latest docker images
           |docker tag ${o.dockerImageUrl}:${sha} ${o.dockerImageUrl}:latest
           |docker push ${o.dockerImageUrl}:latest
-          |# Tag localbuild for runTests
-          |docker tag ${o.dockerImageUrl}:${sha} ${getServiceName()}:localbuild
           |""".stripMargin()
   }
 }
