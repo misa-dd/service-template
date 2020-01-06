@@ -409,8 +409,8 @@ def bounceService(Map optArgs = [:], String gitUrl, String sha, String env, Stri
           |set -ex
           |KUBECONFIG=${k8sCredsFile} kubectl \\
           | -n ${o.k8sNamespace} \\
-          | patch deployment ${getServiceName()}-${o.serviceApp} \\
-          | -p '{"spec":{"template":{"metadata":{"labels":{"bounce-date":"'\$(date +%s)'"}}}}}'
+          | patch deployment ${getServiceName()}-${o.serviceApp} --type=merge \\
+          | -p '{"spec":{"template":{"metadata":{"annotations":{"bounce-date":"'`date +%s`'"}}}}}'
           |""".stripMargin()
   }
 }
