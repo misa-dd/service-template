@@ -1,9 +1,10 @@
-FROM ubuntu:bionic
+FROM debian:stable-slim@sha256:fb24d5c869a1c878ed22840096d50f7d5459370f64a21191042e2b138244e8ae
 
 RUN apt-get update && \
 apt-get install -y --no-install-recommends gnupg2 software-properties-common && \
 apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0xB1998361219BD9C9 && \
-apt-add-repository 'deb http://repos.azulsystems.com/ubuntu stable main' && \
+apt-add-repository 'deb http://repos.azulsystems.com/debian stable main' && \
+apt-get update && \
 apt-get install -y --no-install-recommends \
     locales \
     curl \
