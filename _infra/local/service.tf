@@ -19,7 +19,7 @@ variable "blue_green_first_deployment" {
 }
 
 module "service" {
-  source = "git::https://github.com/doordash/terraform-kubernetes-microservice.git?ref=rollout_misa_2"
+  source = "git::https://github.com/doordash/terraform-kubernetes-microservice.git?ref=master"
 
   namespace                 = "service-template"
   service_name              = "service-template"
