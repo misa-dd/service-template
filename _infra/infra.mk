@@ -21,10 +21,7 @@ docker-build:
 
 .PHONY: local-deploy
 local-deploy:
-	cd _infra/local && \
-	terraform init && \
-	terraform plan -out apply.tfplan && \
-	terraform apply apply.tfplan
+	bash ../common-pipelines/src/scripts/deploy-service.sh -c local -n $(NAMESPACE) -s $(SERVICE_NAME) -t localbuild
 
 .PHONY: local-status
 local-status:
@@ -46,15 +43,15 @@ local-clean:
 
 .PHONY: local-get-all
 local-get-all:
-	kubectl -n $(NAMESPACE) get ingress,service,deployment,configmap,secret,horizontalpodautoscaler,replicaset,pod
+	kubectl -n $(NAMESPACE) get ingress,service,deployment,rollout,configmap,secret,horizontalpodautoscaler,replicaset,pod
 
 .PHONY: local-get-all-running
 local-get-all-running:
-	while true; do echo "" ; echo "----------------" ; date ; echo "----------------" ; echo "" ; kubectl -n $(NAMESPACE) get ingress,service,deployment,configmap,secret,horizontalpodautoscaler,replicaset,pod ; sleep 1 ; done
+	while true; do echo "" ; echo "----------------" ; date ; echo "----------------" ; echo "" ; kubectl -n $(NAMESPACE) get ingress,service,deployment,rollout,configmap,secret,horizontalpodautoscaler,replicaset,pod ; sleep 1 ; done
 
 .PHONY: local-describe-all
 local-describe-all:
-	kubectl -n $(NAMESPACE) describe ingress,service,deployment,configmap,secret,horizontalpodautoscaler,pod
+	kubectl -n $(NAMESPACE) describe ingress,service,deployment,rollout,configmap,secret,horizontalpodautoscaler,pod
 
 .PHONY: local-get-events
 local-get-events:
@@ -103,3 +100,34 @@ remove-docker-images:
 .PHONY: migrate
 migrate:
 	@echo "Migrated $(SERVICE_NAME) to $(tag) for $(env) within $(k8sNamespace) on $(k8sCluster)"
+
+.PHONY: local-argo-rollouts-get
+local-argo-rollouts-get:
+	kubectl argo rollouts get rollout $(SERVICE_NAME)-$(APP) -n $(NAMESPACE) --no-color
+
+.PHONY: local-argo-rollouts-watch
+local-argo-rollouts-watch:
+	kubectl argo rollouts get rollout $(SERVICE_NAME)-$(APP) -n $(NAMESPACE) --no-color --watch
+
+.PHONY: local-argo-rollouts-manual-promote
+local-argo-rollouts-manual-promote:
+	kubectl argo rollouts promote $(SERVICE_NAME)-$(APP) -n $(NAMESPACE)
+
+.PHONY: local-argo-rollouts-patch-replicas
+local-argo-rollouts-patch-replicas: guard-REPLICAS
+	kubectl -n $(NAMESPACE) patch rollout $(SERVICE_NAME)-$(APP) --type=merge -p '{"spec":{"replicas":$(REPLICAS)}}'
+
+.PHONY: local-argo-rollouts-bounce
+local-argo-rollouts-bounce:
+	kubectl -n $(NAMESPACE) patch rollout $(SERVICE_NAME)-$(APP) --type=merge -p '{"spec":{"template":{"metadata":{"annotations":{"bounce-date":"'`date +%s`'"}}}}}'
+
+.PHONY: local-rolling-update-bounce
+local-rolling-update-bounce:
+	kubectl -n $(NAMESPACE) patch deployment $(SERVICE_NAME)-$(APP) --type=merge -p '{"spec":{"template":{"metadata":{"annotations":{"bounce-date":"'`date +%s`'"}}}}}'
+
+# task "guard-[X]" checks to see if the $[X] environment variable is set
+guard-%:
+	@ if [ "${${*}}" = "" ]; then \
+		echo "variable $* not set"; \
+		exit 1; \
+	fi

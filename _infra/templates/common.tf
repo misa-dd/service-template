@@ -14,6 +14,10 @@ variable "service_name" {
   type = string
 }
 
+variable "blue_green_first_deployment" {
+  type = string
+}
+
 provider "aws" {
   region  = "us-west-2"
   version = "2.23.0"

@@ -1,5 +1,3 @@
-@Library('common-pipelines@11.12.0') _
-
 /**
  * Expected inputs:
  * ----------------
@@ -23,7 +21,7 @@ pipeline {
       steps {
         script {
           common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
-          common.deployService(params['GITHUB_REPOSITORY'], params['SHA'], 'prod')
+          deployService(params['GITHUB_REPOSITORY'], params['SHA'], 'prod', common.getServiceName(), rollback: true)
         }
       }
       post {

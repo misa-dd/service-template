@@ -1,4 +1,3 @@
-@Library('common-pipelines@11.12.0') _
 // -----------------------------------------------------------------------------------
 // The following params are automatically provided by the callback gateway as inputs
 // to the Jenkins pipeline that starts this job.
@@ -39,7 +38,7 @@ pipeline {
           steps {
             script {
               common = load "${WORKSPACE}/Jenkinsfile-common.groovy"
-              common.deployService(params['GITHUB_REPOSITORY'], params['SHA'], 'staging')
+              deployService(params['GITHUB_REPOSITORY'], params['SHA'], 'staging', common.getServiceName())
             }
           }
         }

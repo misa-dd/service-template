@@ -166,62 +166,6 @@ def migrateService(Map optArgs = [:], String gitUrl, String sha, String env) {
 }
 
 /**
- * Deploy a Microservice.
- */
-def deployService(Map optArgs = [:], String gitUrl, String sha, String env) {
-  Map o = [
-    k8sCredFileCredentialId: "K8S_CONFIG_${env.toUpperCase()}_NEW",
-    k8sCluster: env,
-    k8sNamespace: gitUrl,
-  ] << envToOptArgs(gitUrl, env) << optArgs
-
-  String tag = sha
-
-  try {
-    tag = getImmutableReleaseSemverTag(sha)
-  } catch (err) {
-    println "Sha does not have an associated semver tag. Using SHA as tag."
-  }
-
-  installTerraform()
-  sshagent (credentials: ['DDGHMACHINEUSER_PRIVATE_KEY']) { // Required for terraform to git clone
-    withCredentials([file(credentialsId: o.k8sCredFileCredentialId, variable: 'k8sCredsFile')]) { // Required for k8s config
-      sh """|#!/bin/bash
-            |set -ex
-            |
-            |# Use Terraform to create the namespace when it doesn't exist
-            |pushd _infra/namespace/${o.k8sCluster}
-            |rm -rf .terraform terraform.*
-            |sed 's/_GITREPO_/${o.k8sNamespace}/g' namespace.tf.template > namespace.tf
-            |terraform="${WORKSPACE}/_infra/terraform"
-            |\${terraform} init -no-color
-            |\${terraform} plan -no-color -out terraform.tfplan \\
-            | -var="k8s_config_path=${k8sCredsFile}" \\
-            | -var="namespace=${o.k8sNamespace}" \\
-            | -var="service_account_namespace=${o.k8sCluster}"
-            |\${terraform} apply -no-color terraform.tfplan
-            |popd
-            |
-            |# Use Terraform to deploy the service
-            |pushd _infra/${o.k8sCluster}
-            |rm -rf .terraform terraform.*
-            |sed 's/_GITREPO_/${o.k8sNamespace}/g' service.tf.template > service.tf
-            |cp -f ${WORKSPACE}/_infra/templates/common.tf common.tf
-            |terraform="${WORKSPACE}/_infra/terraform"
-            |\${terraform} init -no-color
-            |\${terraform} plan -no-color -out terraform.tfplan \\
-            | -var="k8s_config_path=${k8sCredsFile}" \\
-            | -var="image_tag=${tag}" \\
-            | -var="namespace=${o.k8sNamespace}" \\
-            | -var="service_name=${getServiceName()}"
-            |\${terraform} apply -no-color terraform.tfplan
-            |popd
-            |""".stripMargin()
-    }
-  }
-}
-
-/**
  * Deploy Pulse for a Microservice.
  */
 def deployPulse(Map optArgs = [:], String gitUrl, String sha, String env) {
@@ -407,10 +351,25 @@ def bounceService(Map optArgs = [:], String gitUrl, String sha, String env, Stri
   withCredentials([file(credentialsId: o.k8sCredFileCredentialId, variable: 'k8sCredsFile')]) { // Required for k8s config
     sh """|#!/bin/bash
           |set -ex
-          |KUBECONFIG=${k8sCredsFile} kubectl \\
-          | -n ${o.k8sNamespace} \\
-          | patch deployment ${getServiceName()}-${o.serviceApp} --type=merge \\
-          | -p '{"spec":{"template":{"metadata":{"annotations":{"bounce-date":"'`date +%s`'"}}}}}'
+          |
+          |export KUBECONFIG=${k8sCredsFile}
+          |set +e
+          |kubectl -n ${o.k8sNamespace} get deployment ${getServiceName()}-${o.serviceApp}
+          |if [[ "\$?" -eq 0 ]]
+          |then
+          |  set -e
+          |  kubectl -n ${o.k8sNamespace} patch deployment ${getServiceName()}-${o.serviceApp} --type=merge \\
+          |  -p '{"spec":{"template":{"metadata":{"annotations":{"bounce-date":"'`date +%s`'"}}}}}'
+          |fi
+          |
+          |set +e
+          |kubectl -n ${o.k8sNamespace} get rollout ${getServiceName()}-${o.serviceApp}
+          |if [[ "\$?" -eq 0 ]]
+          |then
+          |  set -e
+          |  kubectl -n ${o.k8sNamespace} patch rollout ${getServiceName()}-${o.serviceApp} --type=merge \\
+          |  -p '{"spec":{"template":{"metadata":{"annotations":{"bounce-date":"'`date +%s`'"}}}}}'
+          |fi
           |""".stripMargin()
   }
 }
