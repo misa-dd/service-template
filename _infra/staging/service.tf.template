@@ -42,6 +42,8 @@ module "service" {
     STATSD_SERVICE_NAME=${var.service_name}
     STATSD_ENV_NAME=STAGE
     NEW_RELIC_ENV=staging
+    NINOX_CLIP_PREFIX=/ninox/${var.service_name}/
+    NINOX_DISABLE_BOND=true
     NINOX_ENV=staging
     DATABASE_PASSWORD=todo-add-to-secrets
    EOF
