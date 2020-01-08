@@ -28,8 +28,7 @@ ENV LANG en_US.utf8
 
 ARG PIP_EXTRA_INDEX_URL
 RUN : "${PIP_EXTRA_INDEX_URL?Requires PIP_EXTRA_INDEX_URL}"
-RUN pip install doordash-secret==0.0.30 && \
-    pip install ninox==v20190810 && \
+RUN pip install ninox==v20190810 && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /home/app

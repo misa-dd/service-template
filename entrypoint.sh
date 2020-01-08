@@ -28,15 +28,18 @@ if [[ "${ENVIRONMENT}" == "local" ]] ; then
   export DATABASE_PASSWORD="comment this line out to simulate when secrets are not found"
 fi
 
-eval `doordash-secret get --service service-template` || echo "doordash-secret failed, are we local?" 1>&2
-#eval `python3 -m ninox.interface.bond service-template` || echo "ninox failed, are we local?" 1>&2
+set +x
+eval `python3 -m ninox.interface.bond service-template` || echo "ninox failed, are we local?" 1>&2
+set -x
 
 DATABASE_PASSWORD=${DATABASE_PASSWORD:-}
 
 if [[ -z "${DATABASE_PASSWORD}" ]] ; then
   echo "Retrying in 10 seconds"
   sleep 10
-  eval `doordash-secret get --service service-template` || true
+  set +x
+  eval `python3 -m ninox.interface.bond service-template` || echo "ninox failed, are we local?" 1>&2
+  set -x
   [[ -z "${DATABASE_PASSWORD}" ]] && { echo "DATABASE_PASSWORD is unset. Aborting container startup"; exit 1; }
 fi
 
