@@ -34,12 +34,12 @@ module "service" {
   service_resource_limits_cpu = "100m"
   service_readiness_probe_path = "/health"
 
-  #service_iam_role = "arn:aws:iam::914801092467:role/web.service-template"
+  service_iam_role = "arn:aws:iam::914801092467:role/web.${var.namespace}"
 
   service_environments_variables = <<EOF
     ENVIRONMENT=staging
     STATSD_HOST=staging-statsd-proxy.doorcrawl-int.com
-    STATSD_SERVICE_NAME=service-template
+    STATSD_SERVICE_NAME=${var.service_name}
     STATSD_ENV_NAME=STAGE
     NEW_RELIC_ENV=staging
     NINOX_ENV=staging
