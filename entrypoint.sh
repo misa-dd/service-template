@@ -30,18 +30,14 @@ fi
 
 set +x
 eval `python3 -m ninox.interface.bond service-template` || echo "ninox failed, are we local?" 1>&2
-set -x
-
 DATABASE_PASSWORD=${DATABASE_PASSWORD:-}
-
 if [[ -z "${DATABASE_PASSWORD}" ]] ; then
   echo "Retrying in 10 seconds"
   sleep 10
-  set +x
   eval `python3 -m ninox.interface.bond service-template` || echo "ninox failed, are we local?" 1>&2
-  set -x
   [[ -z "${DATABASE_PASSWORD}" ]] && { echo "DATABASE_PASSWORD is unset. Aborting container startup"; exit 1; }
 fi
+set -x
 
 export INSTANCE_LOCAL_IP="$(wget -qO- -t 1 -T 5 169.254.169.254/latest/meta-data/local-ipv4 || echo "unknown-ip")"
 
