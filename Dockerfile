@@ -44,6 +44,7 @@ COPY \
   Dockerfile \
   entrypoint.sh \
   Makefile \
+  ninox.ini \
   run*.sh ./
 COPY _infra/infra.mk _infra/
 

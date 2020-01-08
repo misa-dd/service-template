@@ -28,20 +28,22 @@ module "service" {
   blue_green_first_deployment = var.blue_green_first_deployment
   blue_green_scale_down_delay_seconds = "3600"
 
-  service_resource_requests_memory = "128Mi"
-  service_resource_limits_memory = "128Mi"
+  service_resource_requests_memory = "256Mi"
+  service_resource_limits_memory = "256Mi"
   service_resource_requests_cpu = "100m"
   service_resource_limits_cpu = "100m"
   service_readiness_probe_path = "/health"
 
-  #service_iam_role = "arn:aws:iam::611706558220:role/web.service-template"
+  service_iam_role = "arn:aws:iam::611706558220:role/web.${var.namespace}"
 
   service_environments_variables = <<EOF
     ENVIRONMENT=prod
     STATSD_HOST=prod-statsd-proxy.doordash.com
-    STATSD_SERVICE_NAME=service-template
+    STATSD_SERVICE_NAME=${var.service_name}
     STATSD_ENV_NAME=PROD
     NEW_RELIC_ENV=production
+    NINOX_CLIP_PREFIX=/ninox/${var.service_name}/
+    NINOX_DISABLE_BOND=true
     NINOX_ENV=prod
     DATABASE_PASSWORD=todo-add-to-secrets
    EOF

@@ -73,6 +73,10 @@ local-tail:
 local-bash:
 	kubectl exec -n $(NAMESPACE) -it `kubectl get pods -n $(NAMESPACE) -l service=$(SERVICE_NAME) -l app=$(APP) -o jsonpath="{.items[0].metadata.name}"` --container=$(APP) bash
 
+.PHONY: local-bash-to-pod
+local-bash-to-pod: guard-POD
+	kubectl exec -n $(NAMESPACE) -it ${POD} --container=$(APP) bash
+
 .PHONY: local-port-forward
 local-port-forward:
 	kubectl -n $(NAMESPACE) port-forward svc/$(SERVICE_NAME)-$(APP) 7001:80
