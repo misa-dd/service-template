@@ -16,6 +16,7 @@ provider "helm" {
 
 variable "blue_green_first_deployment" {
   type = string
+  default = "false"
 }
 
 module "service" {
