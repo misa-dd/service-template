@@ -15,6 +15,7 @@ apt-get install -y --no-install-recommends \
     vim \
     htop \
     runit \
+    procps \
     postgresql-client \
     python3 \
     python3-dev \
