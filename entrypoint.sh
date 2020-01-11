@@ -25,7 +25,6 @@ _int() {
 if [[ "${ENVIRONMENT}" == "local" ]] ; then
   # Reduce metadata service timeout for local development
   export AWS_METADATA_SERVICE_TIMEOUT=7
-  export DATABASE_PASSWORD="comment this line out to simulate when secrets are not found"
 fi
 
 set +x
