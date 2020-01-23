@@ -39,7 +39,7 @@ local-rollout-undo:
 local-clean:
 	cd _infra/local && terraform destroy -auto-approve || true
 	helm --kube-context docker-for-desktop delete --purge $(SERVICE_NAME)-$(APP) || true
-	rm -rf _infra/local/.terraform _infra/local/terraform.tfstate* _infra/local/apply.tfplan
+	rm -rf _infra/local/.terraform _infra/local/terraform.tfstate* _infra/local/*.tfplan
 
 .PHONY: local-get-all
 local-get-all:
