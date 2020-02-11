@@ -26,7 +26,7 @@ Tech stack:
  * [Kubernetes](https://kubernetes.io/docs/home/)
  * [Helm](https://docs.helm.sh/)
  * [Terraform](https://www.terraform.io/docs/)
- * [Ubuntu](http://releases.ubuntu.com/18.04/)
+ * [Debian](https://packages.debian.org/buster/slim)
 
 
 ## Prerequisites for Local Development
