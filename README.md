@@ -82,12 +82,12 @@ To build a local Docker image: `make docker-build`
 
 To deploy the Docker image *using* Terraform with Helm to Kubernetes: `make local-deploy`
 
-To check status *using* Helm: `make local-status`
+To check status *using* Kubernetes: `make local-get-all`
 
  * Note: you are looking for the following:
  ```bash
-NAME                                   READY  STATUS   RESTARTS  AGE
-service-template-web-84754b8564-wjqfd  1/1    Running  0         1m
+NAME                                       DESIRED   CURRENT   UP-TO-DATE   AVAILABLE
+rollout.argoproj.io/service-template-web   1         1         1            1
  ```
 
 To tail logs *using* Kubernetes: `make local-tail`
@@ -114,7 +114,7 @@ To rebuild using docker-compose: `docker-compose up -d --build`
 
 ## Verify
 
-Run a server locally with Docker (use port 80) or without Docker (use port 5000) (you can also do it from PyCharm)
+Run a server locally with Kubernetes or docker-compose (use port 80) or without Docker (use port 5000) (you can also do it from PyCharm)
 
 ### Health Check
 

@@ -45,6 +45,6 @@ module "service" {
     NINOX_CLIP_PREFIX=/ninox/${var.service_name}/
     NINOX_DISABLE_BOND=true
     NINOX_ENV=staging
-    DATABASE_PASSWORD=todo-add-to-secrets-27
+    DATABASE_PASSWORD=todo-add-to-secrets
    EOF
 }

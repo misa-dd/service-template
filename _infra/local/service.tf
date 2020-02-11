@@ -33,6 +33,7 @@ module "service" {
   service_image_pull_policy = "IfNotPresent"
   service_cmd               = "/home/app/run.sh"
   service_cmd_args          = ""
+  service_replica_count     = "1"
 
   service_container_port = "80"
   net_service_port = "80"
