@@ -1,3 +1,5 @@
+@Library('common-pipelines@carlos-report-to-slack') _
+
 /**
  * Expected inputs:
  * ----------------
