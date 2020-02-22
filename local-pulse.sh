@@ -38,7 +38,8 @@ python3.7 -m venv ${PULSE_VENV_PATH}
 
 source ${PULSE_VENV_PATH}/bin/activate
 VERSION=`git rev-parse HEAD`
-pip3 install --extra-index-url https://${ARTIFACTORY_USERNAME}:${ARTIFACTORY_PASSWORD}@ddartifacts.jfrog.io/ddartifacts/api/pypi/pypi-local/simple/ doordash-pulse~=2.1
+pip3 install --upgrade pip
+pip3 install doordash-pulse~=2.1
 
 
 cd pulse
