@@ -38,7 +38,7 @@ terraform {
 }
 
 module "namespace" {
-  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-namespace.git?ref=ignore_rbac_changes"
+  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-namespace.git?ref=master"
   namespace = var.namespace
   service_account_namespace = var.service_account_namespace
 }
