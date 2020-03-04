@@ -38,7 +38,8 @@ python3.7 -m venv ${PRESSURE_VENV_PATH} # create a python 3.6 virtual environmen
 
 source ${PRESSURE_VENV_PATH}/bin/activate # activate the virtual environment
 VERSION=`git rev-parse HEAD`
-pip3 install --extra-index-url https://${ARTIFACTORY_USERNAME}:${ARTIFACTORY_PASSWORD}@ddartifacts.jfrog.io/ddartifacts/api/pypi/pypi-local/simple/ doordash-pressure~=1.0
+pip3 install --upgrade pip
+pip3 install doordash-pressure~=1.0
 
 
 cd pressure

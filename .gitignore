@@ -14,9 +14,6 @@ build/
 *.tfstate.backup
 *.tfplan
 
-# pulse
-pulse/report.html
-
 # python
 __pycache__/
 venv/
