@@ -16,6 +16,7 @@
 #pydevd.settrace('172.16.60.178', port=53061, stdoutToServer=True, stderrToServer=True, suspend=False)
 
 import logging
+import os
 import sys
 
 from doordash_lib.microservice import setup
@@ -40,10 +41,11 @@ setup.init()
 @app.route('/')
 def hello_world():
     name = request.args.get('name')
+    version = os.getenv('GIT_SHA', 'unknown')
     if name is None:
-        return 'Salutation, World!'
+        return 'Hello, World! I am running version {0}\n'.format(version)
     else:
-        return 'Hi, {0}'.format(name)
+        return 'Hello, {0}! I am running version {1}\n'.format(name, version)
 
 
 @app.route('/health')

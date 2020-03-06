@@ -49,6 +49,7 @@ module "service" {
   service_readiness_probe_path = "/health"
 
   service_environments_variables = <<EOF
+    GIT_SHA=localbuild
     ENVIRONMENT=local
    EOF
 }

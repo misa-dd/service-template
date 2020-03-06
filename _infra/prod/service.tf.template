@@ -37,6 +37,7 @@ module "service" {
   service_iam_role = "arn:aws:iam::611706558220:role/web.${var.namespace}"
 
   service_environments_variables = <<EOF
+    GIT_SHA=${var.image_tag}
     ENVIRONMENT=prod
     STATSD_HOST=prod-statsd-proxy.doordash.com
     STATSD_SERVICE_NAME=${var.service_name}

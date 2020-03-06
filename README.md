@@ -7,9 +7,13 @@
 * [Build and Deploy](README.md#build-and-deploy)
 * [Running Locally without Docker or using docker-compose](README.md#running-locally-without-docker-or-using-docker-compose)
 * [Verify](README.md#verify)
+  * [Run Pulse Tests](README.md#run-pulse-tests)
   * [Health Check](README.md#health-check)
+  * [Health Check Response](README.md#health-check-response)
   * [Sample Request](README.md#sample-request)
   * [Sample Response](README.md#sample-response)
+  * [Sample Request with name](README.md#sample-request-with-name)
+  * [Sample Response with name](README.md#sample-response-with-name)
 * [Using this project for your new microservice](README.md#using-this-project-for-your-new-microservice)
 
 ## Introduction
@@ -116,10 +120,26 @@ To rebuild using docker-compose: `docker-compose up -d --build`
 
 Run a server locally with Kubernetes or docker-compose (use port 80) or without Docker (use port 5000) (you can also do it from PyCharm)
 
+### Run Pulse Tests
+
+`make pulse-test`
+
 ### Health Check
 
 `curl -v ` [http://localhost/health](http://localhost/health)
 
+### Health Check Response
+
+```
+< HTTP/1.1 200 OK
+< Server: gunicorn/19.9.0
+< Date: Fri, 06 Mar 2020 20:08:04 GMT
+< Connection: keep-alive
+< Content-Type: text/html; charset=utf-8
+< Content-Length: 2
+< 
+OK
+```
 ### Sample Request
 
 `curl -v ` [http://localhost/](http://localhost/)
@@ -128,13 +148,32 @@ Run a server locally with Kubernetes or docker-compose (use port 80) or without 
 
 ```
 < HTTP/1.1 200 OK
-< Server: nginx/1.14.2
-< Date: Tue, 11 Jun 2019 23:23:01 GMT
-< Content-Type: text/html; charset=utf-8
-< Content-Length: 13
+< Server: gunicorn/19.9.0
+< Date: Fri, 06 Mar 2020 20:05:12 GMT
 < Connection: keep-alive
-<
-Hello, World!
+< Content-Type: text/html; charset=utf-8
+< Content-Length: 46
+< 
+Hello, World! I am running version localbuild
+
+```
+
+### Sample Request with name
+
+`curl -v ` [http://localhost/?name=Mundo](http://localhost/?name=Mundo)
+
+### Sample Response with name
+
+```
+< HTTP/1.1 200 OK
+< Server: gunicorn/19.9.0
+< Date: Fri, 06 Mar 2020 20:07:19 GMT
+< Connection: keep-alive
+< Content-Type: text/html; charset=utf-8
+< Content-Length: 46
+< 
+Hello, Mundo! I am running version localbuild
+
 ```
 
 

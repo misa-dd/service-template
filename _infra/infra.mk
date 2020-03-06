@@ -23,6 +23,10 @@ docker-build:
 local-deploy:
 	bash ../common-pipelines/src/scripts/deploy-service.sh -c local -n $(NAMESPACE) -s $(SERVICE_NAME) -t localbuild
 
+.PHONY: local-bounce
+local-bounce:
+	bash ../common-pipelines/src/scripts/bounce-service.sh -c local -n $(NAMESPACE) -s $(SERVICE_NAME) -t localbuild
+
 .PHONY: local-status
 local-status:
 	helm status $(SERVICE_NAME)-$(APP)
