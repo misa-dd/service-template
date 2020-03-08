@@ -8,6 +8,7 @@ services:
       args:
         - PIP_EXTRA_INDEX_URL
     environment:
+      - GIT_TAG=localbuild
       - ENVIRONMENT=local
     ports:
       - 80:80
