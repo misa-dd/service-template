@@ -69,10 +69,10 @@ Install tools required to deploy to a local Kubernetes cluster:
      sudo mv ./kubectl-argo-rollouts-darwin-amd64 /usr/local/bin/kubectl-argo-rollouts
      kubectl argo rollouts version
      ```
-  4. Clone common-pipelines repo:
+  4. Clone common-pipelines-cbje repo:
      ```bash
      pushd ..
-     git clone https://github.com/doordash/common-pipelines.git
+     git clone https://github.com/doordash/common-pipelines-cbje.git
      popd
       ```
   5. Install jq: `brew install jq`

@@ -21,11 +21,11 @@ docker-build:
 
 .PHONY: local-deploy
 local-deploy:
-	bash ../common-pipelines/src/scripts/deploy-service.sh -c local -n $(NAMESPACE) -s $(SERVICE_NAME) -t localbuild
+	bash ../common-pipelines-cbje/src/scripts/deploy-service.sh -c local -n $(NAMESPACE) -s $(SERVICE_NAME) -t localbuild
 
 .PHONY: local-bounce
 local-bounce:
-	bash ../common-pipelines/src/scripts/bounce-service.sh -c local -n $(NAMESPACE) -s $(SERVICE_NAME) -t localbuild
+	bash ../common-pipelines-cbje/src/scripts/bounce-service.sh -c local -n $(NAMESPACE) -s $(SERVICE_NAME) -t localbuild
 
 .PHONY: local-status
 local-status:
@@ -93,21 +93,9 @@ local-times:
 local-running-count:
 	while true ; do echo "---" ; date ; kubectl -n $(NAMESPACE) get pods -o json | jq -c '.items[] | (if .metadata.deletionTimestamp == null then (.status.phase + " " + ([select(.status.containerStatuses[].ready == true)] | length | tostring) + "/" + (.status.containerStatuses | length | tostring)) else "Terminating" end) + " " + .spec.containers[].image + " " + .metadata.labels["pod-template-hash"] + .metadata.labels["rollouts-pod-template-hash"]' | grep -v runtime | sort | uniq -c ; sleep 2 ; done
 
-.PHONY: tag
-tag:
-	docker tag $(LOCAL_TAG) $(DOCKER_IMAGE_URL):$(SHA)
-
-.PHONY: push
-push:
-	docker push $(DOCKER_IMAGE_URL):$(SHA)
-
 .PHONY: remove-docker-images
 remove-docker-images:
 	docker images -a --filter=reference="$(DOCKER_IMAGE_URL):$(SHA)" --format "{{.ID}}" | sort | uniq | xargs -r docker rmi -f
-
-.PHONY: migrate
-migrate:
-	@echo "Migrated $(SERVICE_NAME) to $(tag) for $(env) within $(k8sNamespace) on $(k8sCluster)"
 
 .PHONY: local-argo-rollouts-get
 local-argo-rollouts-get:

@@ -1,0 +1,22 @@
+pipeline:
+  podSpec:
+    spec:
+      containers:
+      - name: my-buster
+        image: debian:buster-slim
+        command:
+        - cat
+        tty: true
+  stages:
+    Bounce:
+      steps:
+      - type: bounceService
+  post:
+    onSuccess:
+    - type: sendSlackMessage
+      to: "#pulse-svc-template"
+      message: "Successful bounce of service-template:${REF} to prod: <${BUILD_URL}|${JOB_NAME} [${BUILD_NUMBER}]>"
+    onError:
+    - type: sendSlackMessage
+      to: "#pulse-svc-template"
+      message: "Bounce failed for service-template:${REF} to prod: <${BUILD_URL}|${JOB_NAME} [${BUILD_NUMBER}]>"

@@ -1,0 +1,29 @@
+pipeline:
+  options:
+    skipDefaultCheckout: true
+  dockerBuilds:
+    main:
+      image: 611706558220.dkr.ecr.us-west-2.amazonaws.com/service-template
+      dockerfile: _infra/Dockerfile
+      secrets:
+      - type: string
+        credentialsId: PIP_EXTRA_INDEX_URL
+        dockerMountedSecretId: PIP_EXTRA_INDEX_URL
+  podSpec:
+    metadata:
+      annotations:
+        doordash.defaultContainer: web
+    spec:
+      containers:
+      - name: web
+        image: 611706558220.dkr.ecr.us-west-2.amazonaws.com/service-template:${SHA}
+        metadata:
+          annotations:
+            doordash.defaultWorkingDir: /home/app
+        command:
+        - cat
+        tty: true
+  stages:
+    Unit Tests:
+      steps:
+      - make test
