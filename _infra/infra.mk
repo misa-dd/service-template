@@ -113,6 +113,14 @@ local-argo-rollouts-manual-promote:
 local-argo-rollouts-patch-replicas: guard-REPLICAS
 	kubectl -n $(NAMESPACE) patch rollout $(SERVICE_NAME)-$(APP) --type=merge -p '{"spec":{"replicas":$(REPLICAS)}}'
 
+.PHONY: local-argo-rollouts-terminate-blue-now
+local-argo-rollouts-terminate-blue-now: guard-HASH
+	kubectl -n $(NAMESPACE) patch replicaset $(SERVICE_NAME)-$(APP)-$(HASH) --type=merge -p '{"metadata":{"annotations":{"scale-down-deadline":"'`date -u +%Y-%m-%dT%H:%M:%SZ`'"}}}'
+
+.PHONY: local-argo-rollouts-activate-green-now
+local-argo-rollouts-activate-green-now: guard-HASH
+	kubectl -n $(NAMESPACE) patch service $(SERVICE_NAME)-$(APP) --type=merge -p '{"spec":{"selector":{"rollouts-pod-template-hash":"'$(HASH)'"}}}'
+
 .PHONY: local-argo-rollouts-bounce
 local-argo-rollouts-bounce:
 	kubectl -n $(NAMESPACE) patch rollout $(SERVICE_NAME)-$(APP) --type=merge -p '{"spec":{"template":{"metadata":{"annotations":{"bounce-date":"'`date +%s`'"}}}}}'
