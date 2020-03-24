@@ -46,7 +46,7 @@ Setup a local Kubernetes cluster with Helm v2 to deploy local builds:
   3. Select Context: `kubectl config use-context docker-for-desktop`<br>
      Note: If no context exists with the name `docker-for-desktop context`, then restart the cluster...<br>
      Docker whale icon > `Kubernetes` > `Disable local cluster` and then `Enable local cluster`.
-  4. Install Helm: `brew install kubernetes-helm && brew unlink kubernetes-helm && brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/ee94af74778e48ae103a9fb080e26a6a2f62d32c/Formula/kubernetes-helm.rb`
+  4. Install Helm V2: `brew unlink kubernetes-helm; brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/0a17b8e50963de12e8ab3de22e53fccddbe8a226/Formula/kubernetes-helm.rb`
   5. Init Helm: `helm init`
 
 ### 2. Install Deployment Tools
