@@ -1,12 +1,4 @@
 pipeline:
-  podSpec:
-    spec:
-      containers:
-      - name: my-buster
-        image: debian:buster-slim
-        command:
-        - cat
-        tty: true
   stages:
     Bounce:
       steps:

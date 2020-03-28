@@ -9,21 +9,26 @@ pipeline:
       - type: string
         credentialsId: PIP_EXTRA_INDEX_URL
         dockerMountedSecretId: PIP_EXTRA_INDEX_URL
-  podSpec:
-    metadata:
-      annotations:
-        doordash.defaultContainer: web
-    spec:
-      containers:
-      - name: web
-        image: 611706558220.dkr.ecr.us-west-2.amazonaws.com/service-template:${SHA}
-        metadata:
-          annotations:
-            doordash.defaultWorkingDir: /home/app
-        command:
-        - cat
-        tty: true
+      - type: UsernamePasswordMultiBinding
+        credentialsId: TEAM_ARTIFACTORY_ACCESS_TOKEN
+        dockerMountedSecretId: ARTIFACTORY_USERNAME
+        valueFrom: username
+      - type: UsernamePasswordMultiBinding
+        credentialsId: TEAM_ARTIFACTORY_ACCESS_TOKEN
+        dockerMountedSecretId: ARTIFACTORY_PASSWORD
+        valueFrom: password
   stages:
     Unit Tests:
       steps:
-      - make test
+      - type: sh
+        withCredentials:
+        - type: string
+          credentialsId: PIP_EXTRA_INDEX_URL
+          variable: PIP_EXTRA_INDEX_URL
+        - type: UsernamePasswordMultiBinding
+          credentialsId: TEAM_ARTIFACTORY_ACCESS_TOKEN
+          usernameVariable: ARTIFACTORY_USERNAME
+          passwordVariable: ARTIFACTORY_PASSWORD
+        script: |
+          cd /home/app
+          make test
