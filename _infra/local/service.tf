@@ -38,6 +38,7 @@ module "service" {
   service_container_port = "80"
   net_service_port = "80"
 
+  helm_timeout = "0"
   blue_green_enable = "true"
   blue_green_first_deployment = var.blue_green_first_deployment
   blue_green_scale_down_delay_seconds = "120"

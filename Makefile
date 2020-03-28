@@ -1,5 +1,9 @@
 include _infra/infra*.mk
 
+# Include environment file if ENVFILE was passed in when invoking make
+-include ${ENVFILE}
+export $(shell [ -e "$(ENVFILE)" ] && sed 's/=.*//' "$(ENVFILE)")
+
 .PHONY: network
 network:
 	docker network create dr-who || true
