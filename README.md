@@ -192,8 +192,6 @@ git remote -v
 # Push to master
 # Note: you may need to use the -f flag if you created the repo with any default files.
 git push -u origin master
-
-
 ```
 
 To coerce Jenkins to create your service directory and jobs in
