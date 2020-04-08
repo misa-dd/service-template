@@ -52,6 +52,7 @@ Setup a local Kubernetes cluster with Helm v2 to deploy local builds:
 ### 2. Install Deployment Tools
 
 Install tools required to deploy to a local Kubernetes cluster:
+  0. Make sure you are in `service-template` directory
   1. Install Terraform: `brew install terraform`
   2. Install Argo Rollouts:
      ```bash
