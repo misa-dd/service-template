@@ -1,0 +1,16 @@
+pipeline:
+  stages:
+    Migrate:
+      steps:
+        - type: sh
+          script: |
+            echo "Migrated service-template to ${REF} for ${ENV}"
+  post:
+    onSuccess:
+      - type: sendSlackMessage
+        to: "#pulse-svc-template"
+        message: "Successful migrate of service-template to ${REF} in ${ENV}: <${BUILD_URL}|${JOB_NAME} [${BUILD_NUMBER}]>"
+    onError:
+      - type: sendSlackMessage
+        to: "#pulse-svc-template"
+        message: "Migrate failed for service-template to ${REF} in ${ENV}: <${BUILD_URL}|${JOB_NAME} [${BUILD_NUMBER}]>"

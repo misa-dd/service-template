@@ -1,0 +1,14 @@
+pipeline:
+  stages:
+    Promote:
+      steps:
+        - type: deployService
+  post:
+    onSuccess:
+      - type: sendSlackMessage
+        to: "#pulse-svc-template"
+        message: "Successful promote of service-template to ${REF} in ${ENV}: <${BUILD_URL}|${JOB_NAME} [${BUILD_NUMBER}]>"
+    onError:
+      - type: sendSlackMessage
+        to: "#pulse-svc-template"
+        message: "Promote failed for service-template to ${REF} in ${ENV}: <${BUILD_URL}|${JOB_NAME} [${BUILD_NUMBER}]>"

@@ -2,13 +2,13 @@ pipeline:
   stages:
     Bounce:
       steps:
-      - type: bounceService
+        - type: bounceService
   post:
     onSuccess:
-    - type: sendSlackMessage
-      to: "#pulse-svc-template"
-      message: "Successful bounce of service-template:${REF} to prod: <${BUILD_URL}|${JOB_NAME} [${BUILD_NUMBER}]>"
+      - type: sendSlackMessage
+        to: "#pulse-svc-template"
+        message: "Successful bounce of service-template in prod: <${BUILD_URL}|${JOB_NAME} [${BUILD_NUMBER}]>"
     onError:
-    - type: sendSlackMessage
-      to: "#pulse-svc-template"
-      message: "Bounce failed for service-template:${REF} to prod: <${BUILD_URL}|${JOB_NAME} [${BUILD_NUMBER}]>"
+      - type: sendSlackMessage
+        to: "#pulse-svc-template"
+        message: "Bounce failed for service-template in prod: <${BUILD_URL}|${JOB_NAME} [${BUILD_NUMBER}]>"
