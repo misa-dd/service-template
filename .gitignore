@@ -13,6 +13,7 @@ build/
 *.tfstate
 *.tfstate.backup
 *.tfplan
+_infra/local/.pulse-tf/
 
 # python
 __pycache__/

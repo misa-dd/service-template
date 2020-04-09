@@ -3,6 +3,9 @@ pipeline:
     Promote:
       steps:
         - type: deployService
+    Deploy Pulse:
+      steps:
+        - type: deployPulse
   post:
     onSuccess:
       - type: sendSlackMessage

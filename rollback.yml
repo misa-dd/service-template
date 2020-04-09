@@ -4,6 +4,9 @@ pipeline:
       steps:
         - type: deployService
           rollback: true
+    Deploy Pulse:
+      steps:
+        - type: deployPulse
   post:
     onSuccess:
       - type: sendSlackMessage

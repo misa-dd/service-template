@@ -6,9 +6,14 @@ APP=web
 NAMESPACE=$(SERVICE_NAME)
 DOCKER_IMAGE_URL=611706558220.dkr.ecr.us-west-2.amazonaws.com/$(SERVICE_NAME)
 LOCAL_TAG=$(SERVICE_NAME):localbuild
+LOCAL_TAG_PULSE=$(SERVICE_NAME)-pulse:localbuild
 
 ifeq ($(CACHE_FROM),)
   CACHE_FROM=$(LOCAL_TAG)
+endif
+
+ifeq ($(CACHE_FROM_PULSE),)
+  CACHE_FROM_PULSE=$(LOCAL_TAG_PULSE)
 endif
 
 .PHONY: docker-build
@@ -19,9 +24,27 @@ docker-build:
 	--build-arg ARTIFACTORY_PASSWORD="$(ARTIFACTORY_PASSWORD)" \
 	--build-arg ARTIFACTORY_USERNAME="$(ARTIFACTORY_USERNAME)"
 
+.PHONY: docker-build-pulse
+docker-build-pulse:
+	cd pulse && \
+	docker build . -t $(LOCAL_TAG_PULSE) \
+	--cache-from $(CACHE_FROM_PULSE) \
+	--build-arg PULSE_VERSION="THREE" \
+	--build-arg ARTIFACTORY_PASSWORD="$(ARTIFACTORY_PASSWORD)" \
+	--build-arg ARTIFACTORY_USERNAME="$(ARTIFACTORY_USERNAME)" \
+	--build-arg SERVICE_NAME=$(SERVICE_NAME)
+
 .PHONY: local-deploy
 local-deploy:
 	bash ../common-pipelines-cbje/src/scripts/deploy-service.sh -c local -n $(NAMESPACE) -s $(SERVICE_NAME) -t localbuild
+
+.PHONY: local-deploy-pulse
+local-deploy-pulse:
+	bash ../common-pipelines-cbje/src/scripts/deploy-pulse.sh -c local -n $(NAMESPACE) -s $(SERVICE_NAME) -t localbuild
+
+.PHONY: local-run-pulse
+local-run-pulse:
+	docker run --env REPORT_ENABLED=False --env ENVIRONMENT=local $(LOCAL_TAG_PULSE) pulse
 
 .PHONY: local-bounce
 local-bounce:

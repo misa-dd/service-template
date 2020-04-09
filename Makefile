@@ -20,15 +20,6 @@ stop:
 test:
 	echo "no tests"
 
-.PHONY: pulse-test
-pulse-test:
-	./local-pulse.sh
-
-.PHONY: pulse-clean
-pulse-clean:
-	rm -rf /tmp/pulsevenv pulse/.pytest_cache pulse/report*
-	find pulse -name __pycache__ -type d | xargs rm -rf || true
-
 .PHONY: pressure-test
 pressure-test:
 	./local-pressure.sh
@@ -39,5 +30,5 @@ pressure-clean:
 	find pressure -name __pycache__ -type d | xargs rm -rf || true
 
 .PHONY: clean
-clean: stop local-clean pulse-clean pressure-clean
+clean: stop local-clean pressure-clean
 	find . -name __pycache__ -type d | xargs rm -rf || true

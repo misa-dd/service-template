@@ -123,7 +123,11 @@ Run a server locally with Kubernetes or docker-compose (use port 80) or without 
 
 ### Run Pulse Tests
 
-`make pulse-test`
+```bash
+> make docker-build-pulse  # build the pulse img
+
+> make local-run-pulse  # run Pulse once
+```
 
 ### Health Check
 

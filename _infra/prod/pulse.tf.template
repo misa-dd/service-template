@@ -1,0 +1,43 @@
+terraform {
+  backend "s3" {
+    bucket = "doordash-cluster-state"
+    dynamodb_table = "doordash-cluster-state"
+    key    = "resources/services/prod/_GITREPO_/pulse.tfstate"
+    region = "us-west-2"
+  }
+}
+
+module "service-pulse" {
+  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=master"
+
+  namespace                 = var.namespace
+  service_name              = var.service_name
+  service_app               = "pulse"
+  service_contact_info      = "eng-devprod@doordash.com"
+  service_docker_image      = "611706558220.dkr.ecr.us-west-2.amazonaws.com/${var.service_name}-pulse"
+  service_docker_image_tag  = var.image_tag
+  runtime_enable            = "false"
+  service_cmd               = "/build/scripts/entrypoint.sh"
+  service_cmd_args          = ""
+  service_replica_count     = "1"
+
+  helm_timeout = "0"
+  service_resource_requests_memory = "2Gi"
+  service_resource_limits_memory = "2Gi"
+  service_resource_requests_cpu = "1000m"
+  service_resource_limits_cpu = "1000m"
+
+  service_iam_role = "arn:aws:iam::611706558220:role/pulse.${var.namespace}"
+
+  service_environments_variables = <<EOF
+    ENVIRONMENT=prod
+    SERVICE_TEAM_SLACK_CHANNEL=#pulse-dogfood
+    NINOX_DISABLE_BOND=true
+    IDENTITY_SERVICE_URL="identity.int.doordash.com:50051"
+    PIGEON_SERVICE_URL=https://pigeon.doordash.red
+    S3_BUCKET_NAME=pulse-reports-prod
+    CRON_SCHEDULE=*/10 * * * *
+    HEARTBEAT_SCHEDULE=0 */2 * * *
+    SERVICE_URI=http://service-template-web.service-template.svc.cluster.local
+   EOF
+}
