@@ -3,6 +3,7 @@ pipeline:
     Promote:
       steps:
         - type: deployService
+          environment: prod
     Deploy Pulse:
       steps:
         - type: deployPulse
