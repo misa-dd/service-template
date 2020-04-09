@@ -21,7 +21,9 @@ module "service-pulse" {
   service_cmd_args          = ""
   service_replica_count     = "1"
 
+  blue_green_enable = "false"
   helm_timeout = "0"
+
   service_resource_requests_memory = "2Gi"
   service_resource_limits_memory = "2Gi"
   service_resource_requests_cpu = "1000m"
