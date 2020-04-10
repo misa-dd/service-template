@@ -27,6 +27,7 @@ if [[ "${ENVIRONMENT}" == "local" ]] ; then
   export AWS_METADATA_SERVICE_TIMEOUT=7
 fi
 
+# IMPORTANT: Before getting secrets, use set +x to ensure that secrets are never leaked into Splunk!!
 set +x
 eval `python3 -m ninox.interface.bond service-template || echo "ninox failed, are we local?" 1>&2`
 DATABASE_PASSWORD=${DATABASE_PASSWORD:-}
