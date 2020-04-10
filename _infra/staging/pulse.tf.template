@@ -33,7 +33,7 @@ module "service-pulse" {
 
   service_environments_variables = <<EOF
     ENVIRONMENT=staging
-    SERVICE_TEAM_SLACK_CHANNEL=#pulse-dogfood
+    SERVICE_TEAM_SLACK_CHANNEL=#pulse-svc-template
     NINOX_DISABLE_BOND=true
     IDENTITY_SERVICE_URL="identity.int.doordash.com:50051"
     PIGEON_SERVICE_URL=https://pigeon.doordash.red
