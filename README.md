@@ -126,6 +126,7 @@ Run a server locally with Kubernetes or docker-compose (use port 80) or without 
 ```bash
 > make docker-build-pulse  # build the pulse img
 
+# please remember to modify the make local-run-pulse target to set the environment variables needed by your tests
 > make local-run-pulse  # run Pulse once
 ```
 
