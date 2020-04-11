@@ -1,23 +1,11 @@
 pipeline:
   stages:
-    Promote to staging:
+    Promote:
       steps:
         - type: deployService
-          environment: staging
-    Deploy Pulse to staging:
+    Deploy Pulse:
       steps:
         - type: deployPulse
-          environment: staging
-          mode: blocking
-    Promote to prod:
-      steps:
-        - type: deployService
-          environment: prod
-    Deploy Pulse to prod:
-      steps:
-        - type: deployPulse
-          environment: prod
-          mode: blocking
   post:
     onSuccess:
       - type: sendSlackMessage
