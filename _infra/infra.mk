@@ -44,7 +44,7 @@ local-deploy-pulse:
 
 .PHONY: local-run-pulse
 local-run-pulse:
-	docker run --env REPORT_ENABLED=False --env ENVIRONMENT=local $(LOCAL_TAG_PULSE) pulse
+	docker run --env REPORT_ENABLED=False --env ENVIRONMENT=local --env SERVICE_URI=http://`ipconfig getifaddr en0` $(LOCAL_TAG_PULSE) pulse
 
 .PHONY: local-bounce
 local-bounce:
@@ -65,8 +65,9 @@ local-rollout-undo:
 .PHONY: local-clean
 local-clean:
 	cd _infra/local && terraform destroy -auto-approve || true
+	helm --kube-context docker-for-desktop delete --purge $(SERVICE_NAME)-pulse || true
 	helm --kube-context docker-for-desktop delete --purge $(SERVICE_NAME)-$(APP) || true
-	rm -rf _infra/local/.terraform _infra/local/terraform.tfstate* _infra/local/*.tfplan
+	rm -rf _infra/local/.terraform _infra/local/terraform.tfstate* _infra/local/*.tfplan _infra/local/.pulse-tf
 
 .PHONY: local-get-all
 local-get-all:
@@ -95,6 +96,10 @@ local-config:
 .PHONY: local-tail
 local-tail:
 	kubectl logs -n $(NAMESPACE) -f --tail=10 `kubectl get pods -n $(NAMESPACE) -l service=$(SERVICE_NAME) -l app=$(APP) -o jsonpath="{.items[0].metadata.name}"` $(APP)
+
+.PHONY: local-tail-pulse
+local-tail-pulse:
+	kubectl logs -n $(NAMESPACE) -f --tail=10 `kubectl get pods -n $(NAMESPACE) -l service=$(SERVICE_NAME) -l app=pulse -o jsonpath="{.items[0].metadata.name}"` pulse
 
 .PHONY: local-bash
 local-bash:

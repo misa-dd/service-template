@@ -55,5 +55,6 @@ module "service-pulse" {
     REPORT_ENABLED=false
     CRON_SCHEDULE=* * * * *
     HEARTBEAT_SCHEDULE=0 0 31 2 *
+    SERVICE_URI=http://${var.service_name}-web.${var.namespace}
    EOF
 }

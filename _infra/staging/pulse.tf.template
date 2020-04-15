@@ -40,6 +40,6 @@ module "service-pulse" {
     S3_BUCKET_NAME=pulse-reports-staging
     CRON_SCHEDULE=*/10 * * * *
     HEARTBEAT_SCHEDULE=0 */2 * * *
-    SERVICE_URI=http://service-template-web.service-template.svc.cluster.local
+    SERVICE_URI=http://${var.service_name}-web.${var.namespace}.svc.cluster.local
    EOF
 }

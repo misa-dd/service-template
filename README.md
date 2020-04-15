@@ -42,10 +42,12 @@ The following steps assume that you have completed the steps in the
 
 Setup a local Kubernetes cluster with Helm v2 to deploy local builds:
   1. Make sure you are running Docker Desktop version 2.1.0.5 or above.
-  2. Enable Kubernetes: Click on Docker whale icon > `Preferences...` > `Kubernetes` > `Enable Kubernetes`
-  3. Select Context: `kubectl config use-context docker-for-desktop`<br>
-     Note: If no context exists with the name `docker-for-desktop context`, then restart the cluster...<br>
-     Docker whale icon > `Kubernetes` > `Disable local cluster` and then `Enable local cluster`.
+  2. Enable Kubernetes: Click on Docker whale icon > `Preferences...` > `Kubernetes` > check `Enable Kubernetes` > click `Apply & Restart`.
+  3. Select Context: `kubectl config use-context docker-desktop`<br>
+     Note: If no context exists named `docker-desktop`, then restart the cluster...<br>
+     a. Docker whale icon > `Preferences...` > `Kubernetes`<br>
+     b. To stop cluster, uncheck `Enable Kubernetes` and click `Apply & Restart`<br>
+     c. To restart the cluster, check `Enable Kubernetes` and click `Apply & Restart`
   4. Install Helm v2.14.3: `brew unlink kubernetes-helm; brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/0a17b8e50963de12e8ab3de22e53fccddbe8a226/Formula/kubernetes-helm.rb`
   5. Init Helm: `helm init`
 
@@ -128,6 +130,10 @@ Run a server locally with Kubernetes or docker-compose (use port 80) or without 
 
 # please remember to modify the make local-run-pulse target to set the environment variables needed by your tests
 > make local-run-pulse  # run Pulse once
+
+> make local-deploy-pulse  # deploy Pulse to Kubernetes and run Pulse every minute
+> make local-tail-pulse  # tail the logs from the Pulse pod
+# Note: Press CTRL+C to quit tailing logs
 ```
 
 ### Health Check
