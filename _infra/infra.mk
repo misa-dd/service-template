@@ -48,7 +48,7 @@ local-run-pulse:
 
 .PHONY: local-bounce
 local-bounce:
-	bash ../common-pipelines-cbje/src/scripts/bounce-service.sh -c local -n $(NAMESPACE) -s $(SERVICE_NAME) -t localbuild
+	bash ../common-pipelines-cbje/src/scripts/bounce-service.sh -c local -n $(NAMESPACE) -s $(SERVICE_NAME)
 
 .PHONY: local-status
 local-status:
@@ -146,8 +146,8 @@ local-argo-rollouts-terminate-blue-now: guard-HASH
 	kubectl -n $(NAMESPACE) patch replicaset $(SERVICE_NAME)-$(APP)-$(HASH) --type=merge -p '{"metadata":{"annotations":{"scale-down-deadline":"'`date -u +%Y-%m-%dT%H:%M:%SZ`'"}}}'
 
 .PHONY: local-argo-rollouts-activate-green-now
-local-argo-rollouts-activate-green-now: guard-HASH
-	kubectl -n $(NAMESPACE) patch service $(SERVICE_NAME)-$(APP) --type=merge -p '{"spec":{"selector":{"rollouts-pod-template-hash":"'$(HASH)'"}}}'
+local-argo-rollouts-activate-green-now:
+	bash ../common-pipelines-cbje/src/scripts/activate-green-now.sh -c local -n $(NAMESPACE) -s $(SERVICE_NAME)-$(APP)
 
 .PHONY: local-argo-rollouts-bounce
 local-argo-rollouts-bounce:
