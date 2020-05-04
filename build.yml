@@ -43,8 +43,8 @@ pipeline:
     onSuccess:
       - type: sendSlackMessage
         to: "#pulse-svc-template"
-        message: "Successful build of service-template to ${REF}: <${BUILD_URL}|${JOB_NAME} [${BUILD_NUMBER}]>"
+        message: "Successful build of service-template version ${REF}: <${BUILD_URL}|${JOB_NAME} [${BUILD_NUMBER}]>"
     onError:
       - type: sendSlackMessage
         to: "#pulse-svc-template"
-        message: "Build failed for service-template to ${REF}: <${BUILD_URL}|${JOB_NAME} [${BUILD_NUMBER}]>"
+        message: "Build failed for service-template version ${REF}: <${BUILD_URL}|${JOB_NAME} [${BUILD_NUMBER}]>"

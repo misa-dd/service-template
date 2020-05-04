@@ -67,7 +67,7 @@ local-clean:
 	cd _infra/local && terraform destroy -auto-approve || true
 	helm --kube-context docker-for-desktop delete --purge $(SERVICE_NAME)-pulse || true
 	helm --kube-context docker-for-desktop delete --purge $(SERVICE_NAME)-$(APP) || true
-	rm -rf _infra/local/.terraform _infra/local/terraform.tfstate* _infra/local/*.tfplan _infra/local/.pulse-tf
+	rm -rf _infra/logs _infra/local/.terraform _infra/local/terraform.tfstate* _infra/local/*.tfplan _infra/local/.pulse-tf
 
 .PHONY: local-get-all
 local-get-all:
