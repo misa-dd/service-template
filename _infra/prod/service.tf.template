@@ -40,7 +40,7 @@ module "service" {
   service_environments_variables = <<EOF
     GIT_SHA=${var.image_tag}
     ENVIRONMENT=prod
-    STATSD_HOST=prod-statsd-proxy.doordash.com
+    STATSD_HOST=prod-statsd-proxy.int.doordash.com
     STATSD_SERVICE_NAME=${var.service_name}
     STATSD_ENV_NAME=PROD
     NEW_RELIC_ENV=production
