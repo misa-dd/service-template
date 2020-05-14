@@ -7,6 +7,7 @@ NAMESPACE=$(SERVICE_NAME)
 DOCKER_IMAGE_URL=611706558220.dkr.ecr.us-west-2.amazonaws.com/$(SERVICE_NAME)
 LOCAL_TAG=$(SERVICE_NAME):localbuild
 LOCAL_TAG_PULSE=$(SERVICE_NAME)-pulse:localbuild
+JOB_NAME=migratedb
 
 ifeq ($(CACHE_FROM),)
   CACHE_FROM=$(LOCAL_TAG)
@@ -38,6 +39,10 @@ docker-build-pulse:
 local-deploy:
 	bash ../common-pipelines-cbje/src/scripts/deploy-service.sh -c local -n $(NAMESPACE) -s $(SERVICE_NAME) -t localbuild
 
+.PHONY: local-migrate
+local-migrate:
+	bash ../common-pipelines-cbje/src/scripts/migrate-service.sh -c local -j $(JOB_NAME) -n $(NAMESPACE) -s $(SERVICE_NAME) -t localbuild
+
 .PHONY: local-deploy-pulse
 local-deploy-pulse:
 	bash ../common-pipelines-cbje/src/scripts/deploy-pulse.sh -c local -n $(NAMESPACE) -s $(SERVICE_NAME) -t localbuild
@@ -65,21 +70,22 @@ local-rollout-undo:
 .PHONY: local-clean
 local-clean:
 	cd _infra/local && terraform destroy -auto-approve || true
+	helm --kube-context docker-for-desktop delete --purge $(SERVICE_NAME)-$(JOB_NAME) || true
 	helm --kube-context docker-for-desktop delete --purge $(SERVICE_NAME)-pulse || true
 	helm --kube-context docker-for-desktop delete --purge $(SERVICE_NAME)-$(APP) || true
-	rm -rf _infra/logs _infra/local/.terraform _infra/local/terraform.tfstate* _infra/local/*.tfplan _infra/local/.pulse-tf
+	rm -rf _infra/logs _infra/local/.terraform _infra/local/terraform.tfstate* _infra/local/*.tfplan _infra/local/.pulse-tf _infra/local/.job-tf
 
 .PHONY: local-get-all
 local-get-all:
-	kubectl -n $(NAMESPACE) get ingress,service,deployment,rollout,configmap,secret,horizontalpodautoscaler,replicaset,pod
+	kubectl -n $(NAMESPACE) get ingress,service,deployment,rollout,cronjob,job,configmap,secret,horizontalpodautoscaler,replicaset,pod
 
 .PHONY: local-get-all-running
 local-get-all-running:
-	while true; do echo "" ; echo "----------------" ; date ; echo "----------------" ; echo "" ; kubectl -n $(NAMESPACE) get ingress,service,deployment,rollout,configmap,secret,horizontalpodautoscaler,replicaset,pod ; sleep 1 ; done
+	while true; do echo "" ; echo "----------------" ; date ; echo "----------------" ; echo "" ; kubectl -n $(NAMESPACE) get ingress,service,deployment,rollout,cronjob,job,configmap,secret,horizontalpodautoscaler,replicaset,pod ; sleep 1 ; done
 
 .PHONY: local-describe-all
 local-describe-all:
-	kubectl -n $(NAMESPACE) describe ingress,service,deployment,rollout,configmap,secret,horizontalpodautoscaler,pod
+	kubectl -n $(NAMESPACE) describe ingress,service,deployment,rollout,cronjob,job,configmap,secret,horizontalpodautoscaler,pod
 
 .PHONY: local-get-events
 local-get-events:
@@ -96,6 +102,10 @@ local-config:
 .PHONY: local-tail
 local-tail:
 	kubectl logs -n $(NAMESPACE) -f --tail=10 `kubectl get pods -n $(NAMESPACE) -l service=$(SERVICE_NAME) -l app=$(APP) -o jsonpath="{.items[0].metadata.name}"` $(APP)
+
+.PHONY: local-tail-migrate
+local-tail-migrate:
+	kubectl logs -n $(NAMESPACE) -f --tail=10 `kubectl get pods -n $(NAMESPACE) -l service=$(SERVICE_NAME) -l app=$(JOB_NAME) -o jsonpath="{.items[0].metadata.name}"` $(JOB_NAME)
 
 .PHONY: local-tail-pulse
 local-tail-pulse:

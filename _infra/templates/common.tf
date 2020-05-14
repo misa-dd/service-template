@@ -16,6 +16,12 @@ variable "service_name" {
 
 variable "blue_green_first_deployment" {
   type = string
+  default = "false"
+}
+
+variable "job_name" {
+  type = string
+  default = "migratedb"
 }
 
 provider "aws" {

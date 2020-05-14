@@ -1,10 +1,12 @@
 pipeline:
+  options:
+    timeout:
+      time: 60
+      unit: minutes
   stages:
     Migrate:
       steps:
-        - type: sh
-          script: |
-            echo "Migrated service-template to ${REF} for ${ENV}"
+        - type: migrateService
   post:
     onSuccess:
       - type: sendSlackMessage

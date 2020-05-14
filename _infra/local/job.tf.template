@@ -1,0 +1,59 @@
+provider "archive" {
+  version = "1.2.2"
+}
+
+provider "kubernetes" {
+  version = "1.8.1"
+}
+
+provider "helm" {
+  kubernetes {
+    config_context = "docker-for-desktop"
+  }
+  install_tiller = false
+  version = "0.10.1" # Heredoc strings delimited by commas broken in 0.10.2
+}
+
+variable "namespace" {
+  type = string
+}
+
+variable "service_name" {
+  type = string
+}
+
+variable "job_name" {
+  type = string
+  default = "migratedb"
+}
+
+module "job" {
+  source = "git::https://github.com/doordash/terraform-kubernetes-microservice.git?ref=master"
+
+  namespace                 = var.namespace
+  service_name              = var.service_name
+  service_app               = var.job_name
+  service_contact_info      = "eng-devprod@doordash.com"
+  service_docker_image      = var.service_name
+  service_docker_image_tag  = "localbuild"
+  runtime_enable            = "false"
+  service_image_pull_policy = "IfNotPresent"
+  service_cmd               = "/home/app/entrypoint.sh"
+  service_cmd_args          = "/home/app/run-job.sh"
+
+  helm_timeout = "0"
+  job_enable = "true"
+
+  service_resource_requests_memory = "1024Mi"
+  service_resource_limits_memory = "1024Mi"
+  service_resource_requests_cpu = "300m"
+  service_resource_limits_cpu = "300m"
+
+  service_environments_variables = <<EOF
+    TIMESTAMP=${timestamp()}
+    GIT_SHA=localbuild
+    ENVIRONMENT=local
+    JOB_NAME=${var.job_name}
+    DATABASE_PASSWORD=todo-add-to-secrets
+   EOF
+}

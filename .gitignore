@@ -47,6 +47,7 @@ nohup.out
 *.tfstate.backup
 *.tfplan
 .pulse-tf/
+.job-tf/
 
 # python
 __pycache__/

@@ -51,3 +51,7 @@ trap _int  SIGINT
 
 child=$!
 wait "$child"
+
+if [[ -d /sidecarutil ]]; then
+  touch /sidecarutil/stopruntime
+fi
