@@ -20,15 +20,6 @@ stop:
 test:
 	echo "no tests"
 
-.PHONY: pressure-test
-pressure-test:
-	./local-pressure.sh
-
-.PHONY: pressure-clean
-pressure-clean:
-	rm -rf /tmp/pressurevenv pressure/.pytest_cache pressure/report*
-	find pressure -name __pycache__ -type d | xargs rm -rf || true
-
 .PHONY: clean
-clean: stop local-clean pressure-clean
+clean: stop local-clean
 	find . -name __pycache__ -type d | xargs rm -rf || true

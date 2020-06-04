@@ -7,6 +7,7 @@ NAMESPACE=$(SERVICE_NAME)
 DOCKER_IMAGE_URL=611706558220.dkr.ecr.us-west-2.amazonaws.com/$(SERVICE_NAME)
 LOCAL_TAG=$(SERVICE_NAME):localbuild
 LOCAL_TAG_PULSE=$(SERVICE_NAME)-pulse:localbuild
+LOCAL_TAG_PRESSURE=$(SERVICE_NAME)-pressure:localbuild
 JOB_NAME=migratedb
 
 ifeq ($(CACHE_FROM),)
@@ -15,6 +16,10 @@ endif
 
 ifeq ($(CACHE_FROM_PULSE),)
   CACHE_FROM_PULSE=$(LOCAL_TAG_PULSE)
+endif
+
+ifeq ($(CACHE_FROM_PRESSURE),)
+  CACHE_FROM_PRESSURE=$(LOCAL_TAG_PRESSURE)
 endif
 
 .PHONY: docker-build
@@ -35,6 +40,16 @@ docker-build-pulse:
 	--build-arg ARTIFACTORY_USERNAME="$(ARTIFACTORY_USERNAME)" \
 	--build-arg SERVICE_NAME=$(SERVICE_NAME)
 
+.PHONY: docker-build-pressure
+docker-build-pressure:
+	cd pressure && \
+	docker build . -t $(LOCAL_TAG_PRESSURE) \
+	--cache-from $(CACHE_FROM_PRESSURE) \
+	--build-arg PRESSURE_VERSION="THREE" \
+	--build-arg ARTIFACTORY_PASSWORD="$(ARTIFACTORY_PASSWORD)" \
+	--build-arg ARTIFACTORY_USERNAME="$(ARTIFACTORY_USERNAME)" \
+	--build-arg SERVICE_NAME=$(SERVICE_NAME)
+
 .PHONY: local-deploy
 local-deploy:
 	bash ../common-pipelines-cbje/src/scripts/deploy-service.sh -c local -n $(NAMESPACE) -s $(SERVICE_NAME) -t localbuild
@@ -47,9 +62,17 @@ local-migrate:
 local-deploy-pulse:
 	bash ../common-pipelines-cbje/src/scripts/deploy-pulse.sh -c local -n $(NAMESPACE) -s $(SERVICE_NAME) -t localbuild
 
+.PHONY: local-deploy-pressure
+local-deploy-pressure:
+	bash ../common-pipelines-cbje/src/scripts/deploy-pressure.sh -c local -n $(NAMESPACE) -s $(SERVICE_NAME) -t localbuild
+
 .PHONY: local-run-pulse
 local-run-pulse:
 	docker run --env REPORT_ENABLED=False --env ENVIRONMENT=local --env SERVICE_URI=http://`ipconfig getifaddr en0` $(LOCAL_TAG_PULSE) pulse
+
+.PHONY: local-run-pressure
+local-run-pressure:
+	docker run --env ENVIRONMENT=local $(LOCAL_TAG_PRESSURE) pressure
 
 .PHONY: local-bounce
 local-bounce:
@@ -73,7 +96,9 @@ local-clean:
 	helm --kube-context docker-for-desktop delete --purge $(SERVICE_NAME)-$(JOB_NAME) || true
 	helm --kube-context docker-for-desktop delete --purge $(SERVICE_NAME)-pulse || true
 	helm --kube-context docker-for-desktop delete --purge $(SERVICE_NAME)-$(APP) || true
-	rm -rf _infra/logs _infra/local/.terraform _infra/local/terraform.tfstate* _infra/local/*.tfplan _infra/local/.pulse-tf _infra/local/.job-tf
+	helm --kube-context docker-for-desktop delete --purge $(SERVICE_NAME)-pressure-master || true
+	helm --kube-context docker-for-desktop delete --purge $(SERVICE_NAME)-pressure-worker || true
+	rm -rf _infra/logs _infra/local/.terraform _infra/local/terraform.tfstate* _infra/local/*.tfplan _infra/local/.pulse-tf _infra/local/.job-tf _infra/local/.pressure*-tf
 
 .PHONY: local-get-all
 local-get-all:
@@ -110,6 +135,18 @@ local-tail-migrate:
 .PHONY: local-tail-pulse
 local-tail-pulse:
 	kubectl logs -n $(NAMESPACE) -f --tail=10 `kubectl get pods -n $(NAMESPACE) -l service=$(SERVICE_NAME) -l app=pulse -o jsonpath="{.items[0].metadata.name}"` pulse
+
+.PHONY: local-tail-pressure-master
+local-tail-pressure-master:
+	kubectl logs -n $(NAMESPACE) -f --tail=10 `kubectl get pods -n $(NAMESPACE) -l service=$(SERVICE_NAME) -l app=pressure-master -o jsonpath="{.items[0].metadata.name}"` pressure-master
+
+.PHONY: local-tail-pressure-worker
+local-tail-pressure-worker:
+	kubectl logs -n $(NAMESPACE) -f --tail=10 `kubectl get pods -n $(NAMESPACE) -l service=$(SERVICE_NAME) -l app=pressure-worker -o jsonpath="{.items[0].metadata.name}"` pressure-worker
+
+.PHONY: local-pressure-master-bash
+local-pressure-master-bash:
+	kubectl -n $(NAMESPACE) exec -it `kubectl get pods -n $(NAMESPACE) -l service=$(SERVICE_NAME) -l app=pressure-master -o jsonpath="{.items[0].metadata.name}"` bash
 
 .PHONY: local-bash
 local-bash:
