@@ -70,7 +70,6 @@ module "worker" {
   service_docker_image      = "service-template"
   service_docker_image_tag  = "localbuild"
   runtime_enable            = "false"
-  net_service_type          = "LoadBalancer"
   service_image_pull_policy = "IfNotPresent"
   service_cmd               = "/home/app/run.sh"
   service_cmd_args          = ""
