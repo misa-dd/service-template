@@ -7,7 +7,7 @@ NAMESPACE=$(SERVICE_NAME)
 DOCKER_IMAGE_URL=611706558220.dkr.ecr.us-west-2.amazonaws.com/$(SERVICE_NAME)
 LOCAL_TAG=$(SERVICE_NAME):localbuild
 LOCAL_TAG_PULSE=$(SERVICE_NAME)-pulse:localbuild
-LOCAL_TAG_PRESSURE=$(SERVICE_NAME)-pressure:localbuild
+LOCAL_TAG_PRESSURE=$(SERVICE_NAME):pressure-localbuild
 JOB_NAME=migratedb
 
 ifeq ($(CACHE_FROM),)
@@ -69,10 +69,6 @@ local-deploy-pressure:
 .PHONY: local-run-pulse
 local-run-pulse:
 	docker run --env REPORT_ENABLED=False --env ENVIRONMENT=local --env SERVICE_URI=http://`ipconfig getifaddr en0` $(LOCAL_TAG_PULSE) pulse
-
-.PHONY: local-run-pressure
-local-run-pressure:
-	docker run --env ENVIRONMENT=local $(LOCAL_TAG_PRESSURE) pressure
 
 .PHONY: local-bounce
 local-bounce:
