@@ -6,7 +6,7 @@ APP=web
 NAMESPACE=$(SERVICE_NAME)
 DOCKER_IMAGE_URL=611706558220.dkr.ecr.us-west-2.amazonaws.com/$(SERVICE_NAME)
 LOCAL_TAG=$(SERVICE_NAME):localbuild
-LOCAL_TAG_PULSE=$(SERVICE_NAME)-pulse:localbuild
+LOCAL_TAG_PULSE=$(SERVICE_NAME):pulse-localbuild
 LOCAL_TAG_PRESSURE=$(SERVICE_NAME):pressure-localbuild
 JOB_NAME=migratedb
 

@@ -18,8 +18,9 @@ pipeline:
           dockerMountedSecretId: ARTIFACTORY_PASSWORD
           valueFrom: password
     pulse:
-      image: 611706558220.dkr.ecr.us-west-2.amazonaws.com/service-template-pulse
+      image: 611706558220.dkr.ecr.us-west-2.amazonaws.com/service-template
       context: pulse
+      prefixDockerTag: pulse-
       buildArgs:
         plain:
           PULSE_VERSION: THREE

@@ -14,8 +14,8 @@ module "service-pulse" {
   service_name              = var.service_name
   service_app               = "pulse"
   service_contact_info      = "eng-devprod@doordash.com"
-  service_docker_image      = "611706558220.dkr.ecr.us-west-2.amazonaws.com/${var.service_name}-pulse"
-  service_docker_image_tag  = var.image_tag
+  service_docker_image      = "611706558220.dkr.ecr.us-west-2.amazonaws.com/${var.service_name}"
+  service_docker_image_tag  = "pulse-${var.image_tag}"
   runtime_enable            = "false"
   service_cmd               = "/build/scripts/entrypoint.sh"
   service_cmd_args          = ""

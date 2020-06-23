@@ -27,6 +27,11 @@ variable "blue_green_first_deployment" {
   default = "false"
 }
 
+variable "image_tag" {
+  type = string
+  default = "localbuild"
+}
+
 module "service-pulse" {
   source = "git::https://github.com/doordash/terraform-kubernetes-microservice.git?ref=master"
 
@@ -34,8 +39,8 @@ module "service-pulse" {
   service_name              = var.service_name
   service_app               = "pulse"
   service_contact_info      = "eng-devprod@doordash.com"
-  service_docker_image      = "${var.service_name}-pulse"
-  service_docker_image_tag  = "localbuild"
+  service_docker_image      = var.service_name
+  service_docker_image_tag  = "pulse-${var.image_tag}"
   runtime_enable            = "false"
   net_service_type          = "LoadBalancer"
   service_image_pull_policy = "IfNotPresent"
