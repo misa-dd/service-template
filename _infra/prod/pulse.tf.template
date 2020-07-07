@@ -36,7 +36,7 @@ module "service-pulse" {
     ENVIRONMENT=prod
     SERVICE_TEAM_SLACK_CHANNEL=#pulse-svc-template
     NINOX_DISABLE_BOND=true
-    IDENTITY_SERVICE_URL="identity.int.doordash.com:50051"
+    IDENTITY_SERVICE_URL=identity.int.doordash.com:50051
     PIGEON_SERVICE_URL=https://pigeon.doordash.red
     S3_BUCKET_NAME=pulse-reports-prod
     CRON_SCHEDULE=*/10 * * * *

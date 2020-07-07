@@ -59,7 +59,7 @@ module "service-pulse" {
 
   service_environments_variables = <<EOF
     ENVIRONMENT=local
-    IDENTITY_SERVICE_URL="identity.int.doordash.com:50051"
+    IDENTITY_SERVICE_URL=identity.int.doordash.com:50051
     REPORT_ENABLED=false
     CRON_SCHEDULE=* * * * *
     HEARTBEAT_SCHEDULE=0 0 31 2 *

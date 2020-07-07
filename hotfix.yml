@@ -10,8 +10,8 @@ pipeline:
     onSuccess:
       - type: sendSlackMessage
         to: "#pulse-svc-template"
-        message: "Successful hotfix of service-template to ${REF} in prod: <${BUILD_URL}|${JOB_NAME} [${BUILD_NUMBER}]>"
+        message: "Successful hotfix of service-template to ${REF} in ${ENV}: <${BUILD_URL}|${JOB_NAME} [${BUILD_NUMBER}]>"
     onError:
       - type: sendSlackMessage
         to: "#pulse-svc-template"
-        message: "Hotfix failed for service-template to ${REF} in prod: <${BUILD_URL}|${JOB_NAME} [${BUILD_NUMBER}]>"
+        message: "Hotfix failed for service-template to ${REF} in ${ENV}: <${BUILD_URL}|${JOB_NAME} [${BUILD_NUMBER}]>"
