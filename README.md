@@ -21,8 +21,8 @@ Reference project for setting up a Python/Flask service to run in a DoorDash kub
 * [Operating Guide](OPERATING.md "Title")
 
 Tech stack:
- * [Python 3](https://docs.python.org/3/)
  * [Flask](http://flask.pocoo.org/)
+ * [Python 3](https://hub.docker.com/_/python)
  * [Docker](https://docs.docker.com/)
  * [Kubernetes](https://kubernetes.io/docs/home/)
  * [Argo Rollouts](https://argoproj.github.io/argo-rollouts/)
@@ -46,13 +46,37 @@ New-Engineer-Setup-Guide](https://github.com/doordash/doordash-eng-wiki/blob/mas
 ### Run Pulse Tests
 
 ```bash
-> make docker-build-pulse  # build the pulse img
+# Build the Pulse image
+make docker-build-pulse
 
-# For your service, you may need to modify the make local-run-pulse target to set the environment variables needed by your tests
-> make local-run-pulse  # run Pulse once
+# Run Pulse once using docker run
+# NOTE: you may need to modify the make local-run-pulse target in _infra/infra.mk to set the environment variables needed by your tests
+make local-run-pulse
 
-> make local-deploy-pulse  # deploy Pulse to Kubernetes and run Pulse every minute
-> make local-tail-pulse  # tail the logs from the Pulse pod
+# Deploy Pulse to Kubernetes and run Pulse every minute
+make local-deploy-pulse
+
+# Tail the logs of the Pulse pod
+make local-tail-pulse 
+# Note: Press CTRL+C to quit tailing logs
+```
+
+### Run Pressure Tests
+
+```bash
+# Build the Pressure image
+make docker-build-pressure
+
+# Start the Pressure test
+# Note: This will stop any running pressure tests
+make local-deploy-pressure
+
+# Tail the logs of the Pressure master pod
+make local-tail-pressure-master
+# Note: Press CTRL+C to quit tailing logs
+
+# Tail the logs of a Pressure worker pod
+make local-tail-pressure-worker
 # Note: Press CTRL+C to quit tailing logs
 ```
 
@@ -128,8 +152,7 @@ git push -u origin master
 ```
 
 To coerce Jenkins to create your service directory and jobs in
-[https://generaljenkins.doordash.com/](https://generaljenkins.doordash.com/)
-and [https://deployjenkins.doordash.com/](https://deployjenkins.doordash.com/),
+[https://cloudbees.build.doordash.red/](https://cloudbees.build.doordash.red/)
 make a minor modification, create a PR, and merge it.
 
 If that doesn't work, you may also need to add `engineering` and `infrastructure` as collaborators with write access to

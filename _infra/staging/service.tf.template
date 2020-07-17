@@ -107,10 +107,10 @@ module "cronjob" {
   job_enable = "true"
   job_cron_schedule = "* * * * *"
 
-  service_resource_requests_memory = "1024Mi"
-  service_resource_limits_memory = "1024Mi"
-  service_resource_requests_cpu = "300m"
-  service_resource_limits_cpu = "300m"
+  service_resource_requests_memory = "256Mi"
+  service_resource_limits_memory = "256Mi"
+  service_resource_requests_cpu = "100m"
+  service_resource_limits_cpu = "100m"
 
   service_iam_role = "arn:aws:iam::914801092467:role/cronjob.${var.namespace}"
 

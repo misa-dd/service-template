@@ -52,17 +52,17 @@ module "service-pulse" {
   blue_green_enable = "false"
   net_service_enable = "false"
 
-  service_resource_requests_memory = "512Mi"
-  service_resource_limits_memory = "512Mi"
-  service_resource_requests_cpu = "1000m"
-  service_resource_limits_cpu = "1000m"
+  service_resource_requests_memory = "320Mi"
+  service_resource_limits_memory = "320Mi"
+  service_resource_requests_cpu = "200m"
+  service_resource_limits_cpu = "200m"
 
   service_environments_variables = <<EOF
     ENVIRONMENT=local
-    IDENTITY_SERVICE_URL=identity.int.doordash.com:50051
+    IDENTITY_SERVICE_URL=identity.doorcrawl-int.com:50051
     REPORT_ENABLED=false
     CRON_SCHEDULE=* * * * *
     HEARTBEAT_SCHEDULE=0 0 31 2 *
-    SERVICE_URI=http://${var.service_name}-web.${var.namespace}
+    SERVICE_URI=http://${var.service_name}-web.${var.namespace}.svc.cluster.local
    EOF
 }

@@ -56,7 +56,6 @@ hs_err_pid*
 
 # build
 build/
-#!_infra/build/
 runtime/
 target/
 out/
@@ -68,6 +67,7 @@ nohup.out
 *.tfstate.backup
 *.tfplan
 .pulse-tf/
+.pressure-tf/
 .job-tf/
 
 # python
@@ -84,3 +84,10 @@ venv/
 .settings/
 .project
 .classpath
+
+# vscode
+.vscode
+
+# Jenv
+.java-version
+.env

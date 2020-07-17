@@ -5,13 +5,12 @@ ARG SERVICE_NAME
 RUN : "${SERVICE_NAME?Requires SERVICE_NAME}"
 ENV SERVICE_NAME ${SERVICE_NAME}
 
-ARG ARTIFACTORY_USERNAME
-ARG ARTIFACTORY_PASSWORD
-
 COPY . /pulse/
 WORKDIR /pulse
 
-RUN python3.6 -m pip install  -r requirements.txt
+RUN ARTIFACTORY_USERNAME=$(wget -O- -q localhost:8000/ARTIFACTORY_USERNAME) \
+    ARTIFACTORY_PASSWORD=$(wget -O- -q localhost:8000/ARTIFACTORY_PASSWORD) \
+    python3.6 -m pip install  -r requirements.txt
 
 ############################################################################################
 #                                                                                          #

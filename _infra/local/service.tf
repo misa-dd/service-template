@@ -108,10 +108,10 @@ module "cronjob" {
   job_enable = "true"
   job_cron_schedule = "* * * * *"
 
-  service_resource_requests_memory = "1024Mi"
-  service_resource_limits_memory = "1024Mi"
-  service_resource_requests_cpu = "300m"
-  service_resource_limits_cpu = "300m"
+  service_resource_requests_memory = "128Mi"
+  service_resource_limits_memory = "128Mi"
+  service_resource_requests_cpu = "100m"
+  service_resource_limits_cpu = "100m"
 
   service_environments_variables = <<EOF
     GIT_SHA=${var.git_sha}

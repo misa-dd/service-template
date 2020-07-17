@@ -89,9 +89,12 @@ local-rollout-undo:
 .PHONY: local-clean
 local-clean:
 	cd _infra/local && terraform destroy -auto-approve || true
+	cd _infra/local/.job-tf && terraform destroy -auto-approve -var="namespace=$(NAMESPACE)" -var="service_name=$(SERVICE_NAME)" || true
+	cd _infra/local/.pulse-tf && terraform destroy -auto-approve -var="namespace=$(NAMESPACE)" -var="service_name=$(SERVICE_NAME)" || true
+	cd _infra/local/.pressure-tf && terraform destroy -auto-approve -var="namespace=$(NAMESPACE)" -var="service_name=$(SERVICE_NAME)" -var="image_tag=localbuild" || true
+	helm --kube-context docker-for-desktop delete --purge $(SERVICE_NAME)-$(APP) || true
 	helm --kube-context docker-for-desktop delete --purge $(SERVICE_NAME)-$(JOB_NAME) || true
 	helm --kube-context docker-for-desktop delete --purge $(SERVICE_NAME)-pulse || true
-	helm --kube-context docker-for-desktop delete --purge $(SERVICE_NAME)-$(APP) || true
 	helm --kube-context docker-for-desktop delete --purge $(SERVICE_NAME)-pressure-master || true
 	helm --kube-context docker-for-desktop delete --purge $(SERVICE_NAME)-pressure-worker || true
 	rm -rf _infra/logs _infra/local/.terraform _infra/local/terraform.tfstate* _infra/local/*.tfplan _infra/local/.pulse-tf _infra/local/.job-tf _infra/local/.pressure*-tf
