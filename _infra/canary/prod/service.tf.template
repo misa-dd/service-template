@@ -2,7 +2,7 @@ terraform {
   backend "s3" {
     bucket = "doordash-cluster-state"
     dynamodb_table = "doordash-cluster-state"
-    key    = "resources/services/prod/_GITREPO_/service.tfstate"
+    key    = "resources/services/prod/_GITREPO_/canary.tfstate"
     region = "us-west-2"
   }
 }
