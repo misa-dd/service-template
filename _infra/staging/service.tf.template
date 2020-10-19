@@ -12,12 +12,13 @@ module "service" {
 
   namespace                 = var.namespace
   service_name              = var.service_name
-  service_app               = "nginx"
+  service_app               = "web"
   service_contact_info      = "eng-devprod@doordash.com"
   service_docker_image      = "611706558220.dkr.ecr.us-west-2.amazonaws.com/${var.service_name}"
   service_docker_image_tag  = var.image_tag
-  runtime_enable            = "false"
-  service_cmd               = ""
+  runtime_enable            = "true"
+  service_cmd               = "/home/app/entrypoint.sh"
+  service_cmd_args          = "/home/app/run.sh"
   service_replica_count     = "2"
 
   service_container_port = "80"
@@ -32,12 +33,91 @@ module "service" {
   service_resource_limits_memory = "256Mi"
   service_resource_requests_cpu = "100m"
   service_resource_limits_cpu = "100m"
+  service_readiness_probe_path = "/health"
 
   service_iam_role = "arn:aws:iam::914801092467:role/web.${var.namespace}"
 
   service_environments_variables = <<EOF
     GIT_SHA=${var.image_tag}
     ENVIRONMENT=staging
+    STATSD_HOST=staging-statsd-proxy.doorcrawl-int.com
+    STATSD_SERVICE_NAME=${var.service_name}
+    STATSD_ENV_NAME=STAGE
+    NEW_RELIC_ENV=staging
+    NINOX_CLIP_PREFIX=/ninox/${var.service_name}/
+    NINOX_DISABLE_BOND=true
+    NINOX_ENV=staging
+    DATABASE_PASSWORD=todo-add-to-secrets
+   EOF
+}
+
+module "worker" {
+  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=master"
+
+  namespace                 = var.namespace
+  service_name              = var.service_name
+  service_app               = "worker"
+  service_contact_info      = "eng-devprod@doordash.com"
+  service_docker_image      = "611706558220.dkr.ecr.us-west-2.amazonaws.com/${var.service_name}"
+  service_docker_image_tag  = var.image_tag
+  runtime_enable            = "true"
+  service_cmd               = "/home/app/entrypoint.sh"
+  service_cmd_args          = "/home/app/run.sh"
+  service_replica_count     = "2"
+
+  helm_timeout = "0"
+  blue_green_enable = "false"
+  net_service_enable = "false"
+
+  service_resource_requests_memory = "256Mi"
+  service_resource_limits_memory = "256Mi"
+  service_resource_requests_cpu = "100m"
+  service_resource_limits_cpu = "100m"
+
+  service_iam_role = "arn:aws:iam::914801092467:role/worker.${var.namespace}"
+
+  service_environments_variables = <<EOF
+    GIT_SHA=${var.image_tag}
+    ENVIRONMENT=staging
+    STATSD_HOST=staging-statsd-proxy.doorcrawl-int.com
+    STATSD_SERVICE_NAME=${var.service_name}
+    STATSD_ENV_NAME=STAGE
+    NEW_RELIC_ENV=staging
+    NINOX_CLIP_PREFIX=/ninox/${var.service_name}/
+    NINOX_DISABLE_BOND=true
+    NINOX_ENV=staging
+    DATABASE_PASSWORD=todo-add-to-secrets
+   EOF
+}
+
+module "cronjob" {
+  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=master"
+
+  namespace                 = var.namespace
+  service_name              = var.service_name
+  service_app               = "cronjob"
+  service_contact_info      = "eng-devprod@doordash.com"
+  service_docker_image      = "611706558220.dkr.ecr.us-west-2.amazonaws.com/${var.service_name}"
+  service_docker_image_tag  = var.image_tag
+  runtime_enable            = "false"
+  service_cmd               = "/home/app/entrypoint.sh"
+  service_cmd_args          = "/home/app/run-job.sh"
+
+  helm_timeout = "0"
+  job_enable = "true"
+  job_cron_schedule = "* * * * *"
+
+  service_resource_requests_memory = "256Mi"
+  service_resource_limits_memory = "256Mi"
+  service_resource_requests_cpu = "100m"
+  service_resource_limits_cpu = "100m"
+
+  service_iam_role = "arn:aws:iam::914801092467:role/cronjob.${var.namespace}"
+
+  service_environments_variables = <<EOF
+    GIT_SHA=${var.image_tag}
+    ENVIRONMENT=staging
+    JOB_NAME=${var.job_name}
     STATSD_HOST=staging-statsd-proxy.doorcrawl-int.com
     STATSD_SERVICE_NAME=${var.service_name}
     STATSD_ENV_NAME=STAGE
