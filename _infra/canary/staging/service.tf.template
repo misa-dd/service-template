@@ -12,13 +12,12 @@ module "service-canary" {
 
   namespace                 = var.namespace
   service_name              = var.service_name
-  service_app               = "web"
+  service_app               = "nginx"
   service_contact_info      = "eng-devprod@doordash.com"
   service_docker_image      = "611706558220.dkr.ecr.us-west-2.amazonaws.com/${var.service_name}"
   service_docker_image_tag  = var.image_tag
-  runtime_enable            = "true"
-  service_cmd               = "/home/app/entrypoint.sh"
-  service_cmd_args          = "/home/app/run.sh"
+  runtime_enable            = "false"
+  service_cmd               = ""
   service_replica_count     = "1"
 
   service_container_port = "80"
@@ -33,7 +32,6 @@ module "service-canary" {
   service_resource_limits_memory = "256Mi"
   service_resource_requests_cpu = "100m"
   service_resource_limits_cpu = "100m"
-  service_readiness_probe_path = "/health"
 
   service_iam_role = "arn:aws:iam::914801092467:role/web.${var.namespace}"
 

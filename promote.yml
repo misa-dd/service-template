@@ -3,10 +3,6 @@ pipeline:
     Promote:
       steps:
         - type: deployService
-    Deploy Pulse:
-      steps:
-        - type: deployPulse
-          mode: blocking
   post:
     onSuccess:
       - type: sendSlackMessage
