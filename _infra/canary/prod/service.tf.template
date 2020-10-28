@@ -44,9 +44,5 @@ module "service-canary" {
     STATSD_SERVICE_NAME=${var.service_name}
     STATSD_ENV_NAME=CANARY
     NEW_RELIC_ENV=production
-    NINOX_CLIP_PREFIX=/ninox/${var.service_name}/
-    NINOX_DISABLE_BOND=true
-    NINOX_ENV=prod
-    DATABASE_PASSWORD=todo-add-to-secrets
    EOF
 }

@@ -12,7 +12,6 @@ COPY \
   Dockerfile \
   entrypoint.sh \
   Makefile \
-  ninox.ini \
   run*.sh ./
 
 # See main.py for steps to enable remote debugging

@@ -9,8 +9,7 @@ click==7.1.2
 contextlib2==0.6.0.post1
 cryptography==2.9.2
 docutils==0.15.2
-doordash-python-lib==0.8.2
-doordash-secret==0.0.32
+doordash-python-lib==0.13.16
 easydict==1.9
 Flask==1.0.2
 geographiclib==1.50
@@ -25,7 +24,6 @@ jmespath==0.10.0
 lru-dict==1.1.6
 MarkupSafe==1.1.1
 ndg-httpsclient==0.5.1 # Avoid SSL handshake errors for some domains. Requires py-openssl for alpine. See https://stackoverflow.com/a/45671400
-ninox==20200407
 pip==20.1.1
 pyasn1==0.4.8
 pycparser==2.20

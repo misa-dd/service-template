@@ -131,6 +131,18 @@ Hello, World! I am running version localbuild
 Hello, Mundo! I am running version localbuild
 ```
 
+## Secrets
+
+service-template leverages the [secrets module](https://github.com/doordash/doordash-python-lib/tree/master/doordash_lib/secrets) from `doordash-python-lib` to access secrets. The source of the underlying secrets depends on the environment in which the service is running.
+
+### Local
+
+When running the service locally via docker-compose, the `secrets.json` file which lives in the root of the repo is mounted to the path that the secrets module expects. Adding secrets to `secrets.json` will make them available to the service when running locally.
+
+### Staging/Production
+
+When running the service in staging or production, secrets are retrieved from Vault and made available to the secrets module. See the [Vault user manual](https://docs.google.com/document/d/15hLzvxM21lMbD-qbgR946o8v7d3zb_tBQRKniQWpRLI) for more information on configuring a service with Vault.
+
 
 ## Appendix
 

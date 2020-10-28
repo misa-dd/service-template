@@ -15,6 +15,7 @@ services:
     volumes:
       - $PWD/application:/home/app/application
       - ${RUNTIME_PATH:-./empty_runtime}/data:/srv/runtime/current/data
+      - $PWD/secrets.json:/vault/secrets/secrets.json
 # connect to doordash_development network to connect to other running containers
 networks:
   default:

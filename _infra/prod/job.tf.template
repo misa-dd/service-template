@@ -39,9 +39,5 @@ module "job" {
     STATSD_SERVICE_NAME=${var.service_name}
     STATSD_ENV_NAME=PROD
     NEW_RELIC_ENV=production
-    NINOX_CLIP_PREFIX=/ninox/${var.service_name}/
-    NINOX_DISABLE_BOND=true
-    NINOX_ENV=prod
-    DATABASE_PASSWORD=todo-add-to-secrets
    EOF
 }

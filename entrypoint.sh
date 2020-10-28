@@ -35,18 +35,6 @@ if [[ "${ENVIRONMENT}" == "local" ]] ; then
   export AWS_METADATA_SERVICE_TIMEOUT=7
 fi
 
-# IMPORTANT: Before getting secrets, use set +x to ensure that secrets are never leaked into Splunk!!
-set +x
-eval `python3 -m ninox.interface.bond service-template || echo "ninox failed, are we local?" 1>&2`
-DATABASE_PASSWORD=${DATABASE_PASSWORD:-}
-if [[ -z "${DATABASE_PASSWORD}" ]] ; then
-  echo "Retrying in 10 seconds"
-  sleep 10
-  eval `python3 -m ninox.interface.bond service-template || echo "ninox failed, are we local?" 1>&2`
-  [[ -z "${DATABASE_PASSWORD}" ]] && { echo "DATABASE_PASSWORD is unset. Aborting container startup"; exit 1; }
-fi
-set -x
-
 export INSTANCE_LOCAL_IP="$(wget -qO- -t 1 -T 5 169.254.169.254/latest/meta-data/local-ipv4 || echo "unknown-ip")"
 
 trap _term SIGTERM

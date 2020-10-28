@@ -21,6 +21,7 @@ import sys
 
 from doordash_lib.microservice import setup
 from doordash_lib.runtime import Runtime
+from doordash_lib.secrets import secrets
 from doordash_lib.stats.ddstats import doorstats_global, doorstats_internal, doorstats
 from flask import Flask, request
 
@@ -35,6 +36,7 @@ logger = logging.getLogger('main')
 
 runtime = Runtime(location="/srv/runtime/current", namespace="service-template")
 
+secrets.init()
 setup.init()
 
 
@@ -51,6 +53,11 @@ def hello_world():
 @app.route('/health')
 def health():
     return 'OK'
+
+
+@app.route('/secrets/<secret>')
+def lookup_secret(secret):
+    return '{0}: {1}\n'.format(secret, secrets.get(secret))
 
 
 if __name__ == "__main__":
