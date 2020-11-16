@@ -37,7 +37,7 @@ logger = logging.getLogger('main')
 runtime = Runtime(location="/srv/runtime/current", namespace="service-template")
 
 secrets.init()
-setup.init()
+# setup.init()
 
 
 @app.route('/')
