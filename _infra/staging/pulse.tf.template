@@ -32,15 +32,18 @@ module "service-pulse" {
 
   service_iam_role = "arn:aws:iam::914801092467:role/pulse.${var.namespace}"
 
+  vault_enable = "true"
+  vault_enable_pulse = "true"
+
   service_environments_variables = <<EOF
     ENVIRONMENT=staging
     SERVICE_TEAM_SLACK_CHANNEL=#pulse-svc-template
-    NINOX_DISABLE_BOND=true
     IDENTITY_SERVICE_URL=identity.doorcrawl-int.com:50051
     PIGEON_SERVICE_URL=https://pigeon.doordash.red
     S3_BUCKET_NAME=pulse-reports-staging
     CRON_SCHEDULE=*/10 * * * *
     HEARTBEAT_SCHEDULE=0 */2 * * *
     SERVICE_URI=http://${var.service_name}-web.${var.namespace}.svc.cluster.local
+    USE_VAULT_SECRETS=true
    EOF
 }
