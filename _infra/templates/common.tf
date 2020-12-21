@@ -39,5 +39,5 @@ provider "helm" {
     config_path = var.k8s_config_path
   }
   install_tiller = false
-  version = "0.10.1" # Heredoc strings delimited by commas broken in 0.10.2
+  version = "2.0.1" # Heredoc strings delimited by commas broken in 0.10.2
 }
