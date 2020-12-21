@@ -11,7 +11,7 @@ provider "helm" {
     config_context = "docker-for-desktop"
   }
   install_tiller = false
-  version = "0.10.1" # Heredoc strings delimited by commas broken in 0.10.2
+  version = "0.10.4" # Heredoc strings delimited by commas broken in 0.10.2
 }
 
 variable "blue_green_first_deployment" {
