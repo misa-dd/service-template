@@ -35,7 +35,6 @@ provider "kubernetes" {
 }
 
 provider "helm" {
-  init_helm_home = false
   kubernetes {
     config_path = var.k8s_config_path
   }
