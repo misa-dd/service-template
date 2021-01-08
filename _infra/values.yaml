@@ -1,0 +1,108 @@
+# Default values for helm module.
+chartChecksum: ""
+nameOverride: ""
+app: ""
+contact: ""
+namespace: ""
+deployment:
+  terminationGracePeriod: 30
+  restartPolicy: ""
+  revisionHistoryLimit: 10
+service:
+  image: ""
+  tag: ""
+  replicaCount: 1
+  maxSurge: 25%
+  maxUnavailable: 0
+  pullPolicy: ""
+  containerPort: 80
+  ports: ""
+  enVars: ""
+  podEnVars: ""
+  containerEnVars: ""
+  iamRole: ""
+  cmd: ""
+  cmdArgs: ""
+  requests:
+    cpu : 2000m
+    memory: 1Gi
+  limits:
+    cpu: 2000m
+    memory: 1Gi
+  readinessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    failureThreshold: 5
+    timeoutSeconds: 3
+    path: ""
+    command: ""
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    failureThreshold: 5
+    timeoutSeconds: 3
+    path: ""
+    command: ""
+  hpa:
+    enable: false
+    minReplicas: 1
+    maxReplicas: 1
+    cpu:
+      targetAverageUtilization: 0
+  dnsConfig:
+    options: ""
+  customPodAnnotations: ""
+  customLabels: ""
+runtime:
+  enable: true
+  image: ""
+  tag: "latest"
+  pullPolicy: ""
+  requests:
+    cpu : 25m
+    memory: 128Mi
+  limits:
+    cpu: 25m
+    memory: 128Mi
+  hostPath: ""
+  useRuntimed: true
+  runtimedHostPath: "/var/run/runtimed/static"
+dynamicValues:
+  enable: false
+  hostPath: ""
+  runtimedHostPath: "/var/run/runtimed/dynamic"
+net_service:
+  enable: true
+  type: ""
+  port: 80
+  clusterIP: ""
+  idleTimeout: "60"
+  externalLoadBalancer: false
+blueGreen:
+  enable: false
+  scaleDownDelaySeconds: 3600
+  autoPromotionEnabled: true
+  firstDeployment: false
+job:
+  enable: false
+  restartPolicy: "Never"
+  backoffLimit: 0
+  completions: 1
+  parallelism: 1
+  cronSchedule: ""
+  cronConcurrencyPolicy: "Forbid"
+  cronSuccessfulJobsHistoryLimit: 3
+  cronFailedJobsHistoryLimit: 1
+vault:
+  enable: false
+  reloadSecrets: false
+  enablePulse: false
+  enablePressure: false
+  requests:
+    cpu : 250m
+    memory: 64Mi
+  limits:
+    cpu : 250m
+    memory: 64Mi
+canary:
+  deployment: false
