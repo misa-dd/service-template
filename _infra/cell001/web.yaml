@@ -12,6 +12,7 @@ service:
     STATSD_SERVICE_NAME=service-template
     STATSD_ENV_NAME=STAGE
     NEW_RELIC_ENV=staging
+    MY_NEW_ENV=saso
   iamRole: "arn:aws:iam::914801092467:role/web.service-template"
   cmd: "/home/app/entrypoint.sh"
   cmdArgs: "/home/app/run.sh"
