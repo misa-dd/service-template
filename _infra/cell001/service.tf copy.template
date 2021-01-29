@@ -1,0 +1,48 @@
+terraform {
+  backend "s3" {
+    bucket = "doordash-cluster-state"
+    dynamodb_table = "doordash-cluster-state"
+    key    = "resources/services/cell001/_GITREPO_/service.tfstate"
+    region = "us-west-2"
+  }
+}
+
+module "service" {
+  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=master"
+
+  namespace                 = var.namespace
+  service_name              = var.service_name
+  service_app               = "web"
+  service_contact_info      = "eng-devprod@doordash.com"
+  service_docker_image      = "611706558220.dkr.ecr.us-west-2.amazonaws.com/${var.service_name}"
+  service_docker_image_tag  = var.image_tag
+  runtime_enable            = "true"
+  service_cmd               = "/home/app/entrypoint.sh"
+  service_cmd_args          = "/home/app/run.sh"
+  service_replica_count     = "1"
+
+  service_container_port = "80"
+  net_service_port = "80"
+
+  helm_timeout = "0"
+  blue_green_enable = "true"
+  blue_green_first_deployment = var.blue_green_first_deployment
+  blue_green_scale_down_delay_seconds = "600"
+
+  service_resource_requests_memory = "256Mi"
+  service_resource_limits_memory = "256Mi"
+  service_resource_requests_cpu = "100m"
+  service_resource_limits_cpu = "100m"
+  service_readiness_probe_path = "/health"
+
+  service_iam_role = "arn:aws:iam::914801092467:role/web.${var.namespace}"
+
+  service_environments_variables = <<EOF
+    GIT_SHA=${var.image_tag}
+    ENVIRONMENT=cell001
+    STATSD_HOST=staging-statsd-proxy.doorcrawl-int.com
+    STATSD_SERVICE_NAME=${var.service_name}
+    STATSD_ENV_NAME=CELL001
+    NEW_RELIC_ENV=cell001
+   EOF
+}
