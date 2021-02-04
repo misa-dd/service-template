@@ -4,6 +4,7 @@ contact: "eng-devprod@doordash.com"
 namespace: "service-template"
 service:
   image: "611706558220.dkr.ecr.us-west-2.amazonaws.com/service-template"
+  replicaCount: 11
   containerPort: 80
   enVars: |2
     GIT_SHA=

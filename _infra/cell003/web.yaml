@@ -1,9 +1,10 @@
 nameOverride: "service-template"
-app: "worker"
+app: "web"
 contact: "eng-devprod@doordash.com"
 namespace: "service-template"
 service:
   image: "611706558220.dkr.ecr.us-west-2.amazonaws.com/service-template"
+  replicaCount: 11
   containerPort: 80
   enVars: |2
     GIT_SHA=
@@ -12,6 +13,7 @@ service:
     STATSD_SERVICE_NAME=service-template
     STATSD_ENV_NAME=STAGE
     NEW_RELIC_ENV=staging
+    CELL_ENV=cell003
   iamRole: "arn:aws:iam::914801092467:role/web.service-template"
   cmd: "/home/app/entrypoint.sh"
   cmdArgs: "/home/app/run.sh"
