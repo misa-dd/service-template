@@ -24,6 +24,7 @@ from doordash_lib.runtime import Runtime
 from doordash_lib.secrets import secrets
 from doordash_lib.stats.ddstats import doorstats_global, doorstats_internal, doorstats
 from flask import Flask, request
+from prometheus_client import make_wsgi_app
 
 from conf import config
 
@@ -35,6 +36,10 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger('main')
 
 runtime = Runtime(location="/srv/runtime/current", namespace="service-template")
+
+app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {
+    '/metrics': make_wsgi_app()
+})
 
 secrets.init()
 # setup.init()

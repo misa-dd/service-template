@@ -119,4 +119,12 @@ module "cronjob" {
     JOB_NAME=cronjob
     DATABASE_PASSWORD=todo-add-to-secrets
    EOF
+ 
+  service_custom_pod_annotations = <<EOF
+    chronosphere.io/job: "service-template"
+    chronosphere.io/scrape: "true"
+    chronosphere.io/port: “9090”
+    chronosphere.io/path: “/metrics”
+  EOF
+
 }
