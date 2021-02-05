@@ -14,6 +14,11 @@ service:
     STATSD_ENV_NAME=STAGE
     NEW_RELIC_ENV=staging
     CELL_ENV=cell001
+  customPodAnnotations: |2
+    chronosphere.io/job: "service-template"
+    chronosphere.io/scrape: "true"
+    chronosphere.io/port: “9090”
+    chronosphere.io/path: “/metrics”
   iamRole: "arn:aws:iam::914801092467:role/web.service-template"
   cmd: "/home/app/entrypoint.sh"
   cmdArgs: "/home/app/run.sh"
