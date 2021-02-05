@@ -45,6 +45,14 @@ module "service" {
     STATSD_ENV_NAME=STAGE
     NEW_RELIC_ENV=staging
    EOF
+
+  service_custom_pod_annotations = <<EOF
+    chronosphere.io/job: "service-template"
+    chronosphere.io/scrape: "true"
+    chronosphere.io/port: “9090”
+    chronosphere.io/path: “/metrics”
+  EOF
+
 }
 
 module "worker" {
@@ -80,13 +88,6 @@ module "worker" {
     STATSD_ENV_NAME=STAGE
     NEW_RELIC_ENV=staging
    EOF
-
-  service_custom_pod_annotations = <<EOF
-    chronosphere.io/job: "service-template"
-    chronosphere.io/scrape: "true"
-    chronosphere.io/port: “9090”
-    chronosphere.io/path: “/metrics”
-  EOF
 }
 
 module "cronjob" {
