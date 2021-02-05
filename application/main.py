@@ -25,6 +25,7 @@ from doordash_lib.secrets import secrets
 from doordash_lib.stats.ddstats import doorstats_global, doorstats_internal, doorstats
 from flask import Flask, request
 from prometheus_client import make_wsgi_app
+from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
 from conf import config
 
