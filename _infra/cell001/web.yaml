@@ -17,7 +17,7 @@ service:
   customPodAnnotations: |2
     chronosphere.io/job: "service-template"
     chronosphere.io/scrape: "true"
-    chronosphere.io/port: “9090”
+    chronosphere.io/port: “80”
     chronosphere.io/path: “/metrics”
   iamRole: "arn:aws:iam::914801092467:role/web.service-template"
   cmd: "/home/app/entrypoint.sh"

@@ -123,7 +123,7 @@ module "cronjob" {
   service_custom_pod_annotations = <<EOF
     chronosphere.io/job: "service-template"
     chronosphere.io/scrape: "true"
-    chronosphere.io/port: “9090”
+    chronosphere.io/port: “80”
     chronosphere.io/path: “/metrics”
   EOF
 
