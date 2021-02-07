@@ -27,3 +27,12 @@ def test_service_api_with_name():
 
     assert r.status_code == 200
     assert r.text.startswith('Hello, {0}! I am running version '.format(name))
+
+
+def test_latency_api():
+    latency_api_uri = '{0}/latency'.format(SERVICE_URI)
+
+    for i in range(10):
+        r = requests.get(latency_api_uri)
+        assert r.status_code == 200
+        assert r.text == 'Hello!'
