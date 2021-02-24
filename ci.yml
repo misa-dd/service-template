@@ -69,3 +69,5 @@ pipeline:
           script: |
             cd /home/app
             make test
+            ls
+            cp /home/app/jacocoTestReport.xml ${WORKSPACE}/jacocoTestReport.xml
