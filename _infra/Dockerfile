@@ -26,7 +26,6 @@ WORKDIR /home/app/_infra
 COPY _infra/infra.mk .
 
 WORKDIR /home/app
-COPY jacocoTestReport.xml .
 
 WORKDIR /home/app
 EXPOSE 80
