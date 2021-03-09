@@ -7,8 +7,9 @@ provider "kubernetes" {
 }
 
 provider "helm" {
+  init_helm_home = false
   kubernetes {
-    config_context = "docker-for-desktop"
+    config_context = "docker-desktop"
   }
   install_tiller = false
   version = "0.10.4" # Heredoc strings delimited by commas broken in 0.10.2

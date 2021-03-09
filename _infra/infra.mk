@@ -22,6 +22,11 @@ ifeq ($(CACHE_FROM_PRESSURE),)
   CACHE_FROM_PRESSURE=$(LOCAL_TAG_PRESSURE)
 endif
 
+.PHONY: docker-login
+docker-login:
+	export AWS_PROFILE=okta-prod-engineer && aws --region us-west-2 ecr get-login-password | docker login --username AWS --password-stdin 611706558220.dkr.ecr.us-west-2.amazonaws.com
+	export AWS_PROFILE=okta-build-readonly && aws --region us-west-2 ecr get-login-password | docker login --username AWS --password-stdin 839591177169.dkr.ecr.us-west-2.amazonaws.com
+
 .PHONY: docker-build
 docker-build:
 	docker build . -t $(LOCAL_TAG) \
@@ -53,6 +58,10 @@ docker-build-pressure:
 .PHONY: local-deploy
 local-deploy:
 	bash ../common-pipelines-cbje/src/scripts/deploy-service.sh -c local -n $(NAMESPACE) -s $(SERVICE_NAME) -t localbuild
+
+.PHONY: local-deploy-rc
+local-deploy-rc:
+	bash ../common-pipelines-cbje/src/scripts/deploy-release-candidate.sh -c local -n $(NAMESPACE) -s $(SERVICE_NAME) -t localbuild
 
 .PHONY: local-migrate
 local-migrate:
@@ -92,11 +101,12 @@ local-clean:
 	cd _infra/local/.job-tf && terraform destroy -auto-approve -var="namespace=$(NAMESPACE)" -var="service_name=$(SERVICE_NAME)" || true
 	cd _infra/local/.pulse-tf && terraform destroy -auto-approve -var="namespace=$(NAMESPACE)" -var="service_name=$(SERVICE_NAME)" || true
 	cd _infra/local/.pressure-tf && terraform destroy -auto-approve -var="namespace=$(NAMESPACE)" -var="service_name=$(SERVICE_NAME)" -var="image_tag=localbuild" || true
-	helm --kube-context docker-for-desktop delete --purge $(SERVICE_NAME)-$(APP) || true
-	helm --kube-context docker-for-desktop delete --purge $(SERVICE_NAME)-$(JOB_NAME) || true
-	helm --kube-context docker-for-desktop delete --purge $(SERVICE_NAME)-pulse || true
-	helm --kube-context docker-for-desktop delete --purge $(SERVICE_NAME)-pressure-master || true
-	helm --kube-context docker-for-desktop delete --purge $(SERVICE_NAME)-pressure-worker || true
+	helm --kube-context docker-desktop delete --purge $(SERVICE_NAME)-$(APP) || true
+	helm --kube-context docker-desktop delete --purge $(SERVICE_NAME)-$(JOB_NAME) || true
+	helm --kube-context docker-desktop delete --purge $(SERVICE_NAME)-pulse || true
+	helm --kube-context docker-desktop delete --purge $(SERVICE_NAME)-validate-rc || true
+	helm --kube-context docker-desktop delete --purge $(SERVICE_NAME)-pressure-master || true
+	helm --kube-context docker-desktop delete --purge $(SERVICE_NAME)-pressure-worker || true
 	rm -rf _infra/logs _infra/local/.terraform _infra/local/terraform.tfstate* _infra/local/*.tfplan _infra/local/.pulse-tf _infra/local/.job-tf _infra/local/.pressure*-tf
 
 .PHONY: local-get-all
