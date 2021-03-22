@@ -54,6 +54,7 @@ secrets.init()
 def hello_world():
     name = request.args.get('name')
     version = os.getenv('GIT_SHA', 'unknown')
+    abc = "def"
     if name is None:
         return 'Hello, World! I am running version {0}\n'.format(version)
     else:
