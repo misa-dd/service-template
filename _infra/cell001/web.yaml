@@ -18,8 +18,6 @@ service:
     chronosphere.io/scrape: "true"
     chronosphere.io/port: "80"
     chronosphere.io/path: "metrics"
-  podEnVars: |
-    GIT_SHA=service.tag
   iamRole: "arn:aws:iam::914801092467:role/web.service-template"
   cmd: "/home/app/entrypoint.sh"
   cmdArgs: "/home/app/run.sh"
