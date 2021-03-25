@@ -7,7 +7,7 @@ service:
   replicaCount: 11
   containerPort: 80
   enVars: |2
-    GIT_SHA=
+    GIT_SHA=service.tag
     ENVIRONMENT=staging
     STATSD_HOST=staging-statsd-proxy.doorcrawl-int.com
     STATSD_SERVICE_NAME=service-template
