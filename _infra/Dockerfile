@@ -2,9 +2,10 @@ FROM 611706558220.dkr.ecr.us-west-2.amazonaws.com/dd-docker-base:python3-latest
 
 # Install requirements in /home/app
 WORKDIR /home/app
+
+# for kaniko
 COPY requirements.txt .
-RUN PIP_EXTRA_INDEX_URL=$(curl -Ls localhost:8000/PIP_EXTRA_INDEX_URL) \
-    pip install -r requirements.txt
+RUN PIP_EXTRA_INDEX_URL=$(cat /kaniko/secrets/PIP_EXTRA_INDEX_URL) pip install -r requirements.txt
 
 # Copy to /home/app
 WORKDIR /home/app
