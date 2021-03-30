@@ -1,18 +1,20 @@
 pipeline:
+  version: 2
   options:
     timeout:
       time: 60
       unit: minutes
-  stages:
-    Migrate:
+  phases:
+  - stages:
+    - name: Migrate
       steps:
-        - type: migrateService
-  post:
-    onSuccess:
+      - type: migrateService
+    post:
+      onSuccess:
       - type: sendSlackMessage
         to: "#pulse-svc-template"
-        message: "Successful migrate of service-template to ${REF} in ${ENV}: <${BUILD_URL}|${JOB_NAME} [${BUILD_NUMBER}]>"
-    onError:
+        message: 'Successful migrate of service-template to ${REF} in ${ENV}: <${BUILD_URL}|${JOB_NAME} [${BUILD_NUMBER}]>'
+      onError:
       - type: sendSlackMessage
         to: "#pulse-svc-template"
-        message: "Migrate failed for service-template to ${REF} in ${ENV}: <${BUILD_URL}|${JOB_NAME} [${BUILD_NUMBER}]>"
+        message: 'Migrate failed for service-template to ${REF} in ${ENV}: <${BUILD_URL}|${JOB_NAME} [${BUILD_NUMBER}]>'

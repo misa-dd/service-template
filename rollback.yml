@@ -1,18 +1,20 @@
 pipeline:
-  stages:
-    Rollback:
+  version: 2
+  phases:
+  - stages:
+    - name: Rollback
       steps:
-        - type: deployService
-          rollback: true
-    Deploy Pulse:
+      - type: deployService
+        rollback: true
+    - name: Deploy Pulse
       steps:
-        - type: deployPulse
-  post:
-    onSuccess:
+      - type: deployPulse
+    post:
+      onSuccess:
       - type: sendSlackMessage
         to: "#pulse-svc-template"
-        message: "Successful rollback of service-template to ${REF} in ${ENV}: <${BUILD_URL}|${JOB_NAME} [${BUILD_NUMBER}]>"
-    onError:
+        message: 'Successful rollback of service-template to ${REF} in ${ENV}: <${BUILD_URL}|${JOB_NAME} [${BUILD_NUMBER}]>'
+      onError:
       - type: sendSlackMessage
         to: "#pulse-svc-template"
-        message: "Rollback failed for service-template to ${REF} in ${ENV}: <${BUILD_URL}|${JOB_NAME} [${BUILD_NUMBER}]>"
+        message: 'Rollback failed for service-template to ${REF} in ${ENV}: <${BUILD_URL}|${JOB_NAME} [${BUILD_NUMBER}]>'
