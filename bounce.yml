@@ -1,0 +1,16 @@
+pipeline:
+  version: 2
+  phases:
+  - stages:
+    - name: Bounce
+      steps:
+      - type: bounceService
+    post:
+      onSuccess:
+      - type: sendSlackMessage
+        to: "#pulse-svc-template"
+        message: 'Successful bounce of service-template in ${ENV}: <${BUILD_URL}|${JOB_NAME} [${BUILD_NUMBER}]>'
+      onError:
+      - type: sendSlackMessage
+        to: "#pulse-svc-template"
+        message: 'Bounce failed for service-template in ${ENV}: <${BUILD_URL}|${JOB_NAME} [${BUILD_NUMBER}]>'
