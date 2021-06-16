@@ -20,6 +20,10 @@ stop:
 test:
 	echo "no tests"
 
+.PHONY: lint
+lint:
+	echo "no lint"
+
 .PHONY: clean
 clean: stop local-clean
 	find . -name __pycache__ -type d | xargs rm -rf || true
