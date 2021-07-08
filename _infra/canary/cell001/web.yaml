@@ -1,4 +1,6 @@
 app: web
+canary:
+  deployment: true
 contact: eng-devprod@doordash.com
 nameOverride: service-template
 namespace: service-template
@@ -9,8 +11,8 @@ service:
     ENVIRONMENT=cell001
     STATSD_HOST=staging-statsd-proxy.doorcrawl-int.com
     STATSD_SERVICE_NAME=service-template
-    STATSD_ENV_NAME=CELL001
-    NEW_RELIC_ENV=cell001
+    STATSD_ENV_NAME=CELL001-CANARY
+    NEW_RELIC_ENV=CELL001
   iamRole: arn:aws:iam::914801092467:role/web.service-template
   image: 611706558220.dkr.ecr.us-west-2.amazonaws.com/service-template
   limits:

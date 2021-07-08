@@ -1,23 +1,24 @@
-app: web
+app: cronjob
 contact: eng-devprod@doordash.com
+job:
+  cronSchedule: '* * * * *'
+  enable: true
 nameOverride: service-template
 namespace: service-template
 service:
   cmd: /home/app/entrypoint.sh
-  cmdArgs: /home/app/run.sh
+  cmdArgs: /home/app/run-job.sh
   enVars: |-
-    ENVIRONMENT=cell001
+    ENVIRONMENT=staging
     STATSD_HOST=staging-statsd-proxy.doorcrawl-int.com
     STATSD_SERVICE_NAME=service-template
-    STATSD_ENV_NAME=CELL001
-    NEW_RELIC_ENV=cell001
-  iamRole: arn:aws:iam::914801092467:role/web.service-template
+    STATSD_ENV_NAME=STAGE
+    NEW_RELIC_ENV=staging
+  iamRole: arn:aws:iam::914801092467:role/cronjob.service-template
   image: 611706558220.dkr.ecr.us-west-2.amazonaws.com/service-template
   limits:
     cpu: 100m
     memory: 256Mi
-  readinessProbe:
-    path: /health
   requests:
     cpu: 100m
     memory: 256Mi

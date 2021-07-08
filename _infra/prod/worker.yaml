@@ -1,4 +1,4 @@
-app: web
+app: worker
 contact: eng-devprod@doordash.com
 nameOverride: service-template
 namespace: service-template
@@ -6,18 +6,17 @@ service:
   cmd: /home/app/entrypoint.sh
   cmdArgs: /home/app/run.sh
   enVars: |-
-    ENVIRONMENT=cell001
-    STATSD_HOST=staging-statsd-proxy.doorcrawl-int.com
+    ENVIRONMENT=prod
+    STATSD_HOST=prod-statsd-proxy.int.doordash.com
     STATSD_SERVICE_NAME=service-template
-    STATSD_ENV_NAME=CELL001
-    NEW_RELIC_ENV=cell001
-  iamRole: arn:aws:iam::914801092467:role/web.service-template
+    STATSD_ENV_NAME=PROD
+    NEW_RELIC_ENV=production
+  iamRole: arn:aws:iam::611706558220:role/worker.service-template
   image: 611706558220.dkr.ecr.us-west-2.amazonaws.com/service-template
   limits:
     cpu: 100m
     memory: 256Mi
-  readinessProbe:
-    path: /health
+  replicaCount: 3
   requests:
     cpu: 100m
     memory: 256Mi

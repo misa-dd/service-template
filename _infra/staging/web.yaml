@@ -5,12 +5,17 @@ namespace: service-template
 service:
   cmd: /home/app/entrypoint.sh
   cmdArgs: /home/app/run.sh
+  customPodAnnotations: |-
+    chronosphere.io/job: "service-template"
+    chronosphere.io/scrape: "true"
+    chronosphere.io/port: "80"
+    chronosphere.io/path: "/metrics"
   enVars: |-
-    ENVIRONMENT=cell001
+    ENVIRONMENT=staging
     STATSD_HOST=staging-statsd-proxy.doorcrawl-int.com
     STATSD_SERVICE_NAME=service-template
-    STATSD_ENV_NAME=CELL001
-    NEW_RELIC_ENV=cell001
+    STATSD_ENV_NAME=STAGE
+    NEW_RELIC_ENV=staging
   iamRole: arn:aws:iam::914801092467:role/web.service-template
   image: 611706558220.dkr.ecr.us-west-2.amazonaws.com/service-template
   limits:
@@ -18,6 +23,7 @@ service:
     memory: 256Mi
   readinessProbe:
     path: /health
+  replicaCount: 6
   requests:
     cpu: 100m
     memory: 256Mi
