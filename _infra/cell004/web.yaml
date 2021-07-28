@@ -2,6 +2,9 @@ nameOverride: "service-template"
 app: "web"
 contact: "eng-devprod@doordash.com"
 namespace: "service-template"
+net_service:
+  port: 80
+  type: ClusterIP
 service:
   image: "611706558220.dkr.ecr.us-west-2.amazonaws.com/service-template"
   replicaCount: 11

@@ -4,6 +4,9 @@ canary:
 contact: eng-devprod@doordash.com
 nameOverride: service-template
 namespace: service-template
+net_service:
+  port: 80
+  type: ClusterIP
 service:
   cmd: /home/app/entrypoint.sh
   cmdArgs: /home/app/run.sh
