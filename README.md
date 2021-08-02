@@ -1,4 +1,4 @@
-# service-template
+# service-template 
 
 * [Introduction](README.md#introduction)
 * [Prerequisites for Local Development](README.md#prerequisites-for-local-development)
