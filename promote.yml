@@ -3,12 +3,15 @@ pipeline:
   phases:
   - stages:
     - name: Promote
-      steps:
-      - type: deployService
-    - name: Deploy Pulse
-      steps:
-      - type: deployPulse
-        mode: blocking
+      parallel:
+        stages:
+          - name: Promote
+            steps:
+              - type: deployService
+          - name: Deploy Pulse
+            steps:
+               - type: deployPulse
+                 mode: blocking
     post:
       onSuccess:
       - type: sendSlackMessage
