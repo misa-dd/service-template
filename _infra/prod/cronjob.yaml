@@ -5,6 +5,8 @@ job:
   enable: true
 nameOverride: service-template
 namespace: service-template
+net_service:
+  enable: false
 service:
   cmd: /home/app/entrypoint.sh
   cmdArgs: /home/app/run-job.sh
