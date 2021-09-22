@@ -45,4 +45,9 @@ module "service-canary" {
     STATSD_ENV_NAME=PROD-CANARY
     NEW_RELIC_ENV=production
    EOF
+
+  service_custom_pod_annotations = <<EOF
+    # Update the following once you have requested the index
+    doordash.com/logging-index: index-not-sent-to-splunk
+   EOF
 }

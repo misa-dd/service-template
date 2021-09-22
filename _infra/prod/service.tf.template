@@ -45,6 +45,11 @@ module "service" {
     STATSD_ENV_NAME=PROD
     NEW_RELIC_ENV=production
    EOF
+
+  service_custom_pod_annotations = <<EOF
+    # Update the following once you have requested the index
+    doordash.com/logging-index: index-not-sent-to-splunk
+   EOF
 }
 
 module "worker" {
@@ -79,6 +84,11 @@ module "worker" {
     STATSD_SERVICE_NAME=${var.service_name}
     STATSD_ENV_NAME=PROD
     NEW_RELIC_ENV=production
+   EOF
+
+  service_custom_pod_annotations = <<EOF
+    # Update the following once you have requested the index
+    doordash.com/logging-index: index-not-sent-to-splunk
    EOF
 }
 

@@ -51,6 +51,8 @@ module "service" {
     chronosphere.io/scrape: "true"
     chronosphere.io/port: "80"
     chronosphere.io/path: "/metrics"
+    # Update the following once you have requested the index
+    doordash.com/logging-index: index-not-sent-to-splunk
   EOF
 
 }
@@ -87,6 +89,11 @@ module "worker" {
     STATSD_SERVICE_NAME=${var.service_name}
     STATSD_ENV_NAME=STAGE
     NEW_RELIC_ENV=staging
+   EOF
+
+  service_custom_pod_annotations = <<EOF
+    # Update the following once you have requested the index
+    doordash.com/logging-index: index-not-sent-to-splunk
    EOF
 }
 

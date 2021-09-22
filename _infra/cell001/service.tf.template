@@ -45,4 +45,9 @@ module "service" {
     STATSD_ENV_NAME=CELL001
     NEW_RELIC_ENV=cell001
    EOF
+
+  service_custom_pod_annotations = <<EOF
+    # Update the following once you have requested the index
+    doordash.com/logging-index: index-not-sent-to-splunk
+   EOF
 }
