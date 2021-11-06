@@ -5,7 +5,6 @@ pipeline:
     - name: Promote
       steps:
       - type: deployService
-        k8sCredFileCredentialId: TEST_NOT_EXISTENT_CREDS
     - name: Deploy Pulse
       steps:
       - type: deployPulse
