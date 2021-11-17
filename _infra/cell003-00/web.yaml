@@ -3,6 +3,7 @@ app: "web"
 contact: "eng-devprod@doordash.com"
 slackChannel: "spinnaker-slackbot"
 namespace: "service-template"
+environment: "production"
 net_service:
   port: 80
   type: ClusterIP

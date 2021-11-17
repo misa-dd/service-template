@@ -3,6 +3,7 @@ app: "migrate"
 contact: "eng-devprod@doordash.com"
 slackChannel: "spinnaker-slackbot"
 namespace: "service-template"
+environment: "production"
 job:
   enable: true
   backoffLimit: 0
