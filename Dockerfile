@@ -1,4 +1,5 @@
-FROM 611706558220.dkr.ecr.us-west-2.amazonaws.com/dd-docker-base:python3-latest
+ARG IMAGE_SERVICE=611706558220.dkr.ecr.us-west-2.amazonaws.com/dd-docker-base:python3-latest
+FROM ${IMAGE_SERVICE}
 
 # Install requirements in /home/app
 WORKDIR /home/app
