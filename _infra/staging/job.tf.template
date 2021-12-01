@@ -19,6 +19,7 @@ module "job" {
   runtime_enable            = "false"
   service_cmd               = "/home/app/entrypoint.sh"
   service_cmd_args          = "/home/app/run-job.sh"
+  service_pdb_enable        = "true"
 
   helm_timeout = "0"
   job_enable = "true"

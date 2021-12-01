@@ -29,6 +29,7 @@ module "service-pressure-master" {
   service_image_pull_policy = "IfNotPresent"
   service_cmd               = "/build/scripts/entrypoint.sh"
   service_cmd_args          = ""
+  service_pdb_enable        = "true"
 
   service_container_port    = "5557"
   net_service_port          = "5557"
