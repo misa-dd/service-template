@@ -9,10 +9,6 @@ service:
   cmdArgs: /home/app/run.sh
   enVars: |-
     ENVIRONMENT=staging
-    STATSD_HOST=staging-statsd-proxy.doorcrawl-int.com
-    STATSD_SERVICE_NAME=service-template
-    STATSD_ENV_NAME=STAGE
-    NEW_RELIC_ENV=staging
   iamRole: arn:aws:iam::914801092467:role/worker.service-template
   image: 611706558220.dkr.ecr.us-west-2.amazonaws.com/service-template
   limits:

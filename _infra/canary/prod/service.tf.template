@@ -40,10 +40,6 @@ module "service-canary" {
   service_environments_variables = <<EOF
     GIT_SHA=${var.image_tag}
     ENVIRONMENT=prod
-    STATSD_HOST=prod-statsd-proxy.int.doordash.com
-    STATSD_SERVICE_NAME=${var.service_name}
-    STATSD_ENV_NAME=PROD-CANARY
-    NEW_RELIC_ENV=production
    EOF
 
   service_custom_pod_annotations = <<EOF

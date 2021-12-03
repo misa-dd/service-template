@@ -12,10 +12,6 @@ service:
   cmdArgs: /home/app/run.sh
   enVars: |-
     ENVIRONMENT=prod
-    STATSD_HOST=prod-statsd-proxy.int.doordash.com
-    STATSD_SERVICE_NAME=service-template
-    STATSD_ENV_NAME=PROD-CANARY
-    NEW_RELIC_ENV=production
   iamRole: arn:aws:iam::611706558220:role/web.service-template
   image: 611706558220.dkr.ecr.us-west-2.amazonaws.com/service-template
   limits:

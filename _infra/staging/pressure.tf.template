@@ -50,7 +50,6 @@ module "service-pressure-master" {
 
   service_environments_variables = <<EOF
     ENVIRONMENT=staging
-    WAVEFRONT_ENABLED=true
     REPORT_ENABLED=true
     LOCUST_ROLE=master
     LOCUST_FILE=/pressure/tests/locustfile.py
@@ -102,10 +101,6 @@ module "service-pressure-worker" {
 
   service_environments_variables = <<EOF
     ENVIRONMENT=staging
-    WAVEFRONT_ENABLED=true
-    STATSD_HOST=staging-statsd-proxy.doorcrawl-int.com
-    STATSD_PORT=8125
-    LOCUST_ROLE=worker
     LOCUST_FILE=/pressure/tests/locustfile.py
     MASTER_HOST_VENV=${replace(upper(var.service_name), "-", "_")}_PRESSURE_MASTER_SERVICE_HOST
     IDENTITY_SERVICE_URL=identity.doorcrawl-int.com:50051

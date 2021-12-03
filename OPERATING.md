@@ -1,8 +1,8 @@
 # service-template Operating Guide
 
-## Wavefront
+## Chronosphere
 
-`<your wavefront dashboard>`
+`<your chronosphere dashboard>`
 
 
 ## LOGS

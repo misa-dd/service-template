@@ -41,10 +41,6 @@ module "service" {
   service_environments_variables = <<EOF
     GIT_SHA=${var.image_tag}
     ENVIRONMENT=staging
-    STATSD_HOST=staging-statsd-proxy.doorcrawl-int.com
-    STATSD_SERVICE_NAME=${var.service_name}
-    STATSD_ENV_NAME=STAGE
-    NEW_RELIC_ENV=staging
    EOF
 
   service_custom_pod_annotations = <<EOF
@@ -86,10 +82,6 @@ module "worker" {
   service_environments_variables = <<EOF
     GIT_SHA=${var.image_tag}
     ENVIRONMENT=staging
-    STATSD_HOST=staging-statsd-proxy.doorcrawl-int.com
-    STATSD_SERVICE_NAME=${var.service_name}
-    STATSD_ENV_NAME=STAGE
-    NEW_RELIC_ENV=staging
    EOF
 
   service_custom_pod_annotations = <<EOF
@@ -126,9 +118,5 @@ module "cronjob" {
     GIT_SHA=${var.image_tag}
     ENVIRONMENT=staging
     JOB_NAME=${var.job_name}
-    STATSD_HOST=staging-statsd-proxy.doorcrawl-int.com
-    STATSD_SERVICE_NAME=${var.service_name}
-    STATSD_ENV_NAME=STAGE
-    NEW_RELIC_ENV=staging
    EOF
 }

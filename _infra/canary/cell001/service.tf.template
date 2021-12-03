@@ -40,10 +40,6 @@ module "service-canary" {
   service_environments_variables = <<EOF
     GIT_SHA=${var.image_tag}
     ENVIRONMENT=cell001
-    STATSD_HOST=staging-statsd-proxy.doorcrawl-int.com
-    STATSD_SERVICE_NAME=${var.service_name}
-    STATSD_ENV_NAME=CELL001-CANARY
-    NEW_RELIC_ENV=CELL001
    EOF
 
   service_custom_pod_annotations = <<EOF

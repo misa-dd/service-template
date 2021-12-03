@@ -63,7 +63,6 @@ module "service-pressure-master" {
 
   service_environments_variables = <<EOF
     ENVIRONMENT=local
-    WAVEFRONT_ENABLED=false
     REPORT_ENABLED=false
     LOCUST_ROLE=master
     LOCUST_FILE=/pressure/tests/locustfile.py
@@ -105,7 +104,6 @@ module "service-pressure-worker" {
 
   service_environments_variables = <<EOF
     ENVIRONMENT=local
-    WAVEFRONT_ENABLED=false
     LOCUST_ROLE=worker
     LOCUST_FILE=/pressure/tests/locustfile.py
     MASTER_HOST_VENV=${replace(upper(var.service_name), "-", "_")}_PRESSURE_MASTER_SERVICE_HOST

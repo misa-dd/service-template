@@ -9,10 +9,6 @@ service:
   enVars: |2
     GIT_SHA=
     ENVIRONMENT=staging
-    STATSD_HOST=staging-statsd-proxy.doorcrawl-int.com
-    STATSD_SERVICE_NAME=service-template
-    STATSD_ENV_NAME=CELL002
-    NEW_RELIC_ENV=staging
   iamRole: "arn:aws:iam::914801092467:role/web.service-template"
   cmd: "/home/app/entrypoint.sh"
   cmdArgs: "/home/app/run.sh"
