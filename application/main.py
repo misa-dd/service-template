@@ -57,7 +57,7 @@ def hello_world():
     if name is None:
         return 'Hello, World! I am running version {0}\n'.format(version)
     else:
-        return 'Hello, {0}! I am running version {1}\n'.format(name, version)
+        return 'Hello World!, {0}! I am running version {1}\n'.format(name, version)
 
 
 @app.route('/latency')
