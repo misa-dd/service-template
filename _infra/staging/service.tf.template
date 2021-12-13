@@ -8,7 +8,7 @@ terraform {
 }
 
 module "service" {
-  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=master"
+  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=update-pdb"
 
   namespace                 = var.namespace
   service_name              = var.service_name
@@ -55,7 +55,7 @@ module "service" {
 }
 
 module "worker" {
-  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=master"
+  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=update-pdb"
 
   namespace                 = var.namespace
   service_name              = var.service_name
@@ -67,6 +67,7 @@ module "worker" {
   service_cmd               = "/home/app/entrypoint.sh"
   service_cmd_args          = "/home/app/run.sh"
   service_replica_count     = "2"
+  service_pdb_enable        = "true"
 
   helm_timeout = "0"
   blue_green_enable = "false"
@@ -91,7 +92,7 @@ module "worker" {
 }
 
 module "cronjob" {
-  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=master"
+  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=update-pdb"
 
   namespace                 = var.namespace
   service_name              = var.service_name
@@ -102,6 +103,7 @@ module "cronjob" {
   runtime_enable            = "false"
   service_cmd               = "/home/app/entrypoint.sh"
   service_cmd_args          = "/home/app/run-job.sh"
+  service_pdb_enable        = "true"
 
   helm_timeout = "0"
   job_enable = "true"
