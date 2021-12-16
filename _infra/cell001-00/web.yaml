@@ -10,6 +10,7 @@ net_service:
 service:
   image: "611706558220.dkr.ecr.us-west-2.amazonaws.com/service-template"
   replicaCount: 11
+  maxUnavailable: 10%
   containerPort: 80
   enVars: |2
     GIT_SHA=
