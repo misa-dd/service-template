@@ -8,7 +8,7 @@ terraform {
 }
 
 module "service" {
-  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=master"
+  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=CMPT-1967"
 
   namespace                 = var.namespace
   service_name              = var.service_name
@@ -50,7 +50,7 @@ module "service" {
 }
 
 module "worker" {
-  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=master"
+  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=CMPT-1967"
 
   namespace                 = var.namespace
   service_name              = var.service_name
@@ -87,7 +87,7 @@ module "worker" {
 }
 
 module "cronjob" {
-  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=master"
+  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=CMPT-1967"
 
   namespace                 = var.namespace
   service_name              = var.service_name
