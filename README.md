@@ -30,7 +30,6 @@ Tech stack:
  * [Terraform](https://www.terraform.io/docs/)
  * [Debian Buster Slim](https://packages.debian.org/buster/slim)
 
-
 ## Prerequisites for Local Development
 
 The following sections assume that you have completed the steps in the
