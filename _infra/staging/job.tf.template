@@ -8,7 +8,7 @@ terraform {
 }
 
 module "job" {
-  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=master"
+  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=add-startup-probe"
 
   namespace                 = var.namespace
   service_name              = var.service_name
