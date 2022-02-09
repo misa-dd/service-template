@@ -54,10 +54,10 @@ secrets.init()
 def hello_world():
     name = request.args.get('name')
     version = os.getenv('GIT_SHA', 'unknown')
+
     if name is None:
         return 'Hello, World! I am running version {0}\n'.format(version)
-    else:
-        return 'Hello World!, {0}! I am running version {1}\n'.format(name, version)
+    return 'Hello, {0}! I am running version {1}\n'.format(name, version)
 
 
 @app.route('/latency')

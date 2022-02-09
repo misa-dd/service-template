@@ -6,7 +6,7 @@ services:
     build:
       context: .
       args:
-      - IMAGE_SERVICE=611706558220.dkr.ecr.us-west-2.amazonaws.com/dd-docker-base:rc.python3-latest
+      - IMAGE_SERVICE=611706558220.dkr.ecr.us-west-2.amazonaws.com/dd-docker-base:python3-7-latest
       - PIP_EXTRA_INDEX_URL
     environment:
     - GIT_TAG=localbuild
