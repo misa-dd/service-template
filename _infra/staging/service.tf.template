@@ -35,6 +35,9 @@ module "service" {
   service_resource_requests_cpu = "100m"
   service_resource_limits_cpu = "100m"
   service_readiness_probe_path = "/health"
+  service_startup_probe_path = "/health"
+  service_startup_probe_init_delay = "10"
+  service_startup_probe_failure_threshold = "3"
 
   service_iam_role = "arn:aws:iam::914801092467:role/web.${var.namespace}"
 

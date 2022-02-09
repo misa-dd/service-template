@@ -32,5 +32,9 @@ service:
     memory: 256Mi
   readinessProbe:
     path: "/health"
+  startupProbe:
+    path: "/health"
+    initialDelaySeconds: 10
+    failureThreshold: 2
 spinnaker:
   enable: true
