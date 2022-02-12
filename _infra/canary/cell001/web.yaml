@@ -22,9 +22,5 @@ service:
   requests:
     cpu: 100m
     memory: 256Mi
-  startupProbe:
-    path: "/health"
-    initialDelaySeconds: 10
-    failureThreshold: 2
 spinnaker:
   enable: true
