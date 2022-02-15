@@ -31,9 +31,9 @@ module "service" {
   blue_green_scale_down_delay_seconds = "600"
   
   service_hpa_enable                        = "true"
-  service_hpa_min_replicas                  = "5"
-  service_hpa_max_replicas                  = "10"
-  service_hpa_cpu_target_avg_util           = "25"
+  service_hpa_min_replicas                  = "10"
+  service_hpa_max_replicas                  = "15"
+  service_hpa_cpu_target_avg_util           = "27"
 
   service_resource_requests_memory = "256Mi"
   service_resource_limits_memory = "256Mi"
@@ -79,9 +79,9 @@ module "worker" {
   net_service_enable = "false"
   
   service_hpa_enable                        = "true"
-  service_hpa_min_replicas                  = "5"
-  service_hpa_max_replicas                  = "10"
-  service_hpa_cpu_target_avg_util           = "25"
+  service_hpa_min_replicas                  = "10"
+  service_hpa_max_replicas                  = "15"
+  service_hpa_cpu_target_avg_util           = "27"
 
   service_resource_requests_memory = "256Mi"
   service_resource_limits_memory = "256Mi"
