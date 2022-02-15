@@ -102,7 +102,7 @@ module "worker" {
 }
 
 module "cronjob" {
-  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=add-startup-probe"
+  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=master"
 
   namespace                 = var.namespace
   service_name              = var.service_name
