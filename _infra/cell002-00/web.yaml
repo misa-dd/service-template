@@ -32,7 +32,5 @@ service:
     memory: 256Mi
   readinessProbe:
     path: "/health"
-  startupProbe:
-    command: "echo"
 spinnaker:
   enable: true
