@@ -45,9 +45,11 @@ nohup.out
 *.tfstate
 *.tfstate.backup
 *.tfplan
+*.terraform.lock.hcl
 .pulse-tf/
 .pressure-tf/
 .job-tf/
+.sandbox-tf/
 
 # python
 __pycache__/

@@ -85,7 +85,7 @@ local-bounce:
 
 .PHONY: local-status
 local-status:
-	helm status $(SERVICE_NAME)-$(APP)
+	helm status -n $(NAMESPACE) $(SERVICE_NAME)-$(APP)
 
 .PHONY: local-rollout-status
 local-rollout-status:
@@ -101,13 +101,13 @@ local-clean:
 	cd _infra/local/.job-tf && terraform destroy -auto-approve -var="namespace=$(NAMESPACE)" -var="service_name=$(SERVICE_NAME)" || true
 	cd _infra/local/.pulse-tf && terraform destroy -auto-approve -var="namespace=$(NAMESPACE)" -var="service_name=$(SERVICE_NAME)" || true
 	cd _infra/local/.pressure-tf && terraform destroy -auto-approve -var="namespace=$(NAMESPACE)" -var="service_name=$(SERVICE_NAME)" -var="image_tag=localbuild" || true
-	helm --kube-context docker-desktop delete --purge $(SERVICE_NAME)-$(APP) || true
-	helm --kube-context docker-desktop delete --purge $(SERVICE_NAME)-$(JOB_NAME) || true
-	helm --kube-context docker-desktop delete --purge $(SERVICE_NAME)-pulse || true
-	helm --kube-context docker-desktop delete --purge $(SERVICE_NAME)-validate-rc || true
-	helm --kube-context docker-desktop delete --purge $(SERVICE_NAME)-pressure-master || true
-	helm --kube-context docker-desktop delete --purge $(SERVICE_NAME)-pressure-worker || true
-	rm -rf _infra/logs _infra/local/.terraform _infra/local/terraform.tfstate* _infra/local/*.tfplan _infra/local/.pulse-tf _infra/local/.job-tf _infra/local/.pressure*-tf
+	helm --kube-context docker-desktop delete -n $(NAMESPACE) $(SERVICE_NAME)-$(APP) || true
+	helm --kube-context docker-desktop delete -n $(NAMESPACE) $(SERVICE_NAME)-$(JOB_NAME) || true
+	helm --kube-context docker-desktop delete -n $(NAMESPACE) $(SERVICE_NAME)-pulse || true
+	helm --kube-context docker-desktop delete -n $(NAMESPACE) $(SERVICE_NAME)-validate-rc || true
+	helm --kube-context docker-desktop delete -n $(NAMESPACE) $(SERVICE_NAME)-pressure-master || true
+	helm --kube-context docker-desktop delete -n $(NAMESPACE) $(SERVICE_NAME)-pressure-worker || true
+	rm -rf _infra/logs _infra/local/.terraform _infra/local/terraform.tfstate* _infra/local/*.tfplan _infra/local/.pulse-tf _infra/local/.job-tf _infra/local/.pressure*-tf _infra/local/.terraform.lock.hcl
 
 .PHONY: local-get-all
 local-get-all:
