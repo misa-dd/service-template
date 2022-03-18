@@ -40,5 +40,6 @@ module "service" {
   service_environments_variables = <<EOF
     GIT_SHA=${var.image_tag}
     ENVIRONMENT=prod
+    SUB_ENVIRONMENT=sandbox
    EOF
 }
