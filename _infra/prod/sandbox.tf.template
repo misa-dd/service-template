@@ -8,7 +8,7 @@ terraform {
 }
 
 module "service" {
-  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=sandbox-deploy"
+  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=master"
 
   namespace                 = var.namespace
   service_name              = var.service_name
@@ -32,10 +32,6 @@ module "service" {
   service_readiness_probe_path = "/health"
 
   service_iam_role = "arn:aws:iam::914801092467:role/web.${var.namespace}"
-
-  service_custom_labels = <<EOF
-    sandboxDeploy: true
-  EOF
 
   service_environments_variables = <<EOF
     GIT_SHA=${var.image_tag}
