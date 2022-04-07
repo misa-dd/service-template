@@ -21,6 +21,9 @@ service:
     chronosphere.io/scrape: "true"
     chronosphere.io/port: "80"
     chronosphere.io/path: "/metrics"
+    envoy-sidecar-annotation: "true"
+  customLabels: |2
+    envoy-sidecar-injector.doordash.com/enabled: "true"
   iamRole: "arn:aws:iam::914801092467:role/web.service-template"
   cmd: "/home/app/entrypoint.sh"
   cmdArgs: "/home/app/run.sh"
