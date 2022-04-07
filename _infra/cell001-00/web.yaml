@@ -44,10 +44,5 @@ canary:
     size: 1
   canary:
     size: 1
-    overrides:
-      customPodAnnotations: |2
-        envoy-sidecar-annotation: "true"
-      customLabels: |2
-        envoy-sidecar-injector.doordash.com/enabled: "true"
 spinnaker:
   enable: true
