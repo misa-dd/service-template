@@ -25,6 +25,10 @@ module "service" {
   helm_timeout = "0"
   blue_green_enable = "false"
 
+  service_custom_labels = <<EOF
+    sandbox: "true"
+  EOF
+  
   service_resource_requests_memory = "256Mi"
   service_resource_limits_memory = "256Mi"
   service_resource_requests_cpu = "100m"
