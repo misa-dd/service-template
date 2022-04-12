@@ -38,5 +38,6 @@ provider "helm" {
   kubernetes {
     config_path = var.k8s_config_path
   }
-  version = "1.1.1"
+  install_tiller = false
+  version = "0.10.1" # Heredoc strings delimited by commas broken in 0.10.2
 }
