@@ -21,7 +21,6 @@ service:
     chronosphere.io/scrape: "true"
     chronosphere.io/port: "80"
     chronosphere.io/path: "/metrics"
-    envoy-sidecar-annotation: "true"
   customLabels: |2
     envoy-sidecar-injector.doordash.com/enabled: "true"
   iamRole: "arn:aws:iam::914801092467:role/web.service-template"
@@ -38,16 +37,11 @@ service:
 canary:
   config: "99c5b30f-9025-4383-b22b-e9bccc67c271"
   skipJudgementOnPass: true
-  beginCanaryAnalysisAfterMins: 1
-  lifetimeDuration: PT0H1M
+  beginCanaryAnalysisAfterMins: 15
+  lifetimeDuration: PT0H15M
   baseline:
     size: 1
   canary:
     size: 1
-    overrides:
-      customPodAnnotations: |2
-        envoy-sidecar-annotation: "true"
-      customLabels: |2
-        envoy-sidecar-injector.doordash.com/enabled: "true"
 spinnaker:
   enable: true
