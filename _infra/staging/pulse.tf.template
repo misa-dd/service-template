@@ -8,7 +8,7 @@ terraform {
 }
 
 module "service-pulse" {
-  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=add-startup-probe"
+  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=topology-spread"
 
   namespace                 = var.namespace
   service_name              = var.service_name

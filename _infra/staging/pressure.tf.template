@@ -17,7 +17,7 @@ variable "service_image_tag" {
 }
 
 module "service-pressure-master" {
-  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=add-startup-probe"
+  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=topology-spread"
 
   namespace                 = var.namespace
   service_name              = var.service_name
@@ -72,7 +72,7 @@ module "service-pressure-master" {
 }
 
 module "service-pressure-worker" {
-  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=add-startup-probe"
+  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=topology-spread"
 
   namespace                 = var.namespace
   service_name              = var.service_name
