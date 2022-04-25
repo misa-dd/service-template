@@ -8,7 +8,7 @@ terraform {
 }
 
 module "service" {
-  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=master"
+  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=topology-spread"
 
   namespace                 = var.namespace
   service_name              = var.service_name
@@ -29,7 +29,9 @@ module "service" {
   blue_green_enable = "true"
   blue_green_first_deployment = var.blue_green_first_deployment
   blue_green_scale_down_delay_seconds = "600"
-  
+
+  enable_topology_spread = "true"
+
   service_hpa_enable                        = "true"
   service_hpa_min_replicas                  = "10"
   service_hpa_max_replicas                  = "15"
@@ -60,7 +62,7 @@ module "service" {
 }
 
 module "worker" {
-  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=master"
+  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=topology-spread"
 
   namespace                 = var.namespace
   service_name              = var.service_name
@@ -77,7 +79,9 @@ module "worker" {
   helm_timeout = "0"
   blue_green_enable = "false"
   net_service_enable = "false"
-  
+
+  enable_topology_spread = "true"
+
   service_hpa_enable                        = "true"
   service_hpa_min_replicas                  = "10"
   service_hpa_max_replicas                  = "15"
@@ -102,7 +106,7 @@ module "worker" {
 }
 
 module "cronjob" {
-  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=master"
+  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=topology-spread"
 
   namespace                 = var.namespace
   service_name              = var.service_name
@@ -114,6 +118,8 @@ module "cronjob" {
   service_cmd               = "/home/app/entrypoint.sh"
   service_cmd_args          = "/home/app/run-job.sh"
   service_pdb_enable        = "true"
+
+  enable_topology_spread = "true"
 
   helm_timeout = "0"
   job_enable = "true"
