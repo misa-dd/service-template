@@ -8,7 +8,7 @@ terraform {
 }
 
 module "service" {
-  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=master"
+  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=hpa-fix-1"
 
   namespace                 = var.namespace
   service_name              = var.service_name
@@ -52,7 +52,7 @@ module "service" {
 }
 
 module "worker" {
-  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=master"
+  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=hpa-fix-1"
 
   namespace                 = var.namespace
   service_name              = var.service_name
@@ -71,6 +71,11 @@ module "worker" {
   net_service_enable = "false"
 
   enable_topology_spread = "true"
+  
+  service_hpa_enable                        = "true"
+  service_hpa_min_replicas                  = "10"
+  service_hpa_max_replicas                  = "15"
+  service_hpa_cpu_target_avg_util           = "27"
 
   service_resource_requests_memory = "256Mi"
   service_resource_limits_memory = "256Mi"
@@ -91,7 +96,7 @@ module "worker" {
 }
 
 module "cronjob" {
-  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=master"
+  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=hpa-fix-1"
 
   namespace                 = var.namespace
   service_name              = var.service_name
