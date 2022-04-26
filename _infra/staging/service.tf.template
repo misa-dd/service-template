@@ -19,7 +19,7 @@ module "service" {
   runtime_enable            = "true"
   service_cmd               = "/home/app/entrypoint.sh"
   service_cmd_args          = "/home/app/run.sh"
-  service_replica_count     = "6"
+  service_replica_count     = "1"
   service_pdb_enable        = "true"
 
   service_container_port = "80"
