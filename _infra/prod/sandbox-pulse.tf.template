@@ -51,7 +51,7 @@ module "service-pulse" {
     S3_BUCKET_NAME=pulse-reports-staging
     SERVICE_URI=http://${var.service_name}-${var.sandbox_app}.${var.namespace}.svc.cluster.local
     USE_VAULT_SECRETS=true
-    CUSTOM_SUCCESS_MSG=[Pulse sandbox test]service-template _SANDBOX_NAME_ Successfully executed Pulse test on staging
-    CUSTOM_FAILURE_MSG=[Pulse sandbox test]service-template _SANDBOX_NAME_ Pulse testsuite detected an error on staging
+    CUSTOM_SUCCESS_MSG=[Pulse sandbox test]:celebrate: service-template _SANDBOX_NAME_ Successfully executed Pulse test on PROD
+    CUSTOM_FAILURE_MSG=[Pulse sandbox test]:x: service-template _SANDBOX_NAME_ Pulse testsuite detected an error on PROD
    EOF
 }
