@@ -38,7 +38,7 @@ module "service-pulse" {
   service_resource_requests_cpu = "500m"
   service_resource_limits_cpu = "500m"
 
-  service_iam_role = "arn:aws:iam::914801092467:role/pulse.${var.namespace}"
+  service_iam_role = "arn:aws:iam::914801092467:role/pulse.service-template"
 
   vault_enable = "true"
   vault_enable_pulse = "true"
