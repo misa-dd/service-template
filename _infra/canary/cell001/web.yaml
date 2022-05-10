@@ -22,5 +22,8 @@ service:
   requests:
     cpu: 100m
     memory: 256Mi
+  dnsConfig:
+    options: |-
+      ndots=4
 spinnaker:
   enable: true
