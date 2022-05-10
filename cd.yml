@@ -1,0 +1,11 @@
+pipeline:
+  version: 2
+  options:
+    skipDefaultCheckout: true
+  phases:
+  - stages:
+    - name: hello
+      steps:
+      - type: sendSlackMessage
+        to: "#eng-test-platform-internal"
+        message: <https://github.com/doordash/service-template|A test version> of service-template was released.
