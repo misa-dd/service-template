@@ -40,10 +40,6 @@ module "service" {
 
   service_iam_role = "arn:aws:iam::611706558220:role/web.${var.namespace}"
 
-  service_dns_config_options = <<EOF
-    ndots=4
-  EOF
-
   service_environments_variables = <<EOF
     GIT_SHA=${var.image_tag}
     ENVIRONMENT=prod
