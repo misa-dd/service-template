@@ -35,6 +35,9 @@ service:
   readinessProbe:
     path: "/health"
   enableTopologySpread: true
+  dnsConfig:
+    options: |-
+      ndots=4
 canary:
   config: "99c5b30f-9025-4383-b22b-e9bccc67c271"
   skipJudgementOnPass: true
