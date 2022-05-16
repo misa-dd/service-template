@@ -7,5 +7,5 @@ pipeline:
     - name: hello
       steps:
       - type: sendSlackMessage
-        to: "#eng-test-platform-internal"
-        message: <https://github.com/doordash/service-template|A test version> of service-template was released.
+        to: "C03EZGK6CTF"
+        message: "CD of srv template is triggered"
