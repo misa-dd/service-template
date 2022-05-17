@@ -35,7 +35,7 @@ module "service" {
   service_resource_limits_cpu = "100m"
   service_readiness_probe_path = "/health"
 
-  service_iam_role = "arn:aws:iam::914801092467:role/web.${var.namespace}"
+  service_iam_role = "arn:aws:iam::914801092467:role/web.service-template"
 
   service_environments_variables = <<EOF
     GIT_SHA=${var.image_tag}
