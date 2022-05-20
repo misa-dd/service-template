@@ -8,4 +8,4 @@ pipeline:
       steps:
       - type: sendSlackMessage
         to: "C03EZGK6CTF"
-        message: "CD of srv template is triggered"
+        message: "hello"
