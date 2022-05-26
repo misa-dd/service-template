@@ -41,7 +41,7 @@ pipeline:
       steps:
       - type: sendSlackMessage
         to: "C03EZGK6CTF"
-        message: 'Hey! CD test 1 is in progress...'
+        message: 'Hey! CD test 2 is in progress...'
     - name: Sandbox Deploy + Pulse Test
       steps:
       - type: sandboxDeploy
