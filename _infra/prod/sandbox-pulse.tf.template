@@ -44,11 +44,11 @@ module "service-pulse" {
   vault_enable_pulse = "true"
 
   service_environments_variables = <<EOF
-    ENVIRONMENT=staging
+    ENVIRONMENT=prod
     SERVICE_TEAM_SLACK_CHANNEL=#service-template-pulse-test
     IDENTITY_SERVICE_URL=identity.doorcrawl-int.com:50051
     PIGEON_SERVICE_URL=https://pigeon.doordash.red
-    S3_BUCKET_NAME=pulse-reports-staging
+    S3_BUCKET_NAME=pulse-reports-prod
     SERVICE_URI=http://${var.service_name}-${var.sandbox_app}.${var.namespace}.svc.cluster.local
     USE_VAULT_SECRETS=true
     CUSTOM_SUCCESS_MSG=[Pulse sandbox test]:celebrate: service-template _SANDBOX_NAME_ Successfully executed Pulse test on PROD
