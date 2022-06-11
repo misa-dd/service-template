@@ -37,11 +37,6 @@ pipeline:
               dockerMountedSecretId: ARTIFACTORY_PASSWORD
               valueFrom: password
     stages:
-    - name: hello
-      steps:
-      - type: sendSlackMessage
-        to: "C03EZGK6CTF"
-        message: 'Hey! CD getPrNumber feature test 2 is in progress...'
     - name: Sandbox Deploy + Pulse Test
       steps:
       - type: sandboxDeploy
