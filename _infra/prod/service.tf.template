@@ -27,6 +27,7 @@ module "service" {
 
   helm_timeout = "0"
   blue_green_enable = "true"
+  blue_green_pulse_test_enable = "true"
   blue_green_first_deployment = var.blue_green_first_deployment
   blue_green_scale_down_delay_seconds = "3600"
 
