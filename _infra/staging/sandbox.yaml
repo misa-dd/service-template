@@ -1,7 +1,7 @@
 app: sandbox-${parameters.sandboxName}
 contact: eng-devprod@doordash.com
-nameOverride: service-template-sandbox
-namespace: service-template-sandbox
+nameOverride: service-template
+namespace: service-template
 net_service:
   port: 80
   type: ClusterIP
