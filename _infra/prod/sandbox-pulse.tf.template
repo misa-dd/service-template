@@ -26,7 +26,7 @@ module "service-pulse" {
   service_cmd               = "/build/scripts/entrypoint.sh"
   service_cmd_args          = ""
   service_replica_count     = "1"
-  service_pdb_enable        = "true"
+  service_pdb_enable        = "false"
 
   helm_timeout = "0"
   blue_green_enable = "false"
