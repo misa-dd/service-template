@@ -52,5 +52,7 @@ module "service-pulse" {
     USE_VAULT_SECRETS=true
     CUSTOM_SUCCESS_MSG=[Pulse sandbox test]:celebrate: service-template _SANDBOX_NAME_ Successfully executed Pulse test on PROD
     CUSTOM_FAILURE_MSG=[Pulse sandbox test]:x: service-template _SANDBOX_NAME_ Pulse testsuite detected an error on PROD
+    CRON_SCHEDULE=*/10 * * * *
+    HEARTBEAT_SCHEDULE=0 */2 * * *
    EOF
 }
