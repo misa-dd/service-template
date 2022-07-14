@@ -31,7 +31,6 @@ module "service-pulse" {
   helm_timeout = "0"
   blue_green_enable = "false"
   net_service_enable = "false"
-  job_enable = "true"
 
   service_resource_requests_memory = "1Gi"
   service_resource_limits_memory = "1Gi"
