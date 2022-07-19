@@ -56,5 +56,7 @@ module "service-pulse" {
     CUSTOM_FAILURE_MSG=[Pulse sandbox test]:x: service-template _SANDBOX_NAME_ Pulse testsuite detected an error on PROD
     CRON_SCHEDULE=*/10 * * * *
     HEARTBEAT_SCHEDULE=0 */2 * * *
+    SLACK_NOTIFY_SUCCESS=true
+    SLACK_NOTIFY_FAILURE=true
    EOF
 }
