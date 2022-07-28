@@ -24,6 +24,11 @@ variable "job_name" {
   default = "migratedb"
 }
 
+variable "is_preview_pulse" {
+  type = string
+  default = "false"
+}
+
 provider "aws" {
   region  = "us-west-2"
   version = "2.23.0"
