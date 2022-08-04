@@ -26,5 +26,11 @@ service:
   requests:
     cpu: 100m
     memory: 256Mi
+  hpa:
+    enable: true
+    cpu:
+      targetAverageUtilization: 20
+    minReplicas: 2
+    maxReplicas: 6
 spinnaker:
   enable: true
