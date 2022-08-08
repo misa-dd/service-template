@@ -1,7 +1,7 @@
 nameOverride: "service-template"
 app: "web"
 contact: "eng-devprod@doordash.com"
-slackChannel: "spinnaker-slackbot"
+slackChannel: C01D61LK8V9 # 'spinnaker-slackbot'
 namespace: "service-template"
 environment: "production"
 net_service:
