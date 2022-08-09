@@ -1,0 +1,19 @@
+bundle_web:
+  cronjob:
+    arguments:
+      app: cronjob
+      deployFreezeOverride: '${parameters[''deployFreezeOverride'']}'
+      repository: '${parameters[''repository''].trim()}'
+      tag: '${parameters[''tag''].trim()}'
+      targetEnv: '${parameters[''targetEnv'']}'
+    child_pipeline: LunSingleEnvironmentGradualCanaryPromote
+    depends_on:
+      - pulse
+  pulse:
+    arguments:
+      app: pulse
+      deployFreezeOverride: '${parameters[''deployFreezeOverride'']}'
+      repository: '${parameters[''repository''].trim()}'
+      tag: '${parameters[''tag''].trim()}'
+      targetEnv: '${parameters[''targetEnv'']}'
+    child_pipeline: LunSingleEnvironmentGradualCanaryPromote

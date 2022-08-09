@@ -1,0 +1,16 @@
+pipeline:
+  version: 2
+  phases:
+  - stages:
+    - name: sandboxDeploy
+      steps:
+      - type: sandboxDeploy
+    post:
+      onSuccess:
+      - type: sendSlackMessage
+        to: "#pulse-svc-template"
+        message: 'Successful sandbox-deploy of service-template to ${REF} in ${ENV}: <${BUILD_URL}|${JOB_NAME} [${BUILD_NUMBER}]>'
+      onError:
+      - type: sendSlackMessage
+        to: "#pulse-svc-template"
+        message: 'sandbox promote failed for service-template to ${REF} in ${ENV}: <${BUILD_URL}|${JOB_NAME} [${BUILD_NUMBER}]>'

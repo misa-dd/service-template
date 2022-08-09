@@ -1,0 +1,110 @@
+provider "archive" {
+  version = "1.2.2"
+}
+
+provider "kubernetes" {
+  version = "1.8.1"
+}
+
+provider "helm" {
+  kubernetes {
+    config_context = "docker-desktop"
+  }
+  version = "1.1.1"
+}
+
+variable "namespace" {
+  type = string
+}
+
+variable "service_name" {
+  type = string
+}
+
+variable "blue_green_first_deployment" {
+  type = string
+  default = "false"
+}
+
+variable "image_tag" {
+  type = string
+}
+
+module "service-pressure-master" {
+  source = "git::https://github.com/doordash/terraform-kubernetes-microservice.git?ref=master"
+
+  namespace                 = var.namespace
+  service_name              = var.service_name
+  service_app               = "pressure-master"
+  service_contact_info      = "eng-devprod@doordash.com"
+  service_docker_image      = var.service_name
+  service_docker_image_tag  = "pressure-${var.image_tag}"
+  runtime_enable            = "false"
+  net_service_type          = "LoadBalancer"
+  service_image_pull_policy = "IfNotPresent"
+  service_cmd               = "/build/scripts/entrypoint.sh"
+  service_cmd_args          = ""
+
+  service_container_port    = "5557"
+  net_service_port          = "5557"
+
+  helm_timeout = "0"
+
+  job_enable             = "true"
+  job_net_service_enable = "true"
+  job_completions        = "1"
+  job_parallelism        = "1"
+
+  service_resource_requests_memory = "320Mi"
+  service_resource_limits_memory = "320Mi"
+  service_resource_requests_cpu = "200m"
+  service_resource_limits_cpu = "200m"
+
+  service_environments_variables = <<EOF
+    ENVIRONMENT=local
+    REPORT_ENABLED=false
+    LOCUST_ROLE=master
+    LOCUST_FILE=/pressure/tests/locustfile.py
+    EXPECT_SLAVES=8
+    RUN_TIME=2m
+    HATCH_RATE=2
+    USERS=8
+    STEP_TIME=30s
+    STEP_CLIENTS=2
+    TARGET_HOST=http://${var.service_name}-web.${var.namespace}.svc.cluster.local
+  EOF
+}
+
+module "service-pressure-worker" {
+  source = "git::https://github.com/doordash/terraform-kubernetes-microservice.git?ref=master"
+
+  namespace                 = var.namespace
+  service_name              = var.service_name
+  service_app               = "pressure-worker"
+  service_contact_info      = "eng-devprod@doordash.com"
+  service_docker_image      = var.service_name
+  service_docker_image_tag  = "pressure-${var.image_tag}"
+  runtime_enable            = "false"
+  service_image_pull_policy = "IfNotPresent"
+  service_cmd               = "/build/scripts/entrypoint.sh"
+  service_cmd_args          = ""
+
+  helm_timeout = "0"
+
+  job_enable             = "true"
+  job_net_service_enable = "false"
+  job_completions        = "8"
+  job_parallelism        = "8"
+
+  service_resource_requests_memory = "320Mi"
+  service_resource_limits_memory = "320Mi"
+  service_resource_requests_cpu = "200m"
+  service_resource_limits_cpu = "200m"
+
+  service_environments_variables = <<EOF
+    ENVIRONMENT=local
+    LOCUST_ROLE=worker
+    LOCUST_FILE=/pressure/tests/locustfile.py
+    MASTER_HOST_VENV=${replace(upper(var.service_name), "-", "_")}_PRESSURE_MASTER_SERVICE_HOST
+  EOF
+}

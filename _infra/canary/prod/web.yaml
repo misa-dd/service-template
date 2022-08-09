@@ -1,0 +1,26 @@
+app: web
+canary:
+  deployment: true
+contact: eng-devprod@doordash.com
+nameOverride: service-template
+namespace: service-template
+net_service:
+  port: 80
+  type: ClusterIP
+service:
+  cmd: /home/app/entrypoint.sh
+  cmdArgs: /home/app/run.sh
+  enVars: |-
+    ENVIRONMENT=prod
+  iamRole: arn:aws:iam::611706558220:role/web.service-template
+  image: 611706558220.dkr.ecr.us-west-2.amazonaws.com/service-template
+  limits:
+    cpu: 100m
+    memory: 256Mi
+  readinessProbe:
+    path: /health
+  requests:
+    cpu: 100m
+    memory: 256Mi
+spinnaker:
+  enable: true

@@ -1,0 +1,28 @@
+nameOverride: "service-template"
+app: "web"
+contact: "eng-devprod@doordash.com"
+namespace: "service-template"
+net_service:
+  port: 80
+  type: ClusterIP
+service:
+  image: "611706558220.dkr.ecr.us-west-2.amazonaws.com/service-template"
+  replicaCount: 11
+  containerPort: 80
+  enVars: |2
+    GIT_SHA=
+    ENVIRONMENT=staging
+    CELL_ENV=cell004
+  iamRole: "arn:aws:iam::914801092467:role/web.service-template"
+  cmd: "/home/app/entrypoint.sh"
+  cmdArgs: "/home/app/run.sh"
+  requests:
+    cpu : 100m
+    memory: 256Mi
+  limits:
+    cpu: 100m
+    memory: 256Mi
+  readinessProbe:
+    path: "/health"
+spinnaker:
+  enable: true

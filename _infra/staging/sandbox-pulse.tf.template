@@ -1,0 +1,55 @@
+terraform {
+  backend "s3" {
+    bucket = "doordash-cluster-state"
+    dynamodb_table = "doordash-cluster-state"
+    key    = "resources/services/staging-sandbox/_GITREPO_/_SANDBOX_NAME_/pulse.tfstate"
+    region = "us-west-2"
+  }
+}
+
+variable "sandbox_app" {
+  type = string
+  default = "_SANDBOX_NAME_"
+}
+
+module "service-pulse" {
+  source = "git::ssh://git@github.com/doordash/terraform-kubernetes-microservice.git?ref=master"
+
+  namespace                 = var.namespace
+  service_name              = var.service_name
+  service_app               = "pulse-${var.sandbox_app}"
+  service_contact_info      = "eng-devprod@doordash.com"
+  service_docker_image      = "611706558220.dkr.ecr.us-west-2.amazonaws.com/${var.service_name}"
+  service_docker_image_tag  = "pulse-${var.image_tag}"
+  runtime_enable            = "false"
+  service_cmd               = "/build/scripts/pulse.sh"
+  service_cmd_args          = "--report-success"
+  service_replica_count     = "1"
+  service_pdb_enable        = "true"
+
+  helm_timeout = "0"
+  blue_green_enable = "false"
+  net_service_enable = "false"
+
+  service_resource_requests_memory = "1Gi"
+  service_resource_limits_memory = "1Gi"
+  service_resource_requests_cpu = "500m"
+  service_resource_limits_cpu = "500m"
+
+  service_iam_role = "arn:aws:iam::914801092467:role/pulse.${var.namespace}"
+
+  vault_enable = "true"
+  vault_enable_pulse = "true"
+
+  service_environments_variables = <<EOF
+    ENVIRONMENT=staging
+    SERVICE_TEAM_SLACK_CHANNEL=#service-template-pulse-test
+    IDENTITY_SERVICE_URL=identity.doorcrawl-int.com:50051
+    PIGEON_SERVICE_URL=https://pigeon.doordash.red
+    S3_BUCKET_NAME=pulse-reports-staging
+    SERVICE_URI=http://${var.service_name}-${var.sandbox_app}.${var.namespace}.svc.cluster.local
+    USE_VAULT_SECRETS=true
+    CUSTOM_SUCCESS_MSG=[Pulse sandbox test]service-template _SANDBOX_NAME_ Successfully executed Pulse test on staging
+    CUSTOM_FAILURE_MSG=[Pulse sandbox test]service-template _SANDBOX_NAME_ Pulse testsuite detected an error on staging
+   EOF
+}

@@ -1,0 +1,51 @@
+pipeline:
+  version: 2
+  options:
+    skipDefaultCheckout: false
+  phases:
+  - dockerBuilds:
+      images:
+        main:
+          strategy: kaniko
+          image: 611706558220.dkr.ecr.us-west-2.amazonaws.com/service-template
+          secrets:
+          - type: UsernamePasswordMultiBinding
+            credentialsId: TEAM_ARTIFACTORY_ACCESS_TOKEN
+            dockerMountedSecretId: ARTIFACTORY_USERNAME
+            valueFrom: username
+          - type: UsernamePasswordMultiBinding
+            credentialsId: TEAM_ARTIFACTORY_ACCESS_TOKEN
+            dockerMountedSecretId: ARTIFACTORY_PASSWORD
+            valueFrom: password
+        pulse:
+          strategy: kaniko
+          image: 611706558220.dkr.ecr.us-west-2.amazonaws.com/service-template
+          dockerfile: _infra/Dockerfile
+          context: pulse
+          prefixDockerTag: pulse-
+          buildArgs:
+            plain:
+              PULSE_VERSION: THREE
+              SERVICE_NAME: service-template
+          secrets:
+            - type: UsernamePasswordMultiBinding
+              credentialsId: TEAM_ARTIFACTORY_ACCESS_TOKEN
+              dockerMountedSecretId: ARTIFACTORY_USERNAME
+              valueFrom: username
+            - type: UsernamePasswordMultiBinding
+              credentialsId: TEAM_ARTIFACTORY_ACCESS_TOKEN
+              dockerMountedSecretId: ARTIFACTORY_PASSWORD
+              valueFrom: password
+    stages:
+    - name: Sandbox Deploy + Pulse Test
+      steps:
+      - type: sandboxDeploy
+    post:
+      onSuccess:
+        - type: sendSlackMessage
+          to: "C03EZGK6CTF"
+          message: 'Successful sandbox-deploy of service-template to ${REF} in ${ENV}: <${BUILD_URL}|${JOB_NAME} [${BUILD_NUMBER}]>'
+      onError:
+        - type: sendSlackMessage
+          to: "C03EZGK6CTF"
+          message: 'sandbox promote failed for service-template to ${REF} in ${ENV}: <${BUILD_URL}|${JOB_NAME} [${BUILD_NUMBER}]>'

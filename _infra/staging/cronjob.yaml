@@ -1,0 +1,24 @@
+app: cronjob
+contact: eng-devprod@doordash.com
+job:
+  cronSchedule: '* * * * *'
+  enable: true
+nameOverride: service-template
+namespace: service-template
+net_service:
+  enable: false
+service:
+  cmd: /home/app/entrypoint.sh
+  cmdArgs: /home/app/run-job.sh
+  enVars: |-
+    ENVIRONMENT=staging
+  iamRole: arn:aws:iam::914801092467:role/cronjob.service-template
+  image: 611706558220.dkr.ecr.us-west-2.amazonaws.com/service-template
+  limits:
+    cpu: 100m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+spinnaker:
+  enable: true

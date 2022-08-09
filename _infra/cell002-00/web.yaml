@@ -1,0 +1,46 @@
+nameOverride: "service-template"
+app: "web"
+contact: "eng-devprod@doordash.com"
+slackChannel: C01D61LK8V9 # 'spinnaker-slackbot'
+namespace: "service-template"
+environment: "production"
+net_service:
+  port: 80
+  type: ClusterIP
+service:
+  image: "611706558220.dkr.ecr.us-west-2.amazonaws.com/service-template"
+  replicaCount: 11
+  maxUnavailable: 10%
+  containerPort: 80
+  enVars: |2
+    GIT_SHA=
+    ENVIRONMENT=staging
+    CELL_ENV=cell001
+  customPodAnnotations: |2
+    chronosphere.io/job: "service-template"
+    chronosphere.io/scrape: "true"
+    chronosphere.io/port: "80"
+    chronosphere.io/path: "/metrics"
+  iamRole: "arn:aws:iam::914801092467:role/web.service-template"
+  cmd: "/home/app/entrypoint.sh"
+  cmdArgs: "/home/app/run.sh"
+  requests:
+    cpu : 100m
+    memory: 256Mi
+  limits:
+    cpu: 100m
+    memory: 256Mi
+  readinessProbe:
+    path: "/health"
+  enableTopologySpread: true
+canary:
+  config: "99c5b30f-9025-4383-b22b-e9bccc67c271"
+  skipJudgementOnPass: true
+  beginCanaryAnalysisAfterMins: 3
+  lifetimeDuration: PT0H15M
+  baseline:
+    size: 1
+  canary:
+    size: 1
+spinnaker:
+  enable: true

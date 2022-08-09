@@ -1,0 +1,24 @@
+version: '3'
+services:
+  web:
+    image: service-template:localbuild
+    container_name: service-template.web
+    build:
+      context: .
+      args:
+      - IMAGE_SERVICE=611706558220.dkr.ecr.us-west-2.amazonaws.com/dd-docker-base:python3-7-latest
+      - PIP_EXTRA_INDEX_URL
+    environment:
+    - GIT_TAG=localbuild
+    - ENVIRONMENT=local
+    ports:
+    - 80:80
+    volumes:
+    - $PWD/application:/home/app/application
+    - ${RUNTIME_PATH:-./empty_runtime}/data:/srv/runtime/current/data
+    - $PWD/secrets.json:/vault/secrets/secrets.json
+# connect to doordash_development network to connect to other running containers
+networks:
+  default:
+    external:
+      name: dr-who

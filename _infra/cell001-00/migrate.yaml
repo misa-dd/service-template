@@ -1,0 +1,38 @@
+nameOverride: "service-template"
+app: "migrate"
+contact: "eng-devprod@doordash.com"
+slackChannel: "spinnaker-slackbot"
+namespace: "service-template"
+environment: "production"
+job:
+  enable: true
+  backoffLimit: 0
+  completions: 1
+  parallelism: 1
+  restartPolicy: Never
+net_service:
+  enable: false
+service:
+  image: "611706558220.dkr.ecr.us-west-2.amazonaws.com/service-template"
+  enVars: |2
+    GIT_SHA=
+    ENVIRONMENT=staging
+    CELL_ENV=cell001
+  customPodAnnotations: |2
+    chronosphere.io/job: "service-template"
+    chronosphere.io/scrape: "true"
+    chronosphere.io/port: "80"
+    chronosphere.io/path: "/metrics"
+  iamRole: "arn:aws:iam::914801092467:role/web.service-template"
+  cmd: "/home/app/entrypoint.sh"
+  cmdArgs: "/home/app/run-job.sh"
+  requests:
+    cpu : 100m
+    memory: 256Mi
+  limits:
+    cpu: 100m
+    memory: 256Mi
+  readinessProbe:
+    path: "/health"
+spinnaker:
+  enable: true

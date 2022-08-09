@@ -1,0 +1,34 @@
+app: pulse
+contact: eng-devprod@doordash.com
+nameOverride: service-template
+namespace: service-template
+net_service:
+  enable: false
+runtime:
+  enable: false
+service:
+  cmd: /build/scripts/entrypoint.sh
+  enVars: |-
+    ENVIRONMENT=prod
+    SERVICE_TEAM_SLACK_CHANNEL=#pulse-svc-template
+    IDENTITY_SERVICE_URL=identity.int.doordash.com:50051
+    PIGEON_SERVICE_URL=https://pigeon.doordash.red
+    S3_BUCKET_NAME=pulse-reports-prod
+    CRON_SCHEDULE=*/10 * * * *
+    HEARTBEAT_SCHEDULE=0 */2 * * *
+    SERVICE_URI=http://service-template-web.service-template.svc.cluster.local
+    USE_VAULT_SECRETS=true
+  iamRole: arn:aws:iam::611706558220:role/pulse.service-template
+  image: 611706558220.dkr.ecr.us-west-2.amazonaws.com/service-template:pulse-
+  limits:
+    cpu: 1000m
+    memory: 2Gi
+  requests:
+    cpu: 1000m
+    memory: 2Gi
+  tag: pulse-${parameters.tag}
+spinnaker:
+  enable: true
+vault:
+  enable: true
+  enablePulse: true
